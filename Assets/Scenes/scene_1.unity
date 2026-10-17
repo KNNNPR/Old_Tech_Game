@@ -286,6 +286,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RightWall
       objectReference: {fileID: 0}
+    - target: {fileID: -3821253740895256905, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: m_Name
+      value: Blood
+      objectReference: {fileID: 0}
     - target: {fileID: -2914413575082383075, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: PunchCardTube
@@ -362,6 +366,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RecorderSlider5
       objectReference: {fileID: 0}
+    - target: {fileID: 3996715374946979927, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7046365699d42524a90e228fefb96644, type: 2}
     - target: {fileID: 4321514657177891973, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -442,6 +450,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: c04c147c2fe6a1b47bd7136e5d6e308e, type: 2}
+    - target: {fileID: 7293059144023096718, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 7046365699d42524a90e228fefb96644, type: 2}
     - target: {fileID: 8009987137999418058, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: RecorderButton
@@ -457,6 +469,10 @@ PrefabInstance:
     - target: {fileID: 8513859187771203891, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: IndicationCylinder
+      objectReference: {fileID: 0}
+    - target: {fileID: 8549403022290207516, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: m_Name
+      value: bucket
       objectReference: {fileID: 0}
     - target: {fileID: 8700725330082129686, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
