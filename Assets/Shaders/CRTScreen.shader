@@ -17,15 +17,14 @@ Shader "Old Tech/CRT Screen"
 
         [Header(CRT Display)]
         _ScreenRect("Display UV Rect (X, Y, Width, Height)", Vector) = (0.03125, 0.046875, 0.4609375, 0.421875)
-        _ScrollSpeed("Texture Scroll (X, Y)", Vector) = (0.012, -0.055, 0, 0)
         _ScreenTint("Phosphor Tint", Color) = (0.72, 1, 0.84, 1)
         _ScreenEmission("Screen Emission", Range(0, 12)) = 3.2
-        _WarpStrength("Horizontal Wave", Range(0, 0.05)) = 0.007
-        _WarpSpeed("Wave Speed", Range(0, 5)) = 0.8
+        _WaveStrength("Wave Distortion", Range(0, 0.05)) = 0.016
+        _WaveSpeed("Wave Speed", Range(0, 5)) = 1.1
         _ScanlineDensity("Scanline Count", Range(32, 400)) = 160
         _ScanlineStrength("Scanline Strength", Range(0, 0.5)) = 0.1
         _RollStrength("Rolling Light Band", Range(0, 0.5)) = 0.14
-        _FlickerStrength("Flicker Strength", Range(0, 0.15)) = 0.018
+        _FlickerStrength("Flicker Strength", Range(0, 0.15)) = 0.12
         _ScreenNoise("Screen Grain", Range(0, 0.1)) = 0.012
         [HideInInspector] _PreviewTime("Preview Time (-1 = Animated)", Float) = -1
     }

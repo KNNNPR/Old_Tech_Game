@@ -18,11 +18,10 @@ CBUFFER_START(UnityPerMaterial)
     #if defined(OLD_TECH_CRT_SCREEN)
         float4 _BaseMap_TexelSize;
         float4 _ScreenRect;
-        float4 _ScrollSpeed;
         half4 _ScreenTint;
         float _ScreenEmission;
-        float _WarpStrength;
-        float _WarpSpeed;
+        float _WaveStrength;
+        float _WaveSpeed;
         float _ScanlineDensity;
         float _ScanlineStrength;
         float _RollStrength;
