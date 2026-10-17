@@ -1,0 +1,73 @@
+using System;
+using UnityEngine;
+
+/// <summary>
+/// Гнездо, куда можно вставить предмет из руки и забрать обратно.
+/// Основа для перфоратора, считывателя, лотков и почтового ящика.
+/// Машины подписываются на ItemInserted и делают свою логику.
+/// </summary>
+public class ItemSlot : MonoBehaviour, IInteractable
+{
+    [SerializeField] private string slotName = "гнездо";
+
+    [Tooltip("Куда встаёт предмет. Если пусто — в центр этого объекта.")]
+    [SerializeField] private Transform anchor;
+
+    [Tooltip("Принимать только предметы с этим тегом. Пусто — принимать всё.")]
+    [SerializeField] private string acceptedTag = "";
+
+    [SerializeField] private bool allowTakeBack = true;
+
+    public Pickupable Current { get; private set; }
+
+    public event Action<Pickupable> ItemInserted;
+    public event Action<Pickupable> ItemRemoved;
+
+    private Transform Anchor => anchor != null ? anchor : transform;
+
+    public string GetPrompt(PlayerInteractor interactor) =>
+        Current == null ? $"[E] Вставить: {slotName}" : $"[E] Забрать: {slotName}";
+
+    public bool CanInteract(PlayerInteractor interactor)
+    {
+        if (Current == null)
+            return interactor.HeldItem != null && Accepts(interactor.HeldItem);
+
+        return allowTakeBack && interactor.HeldItem == null;
+    }
+
+    public void Interact(PlayerInteractor interactor)
+    {
+        if (Current == null)
+        {
+            Insert(interactor.ReleaseHeld());
+        }
+        else
+        {
+            Pickupable item = Remove();
+            interactor.Hold(item);
+        }
+    }
+
+    public bool Accepts(Pickupable item) =>
+        string.IsNullOrEmpty(acceptedTag) || item.CompareTag(acceptedTag);
+
+    /// <summary>Вставить предмет кодом (например, машина сама кладёт карту в лоток).</summary>
+    public void Insert(Pickupable item)
+    {
+        if (item == null || Current != null) return;
+
+        Current = item;
+        item.AttachTo(Anchor, Vector3.zero, Quaternion.identity);
+        ItemInserted?.Invoke(item);
+    }
+
+    /// <summary>Вынуть предмет кодом. Возвращает предмет, но не кладёт его никуда.</summary>
+    public Pickupable Remove()
+    {
+        Pickupable item = Current;
+        Current = null;
+        if (item != null) ItemRemoved?.Invoke(item);
+        return item;
+    }
+}
