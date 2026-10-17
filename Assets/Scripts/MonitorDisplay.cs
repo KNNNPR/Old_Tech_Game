@@ -2,12 +2,12 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Video;
 
 /// <summary>
-/// Монитор компьютера. Когда рычаг задвигает карту, показывает её содержимое:
-/// текст (печатается по букве), картинку, видео или звук.
+/// Монитор компьютера. Когда рычаг задвигает карту:
+/// - Text  → текст печатается на экране;
+/// - Image → надпись и кнопка EXTRACT, по нажатию принтер печатает изображение;
+/// - Audio → надпись и кнопка EXTRACT, по нажатию выезжает кассета с записью.
 /// </summary>
 public class MonitorDisplay : MonoBehaviour
 {
@@ -15,67 +15,54 @@ public class MonitorDisplay : MonoBehaviour
     [SerializeField] private FeedLever lever;
 
     [Header("Экран")]
-    [SerializeField] private RawImage screenImage;
     [SerializeField] private TMP_Text screenText;
-    [SerializeField] private VideoPlayer videoPlayer;
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private Vector2Int videoResolution = new Vector2Int(640, 480);
+    [SerializeField] private ExtractButton extractButton;
 
-    [Header("Текст")]
-    [Tooltip("Пауза между буквами.")]
-    [SerializeField] private float charDelay = 0.03f;
-    [Tooltip("Звук одной буквы (необязательно).")]
+    [Header("Устройства вывода")]
+    [SerializeField] private ItemDispenser printer;
+    [SerializeField] private ItemDispenser cassetteDeck;
+
+    [Header("Звук печати текста")]
+    [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip typeClip;
     [SerializeField, Range(0f, 1f)] private float typeVolume = 0.4f;
 
     [Header("Поведение")]
-    [Tooltip("Пауза между уходом карты в машину и появлением содержимого.")]
+    [SerializeField] private float charDelay = 0.03f;
+    [Tooltip("Пауза между уходом карты в машину и реакцией экрана.")]
     [SerializeField] private float startDelay = 0.8f;
-    [Tooltip("Что показывать, пока карты нет.")]
+
+    [Header("Системные надписи")]
     [TextArea, SerializeField] private string idleText = "";
+    [TextArea, SerializeField] private string imageReadyText = "ОБНАРУЖЕНО ИЗОБРАЖЕНИЕ.\nНАЖМИТЕ EXTRACT ДЛЯ ПЕЧАТИ.";
+    [TextArea, SerializeField] private string audioReadyText = "ОБНАРУЖЕНА АУДИОЗАПИСЬ.\nНАЖМИТЕ EXTRACT ДЛЯ ЗАПИСИ НА КАССЕТУ.";
+    [SerializeField] private string extractingText = "ВЫПОЛНЯЕТСЯ...";
+    [SerializeField] private string doneText = "ГОТОВО.";
+    [SerializeField] private string trayBusyText = "ЛОТОК ЗАНЯТ.\nЗАБЕРИТЕ ПРЕДЫДУЩИЙ РЕЗУЛЬТАТ.";
     [SerializeField] private string errorText = "ОШИБКА ЧТЕНИЯ КАРТЫ";
 
     public CardData CurrentCard { get; private set; }
 
-    /// <summary>Содержимое карты начало показываться. Пригодится для скриптовых событий.</summary>
+    /// <summary>Карта прочитана, содержимое начало показываться.</summary>
     public event Action<CardData> ContentStarted;
 
-    private RenderTexture videoTexture;
-    private Coroutine showRoutine;
+    /// <summary>Распечатка или кассета выданы в лоток.</summary>
+    public event Action<CardData> Extracted;
 
-    private void Awake()
-    {
-        videoTexture = new RenderTexture(videoResolution.x, videoResolution.y, 0);
+    private Coroutine screenRoutine;
 
-        if (videoPlayer != null)
-        {
-            videoPlayer.playOnAwake = false;
-            videoPlayer.renderMode = VideoRenderMode.RenderTexture;
-            videoPlayer.targetTexture = videoTexture;
-
-            if (audioSource != null)
-            {
-                videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
-                videoPlayer.SetTargetAudioSource(0, audioSource);
-            }
-        }
-
-        Clear();
-    }
+    private void Awake() => Clear();
 
     private void OnEnable()
     {
         if (lever != null) lever.CardFed += OnCardFed;
+        if (extractButton != null) extractButton.Pressed += OnExtractPressed;
     }
 
     private void OnDisable()
     {
         if (lever != null) lever.CardFed -= OnCardFed;
-    }
-
-    private void OnDestroy()
-    {
-        if (videoTexture != null) videoTexture.Release();
+        if (extractButton != null) extractButton.Pressed -= OnExtractPressed;
     }
 
     private void OnCardFed(Pickupable item)
@@ -84,26 +71,15 @@ public class MonitorDisplay : MonoBehaviour
         Show(card != null ? card.Data : null);
     }
 
-    /// <summary>Показать содержимое карты. null — показать ошибку чтения.</summary>
-    public void Show(CardData data)
-    {
-        if (showRoutine != null) StopCoroutine(showRoutine);
-        showRoutine = StartCoroutine(ShowRoutine(data));
-    }
+    /// <summary>Показать карту. null — ошибка чтения.</summary>
+    public void Show(CardData data) => Run(ShowRoutine(data));
 
-    /// <summary>Погасить экран и остановить звук и видео.</summary>
+    /// <summary>Вернуть экран в исходное состояние.</summary>
     public void Clear()
     {
+        StopScreen();
         CurrentCard = null;
-
-        if (videoPlayer != null) videoPlayer.Stop();
-        if (audioSource != null) audioSource.Stop();
-
-        if (screenImage != null)
-        {
-            screenImage.texture = null;
-            screenImage.enabled = false;
-        }
+        SetButton(false);
 
         if (screenText != null)
         {
@@ -114,7 +90,10 @@ public class MonitorDisplay : MonoBehaviour
 
     private IEnumerator ShowRoutine(CardData data)
     {
-        Clear();
+        CurrentCard = null;
+        SetButton(false);
+        if (screenText != null) screenText.text = "";
+
         yield return new WaitForSeconds(startDelay);
 
         if (data == null)
@@ -126,41 +105,79 @@ public class MonitorDisplay : MonoBehaviour
         CurrentCard = data;
         ContentStarted?.Invoke(data);
 
-        if (data.video != null && videoPlayer != null)
+        switch (data.type)
         {
-            videoPlayer.clip = data.video;
-            videoPlayer.isLooping = data.loopVideo;
-            videoPlayer.Prepare();
-            while (!videoPlayer.isPrepared) yield return null;
+            case CardContentType.Text:
+                yield return TypeText(data.text);
+                break;
 
-            screenImage.texture = videoTexture;
-            screenImage.enabled = true;
-            videoPlayer.Play();
+            case CardContentType.Image:
+                yield return TypeText(OrDefault(data.text, imageReadyText));
+                SetButton(true);
+                break;
+
+            case CardContentType.Audio:
+                yield return TypeText(OrDefault(data.text, audioReadyText));
+                SetButton(true);
+                break;
         }
-        else
+    }
+
+    private void OnExtractPressed()
+    {
+        CardData card = CurrentCard;
+        if (card == null) return;
+
+        ItemDispenser dispenser = card.type switch
         {
-            if (data.image != null)
-            {
-                screenImage.texture = data.image;
-                screenImage.enabled = true;
-            }
+            CardContentType.Image => printer,
+            CardContentType.Audio => cassetteDeck,
+            _ => null
+        };
+        if (dispenser == null) return;
 
-            if (data.audio != null && audioSource != null)
-            {
-                audioSource.clip = data.audio;
-                audioSource.Play();
-            }
+        if (!dispenser.IsReady)
+        {
+            Run(TypeThenShowButton(trayBusyText));
+            return;
         }
 
-        if (!string.IsNullOrEmpty(data.text))
-            yield return TypeText(data.text);
+        SetButton(false);
+        Run(TypeText(extractingText));
+
+        dispenser.Dispense(
+            instance => ConfigureOutput(instance, card),
+            () =>
+            {
+                // Если за это время вставили новую карту, экран не трогаем.
+                if (CurrentCard != card) return;
+
+                CurrentCard = null;
+                Run(TypeText(doneText));
+                Extracted?.Invoke(card);
+            });
+    }
+
+    private static void ConfigureOutput(GameObject instance, CardData card)
+    {
+        if (card.type == CardContentType.Image && instance.TryGetComponent(out PrintedPaper paper))
+            paper.SetImage(card.image);
+        else if (card.type == CardContentType.Audio && instance.TryGetComponent(out Cassette cassette))
+            cassette.Clip = card.audio;
+    }
+
+    private IEnumerator TypeThenShowButton(string text)
+    {
+        SetButton(false);
+        yield return TypeText(text);
+        SetButton(true);
     }
 
     private IEnumerator TypeText(string text)
     {
         if (screenText == null) yield break;
 
-        screenText.text = text;
+        screenText.text = text ?? "";
         screenText.maxVisibleCharacters = 0;
         screenText.ForceMeshUpdate();
 
@@ -179,4 +196,27 @@ public class MonitorDisplay : MonoBehaviour
 
         screenText.maxVisibleCharacters = int.MaxValue;
     }
+
+    private void SetButton(bool visible)
+    {
+        if (extractButton != null) extractButton.SetVisible(visible);
+    }
+
+    private void Run(IEnumerator routine)
+    {
+        StopScreen();
+        screenRoutine = StartCoroutine(routine);
+    }
+
+    private void StopScreen()
+    {
+        if (screenRoutine != null)
+        {
+            StopCoroutine(screenRoutine);
+            screenRoutine = null;
+        }
+    }
+
+    private static string OrDefault(string value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value;
 }
