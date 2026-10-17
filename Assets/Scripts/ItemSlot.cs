@@ -20,6 +20,9 @@ public class ItemSlot : MonoBehaviour, IInteractable
 
     public Pickupable Current { get; private set; }
 
+    /// <summary>Пока true, игрок не может ни вставить, ни забрать предмет (машина работает).</summary>
+    public bool Locked { get; set; }
+
     public event Action<Pickupable> ItemInserted;
     public event Action<Pickupable> ItemRemoved;
 
@@ -30,6 +33,8 @@ public class ItemSlot : MonoBehaviour, IInteractable
 
     public bool CanInteract(PlayerInteractor interactor)
     {
+        if (Locked) return false;
+
         if (Current == null)
             return interactor.HeldItem != null && Accepts(interactor.HeldItem);
 
