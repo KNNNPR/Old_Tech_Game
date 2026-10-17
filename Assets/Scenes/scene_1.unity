@@ -284,6 +284,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GearBox1
       objectReference: {fileID: 0}
+    - target: {fileID: -7388894396013007978, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8fc8bd99a7ef8c84599e4f41dc4643b5, type: 2}
     - target: {fileID: -7271449666460269675, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: ToolBox
@@ -340,10 +344,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Floor
       objectReference: {fileID: 0}
+    - target: {fileID: -1461304994638716399, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: c04c147c2fe6a1b47bd7136e5d6e308e, type: 2}
     - target: {fileID: -1063203228461421988, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: OvenToothTop
       objectReference: {fileID: 0}
+    - target: {fileID: -678588488315902003, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5672e6c7b8c8cf647b0ec0d9f256e5d6, type: 2}
     - target: {fileID: -516098083770646512, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: PrinterIndication
@@ -376,10 +388,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: RecorderSlider4
       objectReference: {fileID: 0}
+    - target: {fileID: 3280927520727180574, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4bcfb036f4507c24f83f9d109643c27a, type: 2}
     - target: {fileID: 3849762623622064168, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: RecorderSlider5
       objectReference: {fileID: 0}
+    - target: {fileID: 4321514657177891973, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 4bcfb036f4507c24f83f9d109643c27a, type: 2}
     - target: {fileID: 4356877828898064976, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: FrontBackWall
@@ -412,6 +432,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: RecorderString
       objectReference: {fileID: 0}
+    - target: {fileID: 5958438921693756439, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: m_Color.b
+      value: 0.70899314
+      objectReference: {fileID: 0}
+    - target: {fileID: 5958438921693756439, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: m_Color.g
+      value: 0.7735849
+      objectReference: {fileID: 0}
+    - target: {fileID: 5958438921693756439, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: m_Color.r
+      value: 0.5218049
+      objectReference: {fileID: 0}
     - target: {fileID: 6014503084441653313, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: NormalPunchCardIndication
@@ -436,6 +468,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: OvenAlarm
       objectReference: {fileID: 0}
+    - target: {fileID: 7071182760956848314, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: c04c147c2fe6a1b47bd7136e5d6e308e, type: 2}
     - target: {fileID: 8009987137999418058, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: RecorderButton
@@ -826,9 +862,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1869859503
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1869859505}
+  - component: {fileID: 1869859504}
+  m_Layer: 0
+  m_Name: CRT Screen Glow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1869859504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869859503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 20
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 739f0688f69bc2c4bbedcc46aee1e302, type: 2}
+--- !u!4 &1869859505
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869859503}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1527025595}
   - {fileID: 304260357}
+  - {fileID: 1869859505}
