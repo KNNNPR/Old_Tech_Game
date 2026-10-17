@@ -21,13 +21,16 @@ namespace OldTech.Editor
         static MeshRenderer FindScreen()
         {
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            var screens = scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<MeshRenderer>(true))
-                .Where(r => string.Equals(r.name, "Cube.002", StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (screens.Length != 1) throw new InvalidOperationException($"Expected one Cube.002, found {screens.Length}.");
+            var renderers = scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<MeshRenderer>(true)).ToArray();
+            var screens = renderers.Where(r => string.Equals(r.name, "Monitor", StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (screens.Length == 0)
+                screens = renderers.Where(r => string.Equals(r.name, "Cube.002", StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (screens.Length != 1)
+                throw new InvalidOperationException($"Expected one computer display (Monitor or Cube.002) in {scene.path}, found {screens.Length}.");
             return screens[0];
         }
 
-        [MenuItem("Tools/Old Tech/Apply Animated CRT to Cube.002")]
+        [MenuItem("Tools/Old Tech/Apply Animated CRT to Computer Screen")]
         public static void Apply()
         {
             if (EditorApplication.isPlaying) throw new InvalidOperationException("Apply the CRT in Edit mode so the scene can be saved.");
@@ -38,7 +41,7 @@ namespace OldTech.Editor
             var materials = renderer.sharedMaterials;
             int slot = Array.FindIndex(materials, m => m && m.HasProperty("_BaseMap") &&
                 m.GetTexture("_BaseMap") == AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Textures/comp.png"));
-            if (slot < 0) throw new InvalidOperationException("Cube.002 has no material using the comp.png display atlas.");
+            if (slot < 0) throw new InvalidOperationException($"{renderer.name} has no material using the comp.png display atlas.");
             var source = materials[slot];
             var material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
             if (material == null)
@@ -109,7 +112,7 @@ namespace OldTech.Editor
         {
             var renderer = FindScreen();
             var material = renderer.sharedMaterials.FirstOrDefault(m => m && m.shader.name == ShaderName);
-            if (!material) throw new InvalidOperationException("CRT material is not assigned to Cube.002.");
+            if (!material) throw new InvalidOperationException($"CRT material is not assigned to {renderer.name}.");
             string output = "Temp/CRTScreen";
             Directory.CreateDirectory(output);
             File.WriteAllText(output + "/validation.txt", "Validation in progress...");
@@ -154,6 +157,7 @@ namespace OldTech.Editor
                 if (ShaderUtil.ShaderHasError(material.shader)) throw new InvalidOperationException("CRT shader has compilation errors.");
                 var report = new StringBuilder();
                 report.AppendLine($"PASS - Unity {Application.unityVersion}");
+                report.AppendLine($"Scene: {renderer.gameObject.scene.path}");
                 report.AppendLine($"Target: {renderer.name}; material: {AssetDatabase.GetAssetPath(material)}");
                 report.AppendLine($"Animated pixels between 0s and 2s: {animated}");
                 report.AppendLine($"Pixels affected by Bloom: {glowing}");
