@@ -22,9 +22,12 @@ public class MonitorDisplay : MonoBehaviour
     [SerializeField] private CipherDial cipherDial;
     [Tooltip("Надпись со значением сдвига на экране, например «СДВИГ: 07» (необязательно).")]
     [SerializeField] private TMP_Text shiftLabel;
-    [SerializeField] private string shiftLabelFormat = "СДВИГ: {0:00}";
+    // Формат надписи сдвига задаётся только в коде, чтобы старые значения из сцены не перекрывали его.
+    private const string shiftLabelFormat = DefaultShiftLabelFormat;
 
     [Header("Устройства вывода")]
+    [Tooltip("Фотопринтер. Если задан, изображения с карт печатаются через него.")]
+    [SerializeField] private PhotoPrinterSpawner photoPrinter;
     [SerializeField] private ItemDispenser printer;
     [SerializeField] private ItemDispenser cassetteDeck;
 
@@ -38,14 +41,38 @@ public class MonitorDisplay : MonoBehaviour
     [Tooltip("Пауза между уходом карты в машину и реакцией экрана.")]
     [SerializeField] private float startDelay = 0.8f;
 
-    [Header("Системные надписи")]
+    private const string DefaultShiftLabelFormat = "SHIFT: {0:00}";
+    private const string DefaultImageReadyText = "IMAGE DETECTED.\nPRESS EXTRACT TO PRINT.";
+    private const string DefaultAudioReadyText = "AUDIO DETECTED.\nPRESS EXTRACT TO RECORD TO CASSETTE.";
+    private const string DefaultExtractingText = "PROCESSING...";
+    private const string DefaultDoneText = "DONE.";
+    private const string DefaultTrayBusyText = "OUTPUT TRAY FULL.\nREMOVE PREVIOUS OUTPUT.";
+    private const string DefaultErrorText = "CARD READ ERROR";
+
+    [Header("Системные надписи (⋮ → Use default English texts — вернуть стандартные)")]
     [TextArea, SerializeField] private string idleText = "";
-    [TextArea, SerializeField] private string imageReadyText = "ОБНАРУЖЕНО ИЗОБРАЖЕНИЕ.\nНАЖМИТЕ EXTRACT ДЛЯ ПЕЧАТИ.";
-    [TextArea, SerializeField] private string audioReadyText = "ОБНАРУЖЕНА АУДИОЗАПИСЬ.\nНАЖМИТЕ EXTRACT ДЛЯ ЗАПИСИ НА КАССЕТУ.";
-    [SerializeField] private string extractingText = "ВЫПОЛНЯЕТСЯ...";
-    [SerializeField] private string doneText = "ГОТОВО.";
-    [SerializeField] private string trayBusyText = "ЛОТОК ЗАНЯТ.\nЗАБЕРИТЕ ПРЕДЫДУЩИЙ РЕЗУЛЬТАТ.";
-    [SerializeField] private string errorText = "ОШИБКА ЧТЕНИЯ КАРТЫ";
+    [TextArea, SerializeField] private string imageReadyText = DefaultImageReadyText;
+    [TextArea, SerializeField] private string audioReadyText = DefaultAudioReadyText;
+    [SerializeField] private string extractingText = DefaultExtractingText;
+    [SerializeField] private string doneText = DefaultDoneText;
+    [SerializeField] private string trayBusyText = DefaultTrayBusyText;
+    [SerializeField] private string errorText = DefaultErrorText;
+
+    // Значения из сцены важнее значений по умолчанию в коде,
+    // поэтому старые русские надписи меняются этой кнопкой в меню компонента.
+    [ContextMenu("Use default English texts")]
+    private void UseDefaultEnglishTexts()
+    {
+        imageReadyText = DefaultImageReadyText;
+        audioReadyText = DefaultAudioReadyText;
+        extractingText = DefaultExtractingText;
+        doneText = DefaultDoneText;
+        trayBusyText = DefaultTrayBusyText;
+        errorText = DefaultErrorText;
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+    }
 
     public CardData CurrentCard { get; private set; }
 
@@ -75,6 +102,7 @@ public class MonitorDisplay : MonoBehaviour
         }
         if (extractButton != null) extractButton.Pressed += OnExtractPressed;
         if (cipherDial != null) cipherDial.ValueChanged += OnDialChanged;
+        if (photoPrinter != null) photoPrinter.PhotoReady += OnPhotoReady;
     }
 
     private void OnDisable()
@@ -86,15 +114,29 @@ public class MonitorDisplay : MonoBehaviour
         }
         if (extractButton != null) extractButton.Pressed -= OnExtractPressed;
         if (cipherDial != null) cipherDial.ValueChanged -= OnDialChanged;
+        if (photoPrinter != null) photoPrinter.PhotoReady -= OnPhotoReady;
     }
 
     // Карту достали — экран гаснет.
-    private void OnCardEjected(Pickupable item) => Clear();
+    private void OnCardEjected(Pickupable item)
+    {
+        currentPunchCard = null;
+        Clear();
+    }
 
     private void OnCardFed(Pickupable item)
     {
         PunchCard card = item != null ? item.GetComponent<PunchCard>() : null;
+        currentPunchCard = card;
         Show(card != null ? card.Data : null);
+    }
+
+    // Карта, которая сейчас в машине: ей ставится отметка «просмотрена».
+    private PunchCard currentPunchCard;
+
+    private void MarkCurrentViewed()
+    {
+        if (currentPunchCard != null) currentPunchCard.MarkViewed();
     }
 
     /// <summary>Показать карту. null — ошибка чтения.</summary>
@@ -127,6 +169,7 @@ public class MonitorDisplay : MonoBehaviour
         if (data == null)
         {
             yield return TypeText(errorText);
+            MarkCurrentViewed();   // нечитаемую карту тоже можно выбросить
             yield break;
         }
 
@@ -144,6 +187,7 @@ public class MonitorDisplay : MonoBehaviour
                 else
                 {
                     yield return TypeText(data.text);
+                    MarkCurrentViewed();
                 }
                 break;
 
@@ -164,6 +208,12 @@ public class MonitorDisplay : MonoBehaviour
         CardData card = CurrentCard;
         if (card == null) return;
 
+        if (card.type == CardContentType.Image && photoPrinter != null)
+        {
+            ExtractPhoto(card);
+            return;
+        }
+
         ItemDispenser dispenser = card.type switch
         {
             CardContentType.Image => printer,
@@ -177,6 +227,8 @@ public class MonitorDisplay : MonoBehaviour
             Run(TypeThenShowButton(trayBusyText));
             return;
         }
+
+        MarkCurrentViewed();
 
         SetButton(false);
         Run(TypeText(extractingText));
@@ -200,6 +252,41 @@ public class MonitorDisplay : MonoBehaviour
             paper.SetImage(card.image);
         else if (card.type == CardContentType.Audio && instance.TryGetComponent(out Cassette cassette))
             cassette.Clip = card.audio;
+    }
+
+    // ---------- Фотопринтер ----------
+
+    private CardData pendingPhotoCard;
+
+    private void ExtractPhoto(CardData card)
+    {
+        // Принтер занят, в лотке лежит прошлый лист или слишком много неубранных фото.
+        if (!photoPrinter.TryPrintPhoto())
+        {
+            Run(TypeThenShowButton(trayBusyText));
+            return;
+        }
+
+        photoPrinter.LastPrintedPhoto.AssignImage(card.image, card.isAnomaly);
+        pendingPhotoCard = card;
+        MarkCurrentViewed();
+
+        SetButton(false);
+        Run(TypeText(extractingText));
+    }
+
+    private void OnPhotoReady(DevelopingPhoto photo)
+    {
+        CardData card = pendingPhotoCard;
+        if (card == null) return;
+        pendingPhotoCard = null;
+
+        // Если за это время вставили другую карту, экран не трогаем.
+        if (CurrentCard != card) return;
+
+        CurrentCard = null;
+        Run(TypeText(doneText));
+        Extracted?.Invoke(card);
     }
 
     // ---------- Шифр ----------
@@ -242,6 +329,7 @@ public class MonitorDisplay : MonoBehaviour
         if (!decodedReported && IsDecoded(value))
         {
             decodedReported = true;
+            MarkCurrentViewed();
             TextDecoded?.Invoke(CurrentCard);
         }
     }

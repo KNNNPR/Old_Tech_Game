@@ -84,7 +84,7 @@ public class FeedLever : MonoBehaviour, IInteractable
     }
 
     public string GetPrompt(PlayerInteractor interactor) =>
-        HasCardInside ? "[E] Извлечь карту" : "[E] Потянуть рычаг";
+        HasCardInside ? "[E] Eject card" : "[E] Pull lever";
 
     public bool CanInteract(PlayerInteractor interactor) => !IsBusy;
 

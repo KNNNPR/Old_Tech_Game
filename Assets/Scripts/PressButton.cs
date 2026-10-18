@@ -9,7 +9,7 @@ using UnityEngine.Events;
 /// </summary>
 public class PressButton : MonoBehaviour, IInteractable
 {
-    [SerializeField] private string prompt = "[E] Нажать";
+    [SerializeField] private string prompt = "[E] Press";
 
     [Header("Анимация (необязательно)")]
     [Tooltip("Подвижная часть кнопки.")]

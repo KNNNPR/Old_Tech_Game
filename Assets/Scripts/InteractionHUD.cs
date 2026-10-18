@@ -18,7 +18,8 @@ public class InteractionHUD : MonoBehaviour
 
         if (crosshair != null)
         {
-            crosshair.enabled = !interactor.HasExternalInteraction;
+            // За компьютером вместо прицела курсор мыши.
+            crosshair.enabled = !interactor.IsFocused;
             crosshair.color = interactor.CurrentTarget != null ? activeColor : idleColor;
         }
     }

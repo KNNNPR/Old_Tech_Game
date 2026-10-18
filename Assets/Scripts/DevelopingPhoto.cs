@@ -21,7 +21,18 @@ public sealed class DevelopingPhoto : MonoBehaviour
     public float Progress => Mathf.Clamp01(elapsed / developmentSeconds);
     public bool IsDeveloped => Progress >= 1f;
     public PhotoClothespin HangingFrom { get; private set; }
-    public bool HasImages => HasImage(anomalyImages) || HasImage(normalImages);
+    public bool HasImages => assignedImage || HasImage(anomalyImages) || HasImage(normalImages);
+
+    // Картинка с перфокарты: если задана, увеличитель засветит именно её, а не случайную.
+    private Texture2D assignedImage;
+    private bool assignedIsAnomaly;
+
+    /// <summary>Принтер вызывает при печати по карте (кнопка EXTRACT).</summary>
+    public void AssignImage(Texture2D image, bool isAnomaly)
+    {
+        assignedImage = image;
+        assignedIsAnomaly = isAnomaly;
+    }
 
     private void Awake()
     {
@@ -40,6 +51,15 @@ public sealed class DevelopingPhoto : MonoBehaviour
     public bool Expose()
     {
         if (IsExposed || !HasImages) return false;
+
+        if (assignedImage)
+        {
+            Image = assignedImage;
+            IsAnomaly = assignedIsAnomaly;
+            ApplyAppearance();
+            return true;
+        }
+
         bool anomaliesAvailable = HasImage(anomalyImages);
         bool normalsAvailable = HasImage(normalImages);
         IsAnomaly = anomaliesAvailable && (!normalsAvailable || Random.value < .5f);

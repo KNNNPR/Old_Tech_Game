@@ -6,11 +6,11 @@ using UnityEngine;
 /// Вешается на всегда активный объект с коллайдером (триггером), лежащий поверх кнопки на экране.
 /// Visual — дочерний UI-объект с картинкой и надписью кнопки, он включается и выключается.
 /// </summary>
-public class ExtractButton : MonoBehaviour, IInteractable
+public class ExtractButton : MonoBehaviour, IInteractable, IRequiresFocus
 {
     [Tooltip("UI-объект кнопки на экране (картинка + надпись).")]
     [SerializeField] private GameObject visual;
-    [SerializeField] private string prompt = "[E] EXTRACT";
+    [SerializeField] private string prompt = "[LMB] EXTRACT";
 
     public event Action Pressed;
 

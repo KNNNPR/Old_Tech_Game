@@ -7,7 +7,7 @@ using UnityEngine;
 /// Запасное: колесо мыши (шаг ±1) или E (шаг +1).
 /// Активен, только пока на экране зашифрованный текст.
 /// </summary>
-public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable
+public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable, IRequiresFocus
 {
     [Header("Значения")]
     [SerializeField] private int minValue = 0;
@@ -15,7 +15,8 @@ public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable
     [SerializeField] private int maxValue = 25;
     [Tooltip("Колесо и E: после максимума перескакивать на минимум. При перетаскивании не действует.")]
     [SerializeField] private bool wrap = true;
-    [SerializeField] private string label = "Сдвиг";
+    [Tooltip("Название в подсказке под курсором.")]
+    [SerializeField] private string promptLabel = "Shift";
 
     [Header("Перетаскивание")]
     [Tooltip("Сколько пикселей движения мыши нужно на один шаг ползунка. Больше — точнее и медленнее.")]
@@ -127,7 +128,7 @@ public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable
     // ---------- IInteractable / IScrollable ----------
 
     public string GetPrompt(PlayerInteractor interactor) =>
-        IsDragging ? $"{label}: {Value:00}" : $"[ЛКМ, тянуть] {label}: {Value:00}";
+        IsDragging ? $"{promptLabel}: {Value:00}" : $"[LMB, drag] {promptLabel}: {Value:00}";
 
     public bool CanInteract(PlayerInteractor interactor) => IsActive;
 

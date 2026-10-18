@@ -46,7 +46,9 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
-        HandleCursor();
+        // Курсором управляем только в обычном режиме: за компьютером им управляет PlayerInteractor.
+        if (ControlEnabled && Time.frameCount != controlEnabledFrame)
+            HandleCursor();
 
         if (ControlEnabled)
         {
@@ -69,8 +71,11 @@ public class FirstPersonController : MonoBehaviour
     public void SetControlEnabled(bool enabled)
     {
         ControlEnabled = enabled;
-        if (!enabled) horizontalVelocity = Vector3.zero;
+        if (enabled) controlEnabledFrame = Time.frameCount;
+        else horizontalVelocity = Vector3.zero;
     }
+
+    private int controlEnabledFrame = -1;
 
     private void Look()
     {
@@ -86,11 +91,16 @@ public class FirstPersonController : MonoBehaviour
 
     private void Move()
     {
+        Keyboard kb = Keyboard.current;
         Vector2 input = Vector2.zero;
-        if (GameSettings.IsPressed(GameAction.Forward)) input.y += 1f;
-        if (GameSettings.IsPressed(GameAction.Backward)) input.y -= 1f;
-        if (GameSettings.IsPressed(GameAction.Right)) input.x += 1f;
-        if (GameSettings.IsPressed(GameAction.Left)) input.x -= 1f;
+
+        if (kb != null)
+        {
+            if (kb.wKey.isPressed) input.y += 1f;
+            if (kb.sKey.isPressed) input.y -= 1f;
+            if (kb.dKey.isPressed) input.x += 1f;
+            if (kb.aKey.isPressed) input.x -= 1f;
+        }
 
         if (input.sqrMagnitude > 1f) input.Normalize();
 
