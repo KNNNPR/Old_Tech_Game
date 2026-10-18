@@ -53,6 +53,63 @@ public static class CassetteSceneSetup
         File.WriteAllText("Temp/Cassette/inspection-v2-applied.txt", "Recorder inspection v2 applied and validated in the loaded scene_1: camera rig, six outlined faders and all references connected.\n");
     }
 
+    /// <summary>
+    /// “о же самое дл€ любой открытой сцены (например, scene_1_Kirill), плюс:
+    /// кассеты выдаютс€ только по кнопке EXTRACT (автоспавн выключаетс€),
+    /// а труба подключаетс€ к монитору (MonitorDisplay ? Cassette Spawner).
+    /// —цена не сохран€етс€ сама: проверь результат и нажми Ctrl+S.
+    /// </summary>
+    [MenuItem("Tools/Punch Card/Set Up Cassette Tube and Recorder in Active Scene")]
+    public static void ApplyToActiveScene()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+        var scene = SceneManager.GetActiveScene();
+        if (!scene.IsValid() || !scene.isLoaded) return;
+
+        try
+        {
+            Configure(scene);
+            ValidateInspection(scene);
+        }
+        catch (Exception error)
+        {
+            Debug.LogException(error);
+            EditorUtility.DisplayDialog("Cassette setup", "Ќе получилось: " + error.Message +
+                "\n\nѕодробности в Console. —цену не сохран€й Ч закрой еЄ без сохранени€.", "OK");
+            return;
+        }
+
+        var all = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true)).ToArray();
+        var spawner = all.Select(t => t.GetComponent<CassetteTubeSpawner>()).FirstOrDefault(s => s);
+        if (spawner)
+        {
+            var settings = new SerializedObject(spawner);
+            settings.FindProperty("automaticSpawning").boolValue = false;
+            settings.ApplyModifiedPropertiesWithoutUndo();
+            PrefabUtility.RecordPrefabInstancePropertyModifications(spawner);
+        }
+
+        string monitorNote = "MonitorDisplay в сцене не найден Ч подключи трубу к монитору вручную.";
+        var monitor = all.Select(t => t.GetComponent<MonitorDisplay>()).FirstOrDefault(m => m);
+        if (monitor && spawner)
+        {
+            var settings = new SerializedObject(monitor);
+            var field = settings.FindProperty("cassetteSpawner");
+            if (field != null)
+            {
+                field.objectReferenceValue = spawner;
+                settings.ApplyModifiedPropertiesWithoutUndo();
+                monitorNote = "“руба подключена к монитору: " + monitor.name + ".";
+            }
+            else monitorNote = "” MonitorDisplay нет пол€ Cassette Spawner Ч замени MonitorDisplay.cs на новую версию.";
+        }
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorUtility.DisplayDialog("Cassette setup",
+            "√отово в сцене " + scene.name + ".\n\nХ  ассетна€ труба и магнитофон настроены.\nХ јвтоспавн кассет выключен.\nХ " +
+            monitorNote + "\n\nѕроверь и сохрани сцену (Ctrl+S).", "OK");
+    }
+
     public static void ValidateInspection(Scene scene)
     {
         var transforms = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true)).ToArray();
@@ -107,7 +164,9 @@ public static class CassetteSceneSetup
             Vector3 position = marker ? marker.position : recorder.parent.TransformPoint(prefab.transform.localPosition);
             Quaternion rotation = marker ? marker.rotation : recorder.parent.rotation * prefab.transform.localRotation;
             anchor = WorldChild(recorder, "Cassette Anchor", position, rotation);
-            if (marker) UnityEngine.Object.DestroyImmediate(marker.gameObject);
+            // ¬нутри экземпл€ра префаба объект удалить нельз€ Ч тогда просто пр€чем модельку-заглушку.
+            if (marker && PrefabUtility.IsPartOfPrefabInstance(marker.gameObject)) marker.gameObject.SetActive(false);
+            else if (marker) UnityEngine.Object.DestroyImmediate(marker.gameObject);
         }
         var slot = Ensure<CassetteRecorder>(recorder.gameObject);
         var slotSettings = new SerializedObject(slot);

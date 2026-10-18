@@ -34,5 +34,8 @@ public class CardData : ScriptableObject
     public Texture2D image;
 
     [Header("Для Audio")]
+    [Tooltip("Запись на кассете. У аномальной карты это скрытая дорожка, которая проступает при настройке магнитофона.")]
     public AudioClip audio;
+    [Tooltip("Только для аномальной карты: обычная запись, которая звучит поверх скрытой.\nПусто — случайная обычная запись из префаба кассеты.")]
+    public AudioClip audioCarrier;
 }
