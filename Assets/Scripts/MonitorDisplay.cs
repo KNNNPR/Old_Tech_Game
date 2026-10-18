@@ -22,7 +22,8 @@ public class MonitorDisplay : MonoBehaviour
     [SerializeField] private CipherDial cipherDial;
     [Tooltip("Надпись со значением сдвига на экране, например «СДВИГ: 07» (необязательно).")]
     [SerializeField] private TMP_Text shiftLabel;
-    [SerializeField] private string shiftLabelFormat = DefaultShiftLabelFormat;
+    // Формат надписи сдвига задаётся только в коде, чтобы старые значения из сцены не перекрывали его.
+    private const string shiftLabelFormat = DefaultShiftLabelFormat;
 
     [Header("Устройства вывода")]
     [Tooltip("Фотопринтер. Если задан, изображения с карт печатаются через него.")]
@@ -62,7 +63,6 @@ public class MonitorDisplay : MonoBehaviour
     [ContextMenu("Use default English texts")]
     private void UseDefaultEnglishTexts()
     {
-        shiftLabelFormat = DefaultShiftLabelFormat;
         imageReadyText = DefaultImageReadyText;
         audioReadyText = DefaultAudioReadyText;
         extractingText = DefaultExtractingText;
