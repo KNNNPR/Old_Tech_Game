@@ -3,7 +3,67 @@ guid: 9ae2661538fbac048b456f53e2c6a4aa
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material
+    second: {fileID: 2100000, guid: 7e0f29c146bc6d543b4a343471889321, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: 0fa7b47b56472ac4385f7191183068a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.002
+    second: {fileID: 2100000, guid: 941bad57309c1c6459fff3bb72e5c479, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.003
+    second: {fileID: 2100000, guid: 63196de8946738d4b8212cf47d9f42d0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.004
+    second: {fileID: 2100000, guid: e58f809654486b24facdcc43029de1dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.005
+    second: {fileID: 2100000, guid: b98a227d4eb678d498f92a982e6c32f0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.006
+    second: {fileID: 2100000, guid: 7482961df7d1ccc48ab01748c597a7c2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: c_punch
+    second: {fileID: 2100000, guid: e8b55f57b3e5a4547a5cbb81c8e8ff78, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: modem
+    second: {fileID: 2100000, guid: 3be4702ffdaab7a4089c615cbaf9e109, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: n_punch
+    second: {fileID: 2100000, guid: 2dfc1e982a39ad247a58cfd633da84f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: p_punch
+    second: {fileID: 2100000, guid: 0aecd4b1bcc233c449b2c313509af36f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wall
+    second: {fileID: 2100000, guid: 60a7cb47fa0506940a1b7fa8d514c2f7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

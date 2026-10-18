@@ -27,6 +27,7 @@ public class Pickupable : MonoBehaviour, IInteractable
     private Collider[] colliders;
     private Vector3 targetLocalPosition;
     private Quaternion targetLocalRotation;
+    private float currentAttachSpeed;
 
     private void Awake()
     {
@@ -42,7 +43,7 @@ public class Pickupable : MonoBehaviour, IInteractable
     {
         if (!IsAttached) return;
 
-        float t = attachSpeed * Time.deltaTime;
+        float t = currentAttachSpeed * Time.deltaTime;
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetLocalPosition, t);
         transform.localRotation = Quaternion.Slerp(transform.localRotation, targetLocalRotation, t);
     }
@@ -53,10 +54,14 @@ public class Pickupable : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteractor interactor) => interactor.Hold(this);
 
-    /// <summary>Прикрепить к руке или гнезду, плавно переместив в заданную точку.</summary>
-    public void AttachTo(Transform parent, Vector3 localPosition, Quaternion localRotation)
+    /// <summary>
+    /// Прикрепить к руке или гнезду, плавно переместив в заданную точку.
+    /// speed > 0 — своя скорость подлёта (например, медленный выезд из принтера).
+    /// </summary>
+    public void AttachTo(Transform parent, Vector3 localPosition, Quaternion localRotation, float speed = 0f)
     {
         IsAttached = true;
+        currentAttachSpeed = speed > 0f ? speed : attachSpeed;
         SetPhysics(false);
 
         transform.SetParent(parent, true);
@@ -75,7 +80,15 @@ public class Pickupable : MonoBehaviour, IInteractable
 
     private void SetPhysics(bool enabled)
     {
+        // Rigidbody interpolation otherwise writes the previous world pose over the attachment animation.
+        body.interpolation = RigidbodyInterpolation.None;
         body.isKinematic = !enabled;
+        if (enabled)
+        {
+            body.position = transform.position;
+            body.rotation = transform.rotation;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+        }
         foreach (Collider c in colliders)
             c.enabled = enabled;
     }

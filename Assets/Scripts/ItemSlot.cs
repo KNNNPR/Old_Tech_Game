@@ -18,18 +18,29 @@ public class ItemSlot : MonoBehaviour, IInteractable
 
     [SerializeField] private bool allowTakeBack = true;
 
+    [Tooltip("Скорость, с которой предмет въезжает в гнездо. 0 — обычная скорость предмета.\nДля лотка принтера поставь 1–2, чтобы лист выезжал медленно.")]
+    [SerializeField] private float insertSpeed = 0f;
+
     public Pickupable Current { get; private set; }
+
+    /// <summary>Пока true, игрок не может ни вставить, ни забрать предмет (машина работает).</summary>
+    public bool Locked { get; set; }
 
     public event Action<Pickupable> ItemInserted;
     public event Action<Pickupable> ItemRemoved;
 
     private Transform Anchor => anchor != null ? anchor : transform;
 
+    /// <summary>Точка, куда встаёт предмет (Anchor или сам слот).</summary>
+    public Transform AnchorTransform => Anchor;
+
     public string GetPrompt(PlayerInteractor interactor) =>
         Current == null ? $"[E] Вставить: {slotName}" : $"[E] Забрать: {slotName}";
 
     public bool CanInteract(PlayerInteractor interactor)
     {
+        if (Locked) return false;
+
         if (Current == null)
             return interactor.HeldItem != null && Accepts(interactor.HeldItem);
 
@@ -58,7 +69,7 @@ public class ItemSlot : MonoBehaviour, IInteractable
         if (item == null || Current != null) return;
 
         Current = item;
-        item.AttachTo(Anchor, Vector3.zero, Quaternion.identity);
+        item.AttachTo(Anchor, Vector3.zero, Quaternion.identity, insertSpeed);
         ItemInserted?.Invoke(item);
     }
 
