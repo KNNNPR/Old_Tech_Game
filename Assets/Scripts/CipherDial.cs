@@ -15,8 +15,6 @@ public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable,
     [SerializeField] private int maxValue = 25;
     [Tooltip("Колесо и E: после максимума перескакивать на минимум. При перетаскивании не действует.")]
     [SerializeField] private bool wrap = true;
-    [Tooltip("Название в подсказке под курсором.")]
-    [SerializeField] private string promptLabel = "Shift";
 
     [Header("Перетаскивание")]
     [Tooltip("Сколько пикселей движения мыши нужно на один шаг ползунка. Больше — точнее и медленнее.")]
@@ -127,8 +125,10 @@ public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable,
 
     // ---------- IInteractable / IScrollable ----------
 
+    // Значение сдвига показывается на самом мониторе, поэтому подсказка только про управление,
+    // а пока ползунок тянут — пустая.
     public string GetPrompt(PlayerInteractor interactor) =>
-        IsDragging ? $"{promptLabel}: {Value:00}" : $"[LMB, drag] {promptLabel}: {Value:00}";
+        IsDragging ? "" : "[LMB, drag]";
 
     public bool CanInteract(PlayerInteractor interactor) => IsActive;
 

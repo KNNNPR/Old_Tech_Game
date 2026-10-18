@@ -10,13 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e0b9fa4b44ca3f4b9fa68fbe1b02690, type: 3}
-  m_Name: Card_ 2
+  m_Name: Text_Card_Normal_3
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: Card2
-  type: 1
-  isAnomaly: 1
-  text: 
+  cardName: Text_Card
+  type: 0
+  isAnomaly: 0
+  text: 'WAREHOUSE B. INVENTORY CHECK.
+
+    PUNCH CARDS: 12 BOXES.
+
+    PRINTER
+    RIBBON: 4 UNITS.
+
+    CASSETTES: 30 UNITS. ALL ACCOUNTED.'
   encrypted: 1
   cipherKey: 0
-  image: {fileID: 2800000, guid: 56ae2b899bce9dc489b4f1fc59a5d6f7, type: 3}
+  image: {fileID: 0}
   audio: {fileID: 0}
+  audioCarrier: {fileID: 0}

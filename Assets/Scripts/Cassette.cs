@@ -26,11 +26,12 @@ public class Cassette : MonoBehaviour
         AssignRecording(Choose(evil ? anomalyRecordings : normalRecordings), evil);
     }
 
-    public void AssignRecording(AudioClip recording, bool anomaly)
+    /// <param name="carrierClip">Для аномальной: что звучит поверх скрытой записи. Пусто — случайная обычная.</param>
+    public void AssignRecording(AudioClip recording, bool anomaly, AudioClip carrierClip = null)
     {
         clip = recording;
         IsAnomaly = anomaly;
-        carrier = anomaly ? Choose(normalRecordings) : recording;
+        carrier = anomaly ? (carrierClip ? carrierClip : Choose(normalRecordings)) : recording;
     }
 
     // A tape keeps its tuning after stop, removal and reinsertion.

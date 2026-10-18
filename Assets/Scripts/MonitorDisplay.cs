@@ -30,6 +30,8 @@ public class MonitorDisplay : MonoBehaviour
     [SerializeField] private PhotoPrinterSpawner photoPrinter;
     [SerializeField] private ItemDispenser printer;
     [SerializeField] private ItemDispenser cassetteDeck;
+    [Tooltip("Труба с кассетами. Если задана, аудио с карт выдаётся через неё.")]
+    [SerializeField] private CassetteTubeSpawner cassetteSpawner;
 
     [Header("Звук печати текста")]
     [SerializeField] private AudioSource audioSource;
@@ -103,6 +105,7 @@ public class MonitorDisplay : MonoBehaviour
         if (extractButton != null) extractButton.Pressed += OnExtractPressed;
         if (cipherDial != null) cipherDial.ValueChanged += OnDialChanged;
         if (photoPrinter != null) photoPrinter.PhotoReady += OnPhotoReady;
+        if (cassetteSpawner != null) cassetteSpawner.CassetteReady += OnCassetteReady;
     }
 
     private void OnDisable()
@@ -115,6 +118,7 @@ public class MonitorDisplay : MonoBehaviour
         if (extractButton != null) extractButton.Pressed -= OnExtractPressed;
         if (cipherDial != null) cipherDial.ValueChanged -= OnDialChanged;
         if (photoPrinter != null) photoPrinter.PhotoReady -= OnPhotoReady;
+        if (cassetteSpawner != null) cassetteSpawner.CassetteReady -= OnCassetteReady;
     }
 
     // Карту достали — экран гаснет.
@@ -208,6 +212,12 @@ public class MonitorDisplay : MonoBehaviour
         CardData card = CurrentCard;
         if (card == null) return;
 
+        if (card.type == CardContentType.Audio && cassetteSpawner != null)
+        {
+            ExtractCassette(card);
+            return;
+        }
+
         if (card.type == CardContentType.Image && photoPrinter != null)
         {
             ExtractPhoto(card);
@@ -282,6 +292,40 @@ public class MonitorDisplay : MonoBehaviour
         pendingPhotoCard = null;
 
         // Если за это время вставили другую карту, экран не трогаем.
+        if (CurrentCard != card) return;
+
+        CurrentCard = null;
+        Run(TypeText(doneText));
+        Extracted?.Invoke(card);
+    }
+
+    // ---------- Кассеты ----------
+
+    private CardData pendingCassetteCard;
+
+    private void ExtractCassette(CardData card)
+    {
+        // Труба занята, в выходе лежит прошлая кассета или слишком много неубранных.
+        if (!cassetteSpawner.TrySpawnCassette())
+        {
+            Run(TypeThenShowButton(trayBusyText));
+            return;
+        }
+
+        cassetteSpawner.LastSpawnedCassette.AssignRecording(card.audio, card.isAnomaly, card.audioCarrier);
+        pendingCassetteCard = card;
+        MarkCurrentViewed();
+
+        SetButton(false);
+        Run(TypeText(extractingText));
+    }
+
+    private void OnCassetteReady(Cassette cassette)
+    {
+        CardData card = pendingCassetteCard;
+        if (card == null) return;
+        pendingCassetteCard = null;
+
         if (CurrentCard != card) return;
 
         CurrentCard = null;

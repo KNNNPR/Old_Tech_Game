@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0b9fa4b44ca3f4b9fa68fbe1b02690, type: 3}
+  m_Name: Image_Card_Anomaly_1
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: Card_Image
+  type: 1
+  isAnomaly: 1
+  text: 
+  encrypted: 1
+  cipherKey: 0
+  image: {fileID: 2800000, guid: 56ae2b899bce9dc489b4f1fc59a5d6f7, type: 3}
+  audio: {fileID: 0}
+  audioCarrier: {fileID: 0}
