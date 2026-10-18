@@ -71,6 +71,13 @@ public static class GameFlow
 
     public static void AfterIntermission() => Load(MainScene);
 
+    /// <summary>Игрок потерял сознание и «очнулся» в следующем дне — без перебивки.</summary>
+    public static void WakeUpNextDay()
+    {
+        CurrentShift++;
+        Load(MainScene);
+    }
+
     /// <summary>Чтобы снова увидеть обучение (для проверки).</summary>
     public static void ResetTutorial()
     {

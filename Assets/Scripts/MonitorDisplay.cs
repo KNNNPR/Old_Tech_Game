@@ -361,6 +361,9 @@ public class MonitorDisplay : MonoBehaviour
         if (data.encrypted) source = CaesarCipher.Shift(source, Mathf.Max(1, data.cipherKey));
         screenText.maxVisibleCharacters = int.MaxValue;
 
+        // Красное мерцание и нарастающая тряска — всё время, пока текст распадается.
+        if (playerFaint != null) playerFaint.BeginWarning(glitchSeconds);
+
         var chars = source.ToCharArray();
         var builder = new System.Text.StringBuilder(chars.Length * 2);
         bool faintStarted = false;

@@ -212,6 +212,22 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
         if (ready) BuildPath();
     }
 
+    /// <summary>
+    /// Выдавать вместо карт готовые префабы (например, руку в последний день). Каждый — один раз.
+    /// </summary>
+    public void SetPrefabs(GameObject[] prefabs)
+    {
+        cardDataList = System.Array.Empty<CardData>();
+        cardPrefabs = prefabs;
+        repeat = false;
+        issuedCount = 0;
+        nextPrefab = 0;
+        timer = initialDelay;
+
+        ready = spawnPoint && bendStart && bendEnd && releasePoint && CardCount > 0;
+        if (ready) BuildPath();
+    }
+
     [ContextMenu("Spawn Next Card")]
     private void SpawnFromInspector() => TrySpawnNext();
 

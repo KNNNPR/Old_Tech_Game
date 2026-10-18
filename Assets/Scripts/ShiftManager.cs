@@ -19,6 +19,8 @@ public class ShiftManager : MonoBehaviour
         public string title = "SHIFT 1";
         [Tooltip("Карты смены по порядку, в котором они вылетят из трубы.")]
         public CardData[] cards;
+        [Tooltip("Особый день: вместо карт труба выдаёт эти префабы (например, руку). Если заполнено — Cards не используются,\nа день сам не заканчивается (финал запускает FinalHandTrigger).")]
+        public GameObject[] spawnInsteadOfCards;
     }
 
     [SerializeField] private Shift[] shifts;
@@ -120,7 +122,16 @@ public class ShiftManager : MonoBehaviour
 
         if (tube != null)
         {
-            tube.SetCardData(shiftCards);
+            GameObject[] special = shifts[ShiftIndex].spawnInsteadOfCards;
+            if (special != null && special.Length > 0)
+            {
+                shiftCards = Array.Empty<CardData>(); // особый день не заканчивается сортировкой
+                tube.SetPrefabs(special);
+            }
+            else
+            {
+                tube.SetCardData(shiftCards);
+            }
             tube.AutomaticSpawning = true;
         }
 

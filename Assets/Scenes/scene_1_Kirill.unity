@@ -1030,26 +1030,23 @@ MonoBehaviour:
   shifts:
   - title: Shift_1
     cards:
-    - {fileID: 11400000, guid: 53dff3bcd0d2c804288dea069f19448f, type: 2}
+    - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
     - {fileID: 11400000, guid: ece6b78ff119cfd49ba82f985cbcc581, type: 2}
+    spawnInsteadOfCards: []
   - title: Shift_2
-    cards:
-    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
-    - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
-    - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
-    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
-    - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
-    - {fileID: 11400000, guid: cfa13e7ab7ba2514b990442895518393, type: 2}
+    cards: []
+    spawnInsteadOfCards:
+    - {fileID: 4545806203845693092, guid: 09c5d5edf5a450b419c4727a76e2d2c1, type: 3}
   - title: Shift_3
     cards:
     - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
     - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
-    - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
+    - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
+    spawnInsteadOfCards: []
   - title: Shift_4
-    cards:
-    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
-    - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
-    - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
+    cards: []
+    spawnInsteadOfCards:
+    - {fileID: 4545806203845693092, guid: 09c5d5edf5a450b419c4727a76e2d2c1, type: 3}
   tube: {fileID: 1605404918}
   tutorial: {fileID: 1098284447}
   tutorialCard: {fileID: 11400000, guid: 6cbdf0e5fbdb1204186dbab3a8b8c6a9, type: 2}
@@ -3462,17 +3459,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerFaint
   interactor: {fileID: 0}
   controller: {fileID: 0}
+  warningShake: 7
+  lurchDegrees: 22
+  lurchSeconds: 1.6
   fallSeconds: 2.6
   dropHeight: 1.3
   rollDegrees: 75
   pitchDegrees: 25
-  swayAmplitude: 6
   holdBlackSeconds: 2.5
+  alarmLights: []
+  alarmColor: {r: 1, g: 0.05, b: 0.03, a: 1}
+  alarmIntensity: 4
+  alarmRange: 12
   audioSource: {fileID: 0}
   ringClip: {fileID: 0}
   thudClip: {fileID: 0}
   fadeOutAllAudio: 1
-  nextScene: THE_END
+  afterFaint: 0
+  sceneAfterFaint: THE_END
   onFainted:
     m_PersistentCalls:
       m_Calls: []
@@ -8874,6 +8878,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 40.858}
+--- !u!1 &1986462331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1986462333}
+  - component: {fileID: 1986462332}
+  m_Layer: 0
+  m_Name: FinalTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1986462332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986462331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33ca539fd9d7514d9143bcc9c4e7db4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FinalHandTrigger
+  computerSlot: {fileID: 268923298}
+  playerFaint: {fileID: 515159300}
+  delay: 1
+  alarmSeconds: 3
+  endScene: THE_END
+  audioSource: {fileID: 0}
+  acceptClip: {fileID: 0}
+  onHandInserted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1986462333
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986462331}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1997852335
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9634,3 +9692,4 @@ SceneRoots:
   - {fileID: 1574143077}
   - {fileID: 1098284448}
   - {fileID: 168223663}
+  - {fileID: 1986462333}
