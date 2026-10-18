@@ -80,7 +80,15 @@ public class Pickupable : MonoBehaviour, IInteractable
 
     private void SetPhysics(bool enabled)
     {
+        // Rigidbody interpolation otherwise writes the previous world pose over the attachment animation.
+        body.interpolation = RigidbodyInterpolation.None;
         body.isKinematic = !enabled;
+        if (enabled)
+        {
+            body.position = transform.position;
+            body.rotation = transform.rotation;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+        }
         foreach (Collider c in colliders)
             c.enabled = enabled;
     }
