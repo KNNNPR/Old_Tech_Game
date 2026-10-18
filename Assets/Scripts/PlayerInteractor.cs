@@ -17,6 +17,9 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private LayerMask interactMask = ~0;
     [SerializeField] private float dropDistance = 0.7f;
 
+    [Tooltip("Контроллер игрока: на время перетаскивания обзор замораживается. Если пусто — ищется на этом же объекте.")]
+    [SerializeField] private FirstPersonController controller;
+
     public Pickupable HeldItem { get; private set; }
     public IInteractable CurrentTarget { get; private set; }
     public string CurrentPrompt { get; private set; } = "";
@@ -24,15 +27,56 @@ public class PlayerInteractor : MonoBehaviour
     /// <summary>Отключай на время режима станции или катсцен.</summary>
     public bool InputEnabled { get; set; } = true;
 
+    private IDraggable dragging;
+
+    private void Awake()
+    {
+        if (controller == null) controller = GetComponent<FirstPersonController>();
+    }
+
     private void Update()
     {
+        Mouse mouse = Mouse.current;
+
+        // Пока тянем — только перетаскивание, всё остальное ждёт.
+        if (dragging != null)
+        {
+            if (InputEnabled && mouse != null && mouse.leftButton.isPressed)
+                dragging.Drag(mouse.delta.ReadValue());
+            else
+                StopDragging();
+
+            FindTarget();
+            return;
+        }
+
         FindTarget();
 
         if (!InputEnabled) return;
 
-        if (GameSettings.WasPressed(GameAction.Interact) && CurrentTarget != null)
+        // ЛКМ по ползунку — начать перетаскивание.
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame && CurrentTarget is IDraggable draggable)
+        {
+            dragging = draggable;
+            dragging.BeginDrag();
+            if (controller != null) controller.SetControlEnabled(false);
+            return;
+        }
+
+        // Колесо мыши для ползунков и ручек под прицелом.
+        if (mouse != null && CurrentTarget is IScrollable scrollable)
+        {
+            float scroll = mouse.scroll.ReadValue().y;
+            if (Mathf.Abs(scroll) > 0.01f)
+                scrollable.Scroll(scroll > 0f ? 1 : -1);
+        }
+
+        Keyboard kb = Keyboard.current;
+        if (kb == null) return;
+
+        if (kb.eKey.wasPressedThisFrame && CurrentTarget != null)
             CurrentTarget.Interact(this);
-        else if (GameSettings.WasPressed(GameAction.Drop) && HeldItem != null)
+        else if (kb.gKey.wasPressedThisFrame && HeldItem != null)
             DropHeld();
     }
 
@@ -51,13 +95,20 @@ public class PlayerInteractor : MonoBehaviour
             if (interactable != null && interactable.CanInteract(this))
             {
                 CurrentTarget = interactable;
-                CurrentPrompt = GameSettings.FormatPrompt(interactable.GetPrompt(this));
+                CurrentPrompt = interactable.GetPrompt(this);
                 return;
             }
         }
 
         if (HeldItem != null)
-            CurrentPrompt = $"[{GameSettings.KeyLabel(GameAction.Drop)}] Положить";
+            CurrentPrompt = "[G] Положить";
+    }
+
+    private void StopDragging()
+    {
+        dragging.EndDrag();
+        dragging = null;
+        if (controller != null) controller.SetControlEnabled(true);
     }
 
     /// <summary>Взять предмет в руку.</summary>

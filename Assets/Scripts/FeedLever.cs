@@ -3,13 +3,18 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Рычаг подачи. Если в слоте есть карта:
-/// 1) ручка опускается;
-/// 2) (опционально) пробивка: карта шагает вперёд, головка перфоратора бьёт вниз, несколько раз,
-///    потом карта возвращается назад;
-/// 3) карта уезжает в машину, вызывается CardFed (на него подписан MonitorDisplay);
-/// 4) ручка возвращается.
-/// С пустым слотом рычаг просто клацает вхолостую.
+/// Рычаг компьютера. Работает в два хода:
+///
+/// Карта в слоте → рывок рычага:
+///   ручка вниз → (опционально) пробивка: карта шагает, головка бьёт →
+///   карта уезжает внутрь → CardFed (монитор показывает содержимое) → ручка вверх.
+///   Слот остаётся закрыт, пока карта внутри.
+///
+/// Карта внутри → рывок рычага:
+///   ручка вниз → карта выезжает обратно в слот → CardEjected (монитор гаснет) → ручка вверх.
+///   Карту можно забрать из слота.
+///
+/// С пустым слотом и пустой машиной рычаг клацает вхолостую.
 /// </summary>
 public class FeedLever : MonoBehaviour, IInteractable
 {
@@ -42,10 +47,11 @@ public class FeedLever : MonoBehaviour, IInteractable
     [Tooltip("За сколько карта возвращается в исходное положение после пробивки.")]
     [SerializeField] private float cardReturnTime = 0.5f;
 
-    [Header("Подача карты")]
+    [Header("Подача и извлечение карты")]
     [Tooltip("Куда сдвинуть точку крепления карты (Anchor) в координатах её родителя.")]
     [SerializeField] private Vector3 feedOffset = new Vector3(0f, -0.12f, 0f);
     [SerializeField] private float feedDuration = 1.2f;
+    [SerializeField] private float ejectDuration = 0.8f;
     [SerializeField] private bool hideCardAfterFeed = true;
 
     [Header("Звук (необязательно)")]
@@ -54,14 +60,22 @@ public class FeedLever : MonoBehaviour, IInteractable
     [SerializeField] private AudioClip punchClip;
     [SerializeField] private AudioClip cardStepClip;
     [SerializeField] private AudioClip feedClip;
+    [SerializeField] private AudioClip ejectClip;
 
     /// <summary>Карта ушла в машину.</summary>
     public event Action<Pickupable> CardFed;
 
+    /// <summary>Карта вытолкнута обратно в слот.</summary>
+    public event Action<Pickupable> CardEjected;
+
     public bool IsBusy { get; private set; }
+
+    /// <summary>Карта сейчас внутри машины.</summary>
+    public bool HasCardInside => cardInside != null;
 
     private Quaternion handleRest;
     private Vector3 punchHeadRest;
+    private Pickupable cardInside;
 
     private void Awake()
     {
@@ -69,7 +83,8 @@ public class FeedLever : MonoBehaviour, IInteractable
         if (punchHead != null) punchHeadRest = punchHead.localPosition;
     }
 
-    public string GetPrompt(PlayerInteractor interactor) => "[E] Потянуть рычаг";
+    public string GetPrompt(PlayerInteractor interactor) =>
+        HasCardInside ? "[E] Извлечь карту" : "[E] Потянуть рычаг";
 
     public bool CanInteract(PlayerInteractor interactor) => !IsBusy;
 
@@ -78,8 +93,6 @@ public class FeedLever : MonoBehaviour, IInteractable
     private IEnumerator PullRoutine()
     {
         IsBusy = true;
-
-        Pickupable card = slot != null ? slot.Current : null;
         if (slot != null) slot.Locked = true;
 
         Quaternion pulled = handleRest * Quaternion.Euler(pulledRotation);
@@ -87,29 +100,57 @@ public class FeedLever : MonoBehaviour, IInteractable
         Play(pullClip);
         yield return RotateHandle(handleRest, pulled, pullDuration);
 
-        if (card != null)
-        {
-            Transform anchor = card.transform.parent;
-            Vector3 anchorStart = anchor.localPosition;
-
-            if (punchBeforeFeed)
-                yield return PunchRoutine(anchor, anchorStart);
-
-            Play(feedClip);
-            yield return MoveLocal(anchor, anchorStart, anchorStart + feedOffset, feedDuration);
-
-            slot.Remove();
-            card.transform.SetParent(null, true);
-            if (hideCardAfterFeed) card.gameObject.SetActive(false);
-
-            anchor.localPosition = anchorStart;
-            CardFed?.Invoke(card);
-        }
+        if (HasCardInside)
+            yield return EjectRoutine();
+        else if (slot != null && slot.Current != null)
+            yield return FeedRoutine(slot.Current);
 
         yield return RotateHandle(pulled, handleRest, returnDuration);
 
-        if (slot != null) slot.Locked = false;
+        // Пока карта внутри, в слот ничего не вставить.
+        if (slot != null) slot.Locked = HasCardInside;
         IsBusy = false;
+    }
+
+    private IEnumerator FeedRoutine(Pickupable card)
+    {
+        Transform anchor = slot.AnchorTransform;
+        Vector3 anchorStart = anchor.localPosition;
+
+        if (punchBeforeFeed)
+            yield return PunchRoutine(anchor, anchorStart);
+
+        Play(feedClip);
+        yield return MoveLocal(anchor, anchorStart, anchorStart + feedOffset, feedDuration);
+
+        slot.Remove();
+        card.transform.SetParent(null, true);
+        if (hideCardAfterFeed) card.gameObject.SetActive(false);
+
+        anchor.localPosition = anchorStart;
+        cardInside = card;
+        CardFed?.Invoke(card);
+    }
+
+    private IEnumerator EjectRoutine()
+    {
+        Pickupable card = cardInside;
+        cardInside = null;
+
+        Transform anchor = slot.AnchorTransform;
+        Vector3 anchorStart = anchor.localPosition;
+
+        // Ставим точку крепления в глубину машины и кладём туда карту.
+        anchor.localPosition = anchorStart + feedOffset;
+        card.gameObject.SetActive(true);
+        card.transform.SetPositionAndRotation(anchor.position, anchor.rotation);
+        slot.Insert(card);
+
+        // Выталкиваем карту обратно наружу.
+        Play(ejectClip);
+        yield return MoveLocal(anchor, anchorStart + feedOffset, anchorStart, ejectDuration);
+
+        CardEjected?.Invoke(card);
     }
 
     private IEnumerator PunchRoutine(Transform anchor, Vector3 anchorStart)
