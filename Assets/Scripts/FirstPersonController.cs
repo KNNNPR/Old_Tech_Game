@@ -77,6 +77,17 @@ public class FirstPersonController : MonoBehaviour
 
     private int controlEnabledFrame = -1;
 
+    /// <summary>Align a cinematic's final view with normal mouse look, including its stored pitch.</summary>
+    public void SetLookDirection(Vector3 direction)
+    {
+        if (direction.sqrMagnitude < .0001f) return;
+        direction.Normalize();
+        float yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        pitch = Mathf.Clamp(-Mathf.Asin(direction.y) * Mathf.Rad2Deg, minPitch, maxPitch);
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+    }
+
     private void Look()
     {
         Mouse mouse = Mouse.current;

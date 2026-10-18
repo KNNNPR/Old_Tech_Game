@@ -27,6 +27,8 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
     [SerializeField] private float tumbleSpeed = 2.2f;
 
     public bool InTransit => transit != null;
+    // A scene-local tutorial can request one card while keeping the route and pickup physics running.
+    public bool AutomaticSpawning { get; set; } = true;
     public Pickupable LastSpawnedCard { get; private set; }
     public event Action<Pickupable> CardReleased;
 
@@ -59,7 +61,7 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (!ready || !repeat && issuedFirst) return;
+        if (!ready || !AutomaticSpawning || !repeat && issuedFirst) return;
         timer -= Time.deltaTime;
         if (timer > 0) return;
         TrySpawnNext();
