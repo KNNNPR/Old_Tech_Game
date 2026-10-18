@@ -7,14 +7,14 @@ using UnityEngine.SceneManagement;
 public sealed class PunchCardTubeSpawner : MonoBehaviour
 {
     [Header("Cards / issued in order")]
-    [Tooltip("���������� ���� �� �������. ���� ������ ��������, ����� ����� ��� �����, �������� �� �� Card Model Prefab.\n����� �������� = ����� CardData, ������������ ����.")]
+    [Tooltip("Содержимое карт по порядку. Если список заполнен, труба выдаёт эти карты, создавая их из Card Model Prefab.\nНовая карточка = новый CardData, перетащенный сюда.")]
     [SerializeField] private CardData[] cardDataList;
-    [Tooltip("������ ����� ��� ������ ���� (��������, Normal_punchcard). ����� � ������ ������ ������ �� Card Prefabs.")]
+    [Tooltip("Модель карты для списка выше (например, Normal_punchcard). Пусто — берётся первый префаб из Card Prefabs.")]
     [SerializeField] private GameObject cardModelPrefab;
-    [Tooltip("������ ������: ������� ������� ����. ������������, ������ ���� Card Data List ����.")]
+    [Tooltip("Старый способ: готовые префабы карт. Используется, только если Card Data List пуст.")]
     [SerializeField] private GameObject[] cardPrefabs;
     [SerializeField, Min(0)] private float initialDelay = 2f;
-    [Tooltip("��� � �������� ������ �� ����� ����������. ���� � ������ ������ ����� �� ������ �� ������ ���� � ������������.")]
+    [Tooltip("Вкл — выдавать список по кругу бесконечно. Выкл — выдать каждую карту из списка по одному разу и остановиться.")]
     [SerializeField] private bool repeat = true;
     [SerializeField, Min(.1f)] private float spawnInterval = 10f;
     [SerializeField, Min(1)] private int maxLooseCards = 3;
@@ -33,6 +33,8 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
     [SerializeField] private float tumbleSpeed = 2.2f;
 
     public bool InTransit => transit != null;
+    // A scene-local tutorial can request one card while keeping the route and pickup physics running.
+    public bool AutomaticSpawning { get; set; } = true;
 
     private bool UsesDataList => cardDataList != null && cardDataList.Length > 0;
     private int CardCount => UsesDataList ? cardDataList.Length : (cardPrefabs != null ? cardPrefabs.Length : 0);
@@ -71,7 +73,7 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (!ready || !repeat && issuedCount >= CardCount) return;
+        if (!ready || !AutomaticSpawning || !repeat && issuedCount >= CardCount) return;
         timer -= Time.deltaTime;
         if (timer > 0) return;
         TrySpawnNext();
