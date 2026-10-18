@@ -43,6 +43,13 @@ public class PlayerInteractor : MonoBehaviour
     public bool IsFocused => CurrentFocus != null;
 
     private IDraggable dragging;
+
+    // Внешнее управление вводом (магнитофон и другие станции со своим вводом).
+    private System.Action externalInteraction;
+    public Camera PlayerCamera => playerCamera;
+    public FirstPersonController Controller => controller;
+    public bool HasExternalInteraction => externalInteraction != null;
+
     private Coroutine cameraRoutine;
     private bool cameraLockedToFocus;
     private Vector3 cameraRestLocalPosition;
@@ -91,6 +98,12 @@ public class PlayerInteractor : MonoBehaviour
             return;
         }
 
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame && CurrentTarget is IPrimaryInteractable primary && primary.CanPrimaryInteract(this))
+        {
+            primary.PrimaryInteract(this);
+            return;
+        }
+
         // ЛКМ: тянуть ползунок, сесть за компьютер, нажать элемент экрана.
         if (mouse != null && mouse.leftButton.wasPressedThisFrame && CurrentTarget != null)
         {
@@ -121,6 +134,25 @@ public class PlayerInteractor : MonoBehaviour
             CurrentTarget.Interact(this);
         else if (kb.gKey.wasPressedThisFrame && HeldItem != null)
             DropHeld();
+    }
+
+    public void BeginExternalInteraction(System.Action updateInput)
+    {
+        if (dragging != null) StopDragging();
+        externalInteraction = updateInput;
+    }
+
+    public void EndExternalInteraction(System.Action updateInput)
+    {
+        if (externalInteraction == updateInput) externalInteraction = null;
+        CurrentTarget = null;
+        CurrentPrompt = "";
+    }
+
+    public void SetExternalPrompt(IInteractable target, string prompt)
+    {
+        CurrentTarget = target;
+        CurrentPrompt = prompt;
     }
 
     private void LateUpdate()
