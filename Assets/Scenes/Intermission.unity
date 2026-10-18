@@ -2323,9 +2323,10 @@ MonoBehaviour:
   extractButton: {fileID: 823647459}
   cipherDial: {fileID: 0}
   shiftLabel: {fileID: 0}
-  shiftLabelFormat: "\u0421\u0414\u0412\u0418\u0413: {0:00}"
+  photoPrinter: {fileID: 0}
   printer: {fileID: 0}
   cassetteDeck: {fileID: 0}
+  cassetteSpawner: {fileID: 0}
   audioSource: {fileID: 0}
   typeClip: {fileID: 0}
   typeVolume: 0.4
@@ -2560,12 +2561,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractor
   playerCamera: {fileID: 1109477480}
   holdPoint: {fileID: 1473274244}
+  controller: {fileID: 0}
   interactDistance: 6
   interactMask:
     serializedVersion: 2
     m_Bits: 4294967295
   dropDistance: 0.7
-  controller: {fileID: 0}
+  focusTransitionTime: 0.5
+  focusCursor: {fileID: 0}
+  cursorHotspot: {x: 0, y: 0}
 --- !u!114 &515159297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8865,6 +8869,56 @@ Transform:
   m_Children: []
   m_Father: {fileID: 821467312}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1006655767
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1006655769}
+  - component: {fileID: 1006655768}
+  m_Layer: 0
+  m_Name: SceneExit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1006655768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006655767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30901011b31b01d4abea623fdbb6b149, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneExit
+  after: 0
+  intermission: {fileID: 825033492}
+  tutorial: {fileID: 0}
+  delay: 1
+  fade: {fileID: 0}
+  fadeSeconds: 1
+--- !u!4 &1006655769
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006655767}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.30093, y: 5.33239, z: 7.40182}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1018474284
 GameObject:
   m_ObjectHideFlags: 0
@@ -10702,6 +10756,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b192ad3af1b14ddfba01e9032c0f7042, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PunchCardTubeSpawner
+  cardDataList: []
+  cardModelPrefab: {fileID: 0}
   cardPrefabs:
   - {fileID: 7524059578307144590, guid: a70c711f15ba16347adff5d593a72531, type: 3}
   initialDelay: 2
@@ -12086,3 +12142,4 @@ SceneRoots:
   - {fileID: 3551520506242217267}
   - {fileID: 1913333371755750158}
   - {fileID: 825033493}
+  - {fileID: 1006655769}

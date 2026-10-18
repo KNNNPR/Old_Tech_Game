@@ -35,6 +35,8 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
     public bool InTransit => transit != null;
     // A scene-local tutorial can request one card while keeping the route and pickup physics running.
     public bool AutomaticSpawning { get; set; } = true;
+    /// <summary>Труба настроена и ей есть что выдать.</summary>
+    public bool CanSpawn => spawnPoint && bendStart && bendEnd && releasePoint && CardCount > 0 && (!UsesDataList || ModelPrefab);
 
     private bool UsesDataList => cardDataList != null && cardDataList.Length > 0;
     private int CardCount => UsesDataList ? cardDataList.Length : (cardPrefabs != null ? cardPrefabs.Length : 0);
@@ -193,6 +195,21 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
         positions.Add(point); distances.Add(distance);
         // Card width stays across the pipe; its face follows the bend without turning into the walls.
         rotations.Add(Quaternion.LookRotation(Vector3.Cross(widthDirection, direction), direction));
+    }
+
+    /// <summary>
+    /// Задать карты смены (вызывает ShiftManager). Труба выдаст их по одному разу по порядку.
+    /// </summary>
+    public void SetCardData(CardData[] cards)
+    {
+        cardDataList = cards;
+        repeat = false;
+        issuedCount = 0;
+        nextPrefab = 0;
+        timer = initialDelay;
+
+        ready = spawnPoint && bendStart && bendEnd && releasePoint && CardCount > 0 && (!UsesDataList || ModelPrefab);
+        if (ready) BuildPath();
     }
 
     [ContextMenu("Spawn Next Card")]
