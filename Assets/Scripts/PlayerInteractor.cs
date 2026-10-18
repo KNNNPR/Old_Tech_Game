@@ -27,6 +27,10 @@ public class PlayerInteractor : MonoBehaviour
 
     [Header("Работа за компьютером")]
     [SerializeField] private float focusTransitionTime = 0.5f;
+    [Tooltip("Курсор за компьютером. PNG с Texture Type = Cursor. Пусто — системный курсор.")]
+    [SerializeField] private Texture2D focusCursor;
+    [Tooltip("Точка клика внутри картинки курсора в пикселях от левого верхнего угла (у стрелки — кончик).")]
+    [SerializeField] private Vector2 cursorHotspot = Vector2.zero;
 
     public Pickupable HeldItem { get; private set; }
     public IInteractable CurrentTarget { get; private set; }
@@ -186,6 +190,7 @@ public class PlayerInteractor : MonoBehaviour
         if (controller != null) controller.SetControlEnabled(false);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        if (focusCursor != null) Cursor.SetCursor(focusCursor, cursorHotspot, CursorMode.Auto);
 
         if (cameraRoutine != null) StopCoroutine(cameraRoutine);
         cameraRoutine = StartCoroutine(MoveCameraToFocus(station.FocusPoint));
@@ -202,6 +207,7 @@ public class PlayerInteractor : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        if (focusCursor != null) Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
 
         if (cameraRoutine != null) StopCoroutine(cameraRoutine);
         cameraRoutine = StartCoroutine(ReturnCamera());
