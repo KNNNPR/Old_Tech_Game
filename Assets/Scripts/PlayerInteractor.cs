@@ -30,12 +30,9 @@ public class PlayerInteractor : MonoBehaviour
 
         if (!InputEnabled) return;
 
-        Keyboard kb = Keyboard.current;
-        if (kb == null) return;
-
-        if (kb.eKey.wasPressedThisFrame && CurrentTarget != null)
+        if (GameSettings.WasPressed(GameAction.Interact) && CurrentTarget != null)
             CurrentTarget.Interact(this);
-        else if (kb.gKey.wasPressedThisFrame && HeldItem != null)
+        else if (GameSettings.WasPressed(GameAction.Drop) && HeldItem != null)
             DropHeld();
     }
 
@@ -54,13 +51,13 @@ public class PlayerInteractor : MonoBehaviour
             if (interactable != null && interactable.CanInteract(this))
             {
                 CurrentTarget = interactable;
-                CurrentPrompt = interactable.GetPrompt(this);
+                CurrentPrompt = GameSettings.FormatPrompt(interactable.GetPrompt(this));
                 return;
             }
         }
 
         if (HeldItem != null)
-            CurrentPrompt = "[G] Положить";
+            CurrentPrompt = $"[{GameSettings.KeyLabel(GameAction.Drop)}] Положить";
     }
 
     /// <summary>Взять предмет в руку.</summary>

@@ -86,16 +86,11 @@ public class FirstPersonController : MonoBehaviour
 
     private void Move()
     {
-        Keyboard kb = Keyboard.current;
         Vector2 input = Vector2.zero;
-
-        if (kb != null)
-        {
-            if (kb.wKey.isPressed) input.y += 1f;
-            if (kb.sKey.isPressed) input.y -= 1f;
-            if (kb.dKey.isPressed) input.x += 1f;
-            if (kb.aKey.isPressed) input.x -= 1f;
-        }
+        if (GameSettings.IsPressed(GameAction.Forward)) input.y += 1f;
+        if (GameSettings.IsPressed(GameAction.Backward)) input.y -= 1f;
+        if (GameSettings.IsPressed(GameAction.Right)) input.x += 1f;
+        if (GameSettings.IsPressed(GameAction.Left)) input.x -= 1f;
 
         if (input.sqrMagnitude > 1f) input.Normalize();
 

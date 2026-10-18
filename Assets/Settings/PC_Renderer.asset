@@ -47,7 +47,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: -605746645357898335}
-  m_RendererFeatureMap: ad6b866f10d7b46ca1d58eaba2f497f7
+  - {fileID: 4406442910271643922}
+  m_RendererFeatureMap: ad6b866f10d7b46ca1d58eaba2f497f712a1c7057bd4263d
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -76,6 +77,19 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &4406442910271643922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6362f210ca947289fb6d0bd1045f9a2, type: 3}
+  m_Name: Menu Hover Outline
+  m_EditorClassIdentifier: Assembly-CSharp::MenuHoverOutlineFeature
+  m_Active: 1
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0
