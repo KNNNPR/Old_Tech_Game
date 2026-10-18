@@ -7,6 +7,11 @@ using UnityEngine.SceneManagement;
 public sealed class PunchCardTubeSpawner : MonoBehaviour
 {
     [Header("Cards / issued in order")]
+    [Tooltip("Содержимое карт по порядку. Если список заполнен, труба выдаёт эти карты, создавая их из Card Model Prefab.\nНовая карточка = новый CardData, перетащенный сюда.")]
+    [SerializeField] private CardData[] cardDataList;
+    [Tooltip("Модель карты для списка выше (например, Normal_punchcard). Пусто — берётся первый префаб из Card Prefabs.")]
+    [SerializeField] private GameObject cardModelPrefab;
+    [Tooltip("Старый способ: готовые префабы карт. Используется, только если Card Data List пуст.")]
     [SerializeField] private GameObject[] cardPrefabs;
     [SerializeField, Min(0)] private float initialDelay = 2f;
     [Tooltip("Вкл — выдавать список по кругу бесконечно. Выкл — выдать каждую карту из списка по одному разу и остановиться.")]
@@ -28,6 +33,11 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
     [SerializeField] private float tumbleSpeed = 2.2f;
 
     public bool InTransit => transit != null;
+
+    private bool UsesDataList => cardDataList != null && cardDataList.Length > 0;
+    private int CardCount => UsesDataList ? cardDataList.Length : (cardPrefabs != null ? cardPrefabs.Length : 0);
+    private GameObject ModelPrefab => cardModelPrefab ? cardModelPrefab
+        : (cardPrefabs != null && cardPrefabs.Length > 0 ? cardPrefabs[0] : null);
     public Pickupable LastSpawnedCard { get; private set; }
     public event Action<Pickupable> CardReleased;
 
@@ -53,15 +63,15 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
 
     private void Start()
     {
-        ready = spawnPoint && bendStart && bendEnd && releasePoint && cardPrefabs != null && cardPrefabs.Length > 0;
-        if (!ready) { Debug.LogError("PunchCardTubeSpawner needs its card prefabs and four route points.", this); return; }
+        ready = spawnPoint && bendStart && bendEnd && releasePoint && CardCount > 0 && (!UsesDataList || ModelPrefab);
+        if (!ready) { Debug.LogError("PunchCardTubeSpawner needs cards (Card Data List + model, or Card Prefabs) and four route points.", this); return; }
         BuildPath();
         timer = initialDelay;
     }
 
     private void Update()
     {
-        if (!ready || !repeat && issuedCount >= cardPrefabs.Length) return;
+        if (!ready || !repeat && issuedCount >= CardCount) return;
         timer -= Time.deltaTime;
         if (timer > 0) return;
         TrySpawnNext();
@@ -70,14 +80,14 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
     public bool TrySpawnNext()
     {
         if (!Application.isPlaying || !ready || transit != null) return false;
-        if (cardPrefabs == null || cardPrefabs.Length == 0) return false;
+        if (CardCount == 0) return false;
         issued.RemoveAll(item => !item);
         int loose = 0;
         foreach (var item in issued)
             if (item.gameObject.activeInHierarchy && !item.IsAttached) loose++;
         if (loose >= maxLooseCards) return false;
-        nextPrefab %= cardPrefabs.Length;
-        GameObject prefab = cardPrefabs[nextPrefab];
+        nextPrefab %= CardCount;
+        GameObject prefab = UsesDataList ? ModelPrefab : cardPrefabs[nextPrefab];
         if (!prefab || !prefab.GetComponent<Pickupable>() || !prefab.GetComponent<Rigidbody>())
         {
             Debug.LogError("A tube card prefab needs Pickupable and Rigidbody.", this);
@@ -87,6 +97,11 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
         BuildPath();
         var instance = Instantiate(prefab, positions[0], rotations[0]);
         SceneManager.MoveGameObjectToScene(instance, gameObject.scene);
+        if (UsesDataList)
+        {
+            if (instance.TryGetComponent(out PunchCard punchCard)) punchCard.Data = cardDataList[nextPrefab];
+            else Debug.LogError("Card Model Prefab has no PunchCard component.", this);
+        }
         var itemComponent = instance.GetComponent<Pickupable>();
         var body = instance.GetComponent<Rigidbody>();
         var cardColliders = instance.GetComponentsInChildren<Collider>(true);
@@ -111,7 +126,7 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
         body.isKinematic = true; body.useGravity = false; body.interpolation = RigidbodyInterpolation.Interpolate;
         body.position = positions[0] - rotations[0] * transit.centreOffset; body.rotation = rotations[0];
         issued.Add(itemComponent); LastSpawnedCard = itemComponent;
-        nextPrefab = (nextPrefab + 1) % cardPrefabs.Length;
+        nextPrefab = (nextPrefab + 1) % CardCount;
         issuedCount++; timer = spawnInterval;
         return true;
     }

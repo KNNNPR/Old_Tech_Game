@@ -3237,7 +3237,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   dropDistance: 0.7
   focusTransitionTime: 0.5
-  focusCursor: {fileID: 0}
+  focusCursor: {fileID: 2800000, guid: cab8bf2156d15a34cb0a120a5fa2a589, type: 3}
   cursorHotspot: {x: 0, y: 0}
 --- !u!114 &515159297
 MonoBehaviour:
@@ -7290,10 +7290,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b192ad3af1b14ddfba01e9032c0f7042, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PunchCardTubeSpawner
-  cardPrefabs:
-  - {fileID: 8221732562961602465, guid: f8662b9e897212a4dbdd99ccfb78f8c6, type: 3}
-  - {fileID: 997681124623375749, guid: 4f8f14a40478ed344b9bc88e1bf070e5, type: 3}
-  - {fileID: 8310991126702899966, guid: 37a5b3329e0d35a4db1e32503610465b, type: 3}
+  cardDataList:
+  - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
+  - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
+  - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
+  - {fileID: 11400000, guid: ece6b78ff119cfd49ba82f985cbcc581, type: 2}
+  cardModelPrefab: {fileID: 7524059578307144590, guid: a70c711f15ba16347adff5d593a72531, type: 3}
+  cardPrefabs: []
   initialDelay: 2
   repeat: 0
   spawnInterval: 4
@@ -8853,7 +8856,6 @@ MonoBehaviour:
   minValue: 0
   maxValue: 25
   wrap: 1
-  promptLabel: Shift
   pixelsPerStep: 12
   visual: {fileID: 404154750}
   knob: {fileID: 136256920}
