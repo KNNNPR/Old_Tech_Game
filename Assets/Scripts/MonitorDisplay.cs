@@ -18,6 +18,12 @@ public class MonitorDisplay : MonoBehaviour
     [SerializeField] private TMP_Text screenText;
     [SerializeField] private ExtractButton extractButton;
 
+    [Header("Шифр (для текстовых карт)")]
+    [SerializeField] private CipherDial cipherDial;
+    [Tooltip("Надпись со значением сдвига на экране, например «СДВИГ: 07» (необязательно).")]
+    [SerializeField] private TMP_Text shiftLabel;
+    [SerializeField] private string shiftLabelFormat = "СДВИГ: {0:00}";
+
     [Header("Устройства вывода")]
     [SerializeField] private ItemDispenser printer;
     [SerializeField] private ItemDispenser cassetteDeck;
@@ -49,21 +55,41 @@ public class MonitorDisplay : MonoBehaviour
     /// <summary>Распечатка или кассета выданы в лоток.</summary>
     public event Action<CardData> Extracted;
 
+    /// <summary>Игрок подобрал верный сдвиг и текст стал читаемым.</summary>
+    public event Action<CardData> TextDecoded;
+
     private Coroutine screenRoutine;
+
+    private string cipherText;     // зашифрованный текст текущей карты (null — шифра нет)
+    private int cipherKey;
+    private bool decodedReported;
 
     private void Awake() => Clear();
 
     private void OnEnable()
     {
-        if (lever != null) lever.CardFed += OnCardFed;
+        if (lever != null)
+        {
+            lever.CardFed += OnCardFed;
+            lever.CardEjected += OnCardEjected;
+        }
         if (extractButton != null) extractButton.Pressed += OnExtractPressed;
+        if (cipherDial != null) cipherDial.ValueChanged += OnDialChanged;
     }
 
     private void OnDisable()
     {
-        if (lever != null) lever.CardFed -= OnCardFed;
+        if (lever != null)
+        {
+            lever.CardFed -= OnCardFed;
+            lever.CardEjected -= OnCardEjected;
+        }
         if (extractButton != null) extractButton.Pressed -= OnExtractPressed;
+        if (cipherDial != null) cipherDial.ValueChanged -= OnDialChanged;
     }
+
+    // Карту достали — экран гаснет.
+    private void OnCardEjected(Pickupable item) => Clear();
 
     private void OnCardFed(Pickupable item)
     {
@@ -80,6 +106,7 @@ public class MonitorDisplay : MonoBehaviour
         StopScreen();
         CurrentCard = null;
         SetButton(false);
+        ResetCipher();
 
         if (screenText != null)
         {
@@ -92,6 +119,7 @@ public class MonitorDisplay : MonoBehaviour
     {
         CurrentCard = null;
         SetButton(false);
+        ResetCipher();
         if (screenText != null) screenText.text = "";
 
         yield return new WaitForSeconds(startDelay);
@@ -108,7 +136,15 @@ public class MonitorDisplay : MonoBehaviour
         switch (data.type)
         {
             case CardContentType.Text:
-                yield return TypeText(data.text);
+                if (data.encrypted && cipherDial != null)
+                {
+                    StartCipher(data);
+                    yield return TypeText(CurrentDecoded());
+                }
+                else
+                {
+                    yield return TypeText(data.text);
+                }
                 break;
 
             case CardContentType.Image:
@@ -165,6 +201,60 @@ public class MonitorDisplay : MonoBehaviour
         else if (card.type == CardContentType.Audio && instance.TryGetComponent(out Cassette cassette))
             cassette.Clip = card.audio;
     }
+
+    // ---------- Шифр ----------
+
+    private void StartCipher(CardData data)
+    {
+        cipherKey = data.cipherKey > 0
+            ? data.cipherKey
+            : UnityEngine.Random.Range(Mathf.Max(1, cipherDial.MinValue + 1), cipherDial.MaxValue + 1);
+
+        cipherText = CaesarCipher.Shift(data.text, cipherKey);
+        decodedReported = false;
+
+        cipherDial.ResetValue();
+        cipherDial.SetActive(true);
+        UpdateShiftLabel();
+    }
+
+    private void ResetCipher()
+    {
+        cipherText = null;
+        decodedReported = false;
+        if (cipherDial != null) cipherDial.SetActive(false);
+        if (shiftLabel != null) shiftLabel.text = "";
+    }
+
+    /// <summary>Текст с учётом текущего положения ползунка.</summary>
+    private string CurrentDecoded() => CaesarCipher.Shift(cipherText, -cipherDial.Value);
+
+    private void OnDialChanged(int value)
+    {
+        if (cipherText == null || screenText == null) return;
+
+        // Ползунок сдвинули — печать прерывается, текст перерисовывается целиком.
+        StopScreen();
+        screenText.text = CurrentDecoded();
+        screenText.maxVisibleCharacters = int.MaxValue;
+        UpdateShiftLabel();
+
+        if (!decodedReported && IsDecoded(value))
+        {
+            decodedReported = true;
+            TextDecoded?.Invoke(CurrentCard);
+        }
+    }
+
+    private bool IsDecoded(int value) => cipherText != null && CurrentDecoded() == CurrentCard.text;
+
+    private void UpdateShiftLabel()
+    {
+        if (shiftLabel != null && cipherDial != null)
+            shiftLabel.text = string.Format(shiftLabelFormat, cipherDial.Value);
+    }
+
+    // ---------- Служебное ----------
 
     private IEnumerator TypeThenShowButton(string text)
     {

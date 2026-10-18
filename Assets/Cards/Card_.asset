@@ -15,5 +15,7 @@ MonoBehaviour:
   cardName: "\u043F\u0435\u0440\u0444\u043E\u043A\u0430\u0440\u0442\u0430"
   type: 0
   text: Hello Operator!
+  encrypted: 1
+  cipherKey: 8
   image: {fileID: 0}
   audio: {fileID: 0}
