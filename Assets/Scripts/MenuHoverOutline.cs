@@ -42,6 +42,18 @@ public class MenuHoverOutline : MonoBehaviour
         foreach (var renderer in outlines) if (renderer != null) renderer.enabled = value;
     }
 
+    public void SetAppearance(Color color, float width, MaterialPropertyBlock properties)
+    {
+        foreach (var renderer in outlines)
+        {
+            if (!renderer) continue;
+            renderer.GetPropertyBlock(properties);
+            properties.SetColor("_OutlineColor", color);
+            properties.SetFloat("_OutlineWidth", width);
+            renderer.SetPropertyBlock(properties);
+        }
+    }
+
     private void OnDisable() => SetHovered(false);
 
     private void OnDestroy()

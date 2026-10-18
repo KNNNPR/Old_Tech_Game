@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7668564726238421721}
   - component: {fileID: 491957403336287621}
   - component: {fileID: 6137204977017865727}
+  - component: {fileID: 6622689351077212288}
   m_Layer: 0
   m_Name: Photo
   m_TagString: Untagged
@@ -186,3 +187,20 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 512f42b8f22dd694b9f9dd0c6baa3711, type: 3}
   - {fileID: 2800000, guid: 50e39a1f73648ac4f9775c9fddc2f384, type: 3}
   developmentSeconds: 10
+--- !u!114 &6622689351077212288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5171647105998493100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357cf7b72866408b874b30bc4303d69f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupPulseOutline
+  outlineMaterial: {fileID: 2100000, guid: 29f9fa1ddf796a4408e0435c32d4cfa5, type: 2}
+  outlineColor: {r: 0.8, g: 1.1, b: 0.9, a: 1}
+  width: 1.35
+  pulseSpeed: 2
+  visibleDistance: 8

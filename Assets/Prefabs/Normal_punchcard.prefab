@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 118437352280314317}
   - component: {fileID: 1572269629328195337}
   - component: {fileID: 7786606850619466201}
+  - component: {fileID: 6698857148582637080}
   m_Layer: 0
   m_Name: Normal_punchcard
   m_TagString: Card
@@ -171,3 +172,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PunchCard
   data: {fileID: 11400000, guid: b3dbf71302de5b147845ba30c1475dbe, type: 2}
+--- !u!114 &6698857148582637080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7524059578307144590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357cf7b72866408b874b30bc4303d69f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupPulseOutline
+  outlineMaterial: {fileID: 2100000, guid: 29f9fa1ddf796a4408e0435c32d4cfa5, type: 2}
+  outlineColor: {r: 0.8, g: 1.1, b: 0.9, a: 1}
+  width: 1.35
+  pulseSpeed: 2
+  visibleDistance: 8

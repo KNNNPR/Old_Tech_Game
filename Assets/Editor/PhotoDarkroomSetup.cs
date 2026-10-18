@@ -41,7 +41,7 @@ public static class PhotoDarkroomSetup
         Configure(scene);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
-        File.WriteAllText("Temp/Photo/applied.txt", "Photo enlarger, five clothespins and five blank prints configured.\n");
+        File.WriteAllText("Temp/Photo/applied.txt", "Photo enlarger and five clothespins configured. Photos are supplied by the printer.\n");
     }
 
     public static void Configure(Scene scene)
@@ -86,22 +86,7 @@ public static class PhotoDarkroomSetup
             hitbox.isTrigger = true;
         }
 
-        // Only seed the scene once. Existing prints and manually placed prefab instances are retained.
-        if (!scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<DevelopingPhoto>(true)).Any())
-        {
-            var stack = all.FirstOrDefault(t => t.name == "Blank Photo Stack");
-            if (!stack) { stack = new GameObject("Blank Photo Stack").transform; SceneManager.MoveGameObjectToScene(stack.gameObject, scene); }
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-            for (int i = 0; i < 5; i++)
-            {
-                var photo = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-                photo.name = "Blank Photo " + (i + 1);
-                photo.transform.SetParent(stack, true);
-                photo.transform.position = new Vector3(exposurePosition.x - 1.05f + i * .018f, table.max.y + .012f + i * .01f, exposurePosition.z + i * .016f);
-                photo.transform.rotation = Quaternion.Euler(0f, -7f + i * 3f, 0f);
-                PrefabUtility.RecordPrefabInstancePropertyModifications(photo.transform);
-            }
-        }
+        // Blank prints now come from PhotoPrinterSpawner instead of a preplaced stack.
         EditorSceneManager.MarkSceneDirty(scene);
     }
 
