@@ -1037,6 +1037,19 @@ MonoBehaviour:
     - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
     - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
     - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
+    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
+    - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
+    - {fileID: 11400000, guid: cfa13e7ab7ba2514b990442895518393, type: 2}
+  - title: Shift_3
+    cards:
+    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
+    - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
+    - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
+  - title: Shift_4
+    cards:
+    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
+    - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
+    - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
   tube: {fileID: 1605404918}
   tutorial: {fileID: 1098284447}
   tutorialCard: {fileID: 11400000, guid: 6cbdf0e5fbdb1204186dbab3a8b8c6a9, type: 2}
@@ -3210,6 +3223,9 @@ MonoBehaviour:
   extractButton: {fileID: 823647459}
   cipherDial: {fileID: 2039688183}
   shiftLabel: {fileID: 122591881}
+  playerFaint: {fileID: 0}
+  glitchSeconds: 3.5
+  glitchClip: {fileID: 0}
   photoPrinter: {fileID: 821467313}
   printer: {fileID: 0}
   cassetteDeck: {fileID: 0}
@@ -3338,6 +3354,7 @@ GameObject:
   - component: {fileID: 515159298}
   - component: {fileID: 515159297}
   - component: {fileID: 515159296}
+  - component: {fileID: 515159300}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -3431,6 +3448,34 @@ Transform:
   - {fileID: 2007078758}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &515159300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 515159295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de513e1987ac5044e9f2dc9e404fd397, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFaint
+  interactor: {fileID: 0}
+  controller: {fileID: 0}
+  fallSeconds: 2.6
+  dropHeight: 1.3
+  rollDegrees: 75
+  pitchDegrees: 25
+  swayAmplitude: 6
+  holdBlackSeconds: 2.5
+  audioSource: {fileID: 0}
+  ringClip: {fileID: 0}
+  thudClip: {fileID: 0}
+  fadeOutAllAudio: 1
+  nextScene: THE_END
+  onFainted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &555961855
 GameObject:
   m_ObjectHideFlags: 0
