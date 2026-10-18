@@ -1,0 +1,207 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &650863548017960499
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2258110630261476202}
+  - component: {fileID: 3972368198639987453}
+  - component: {fileID: 2907604170231800684}
+  - component: {fileID: -835718135948232660}
+  - component: {fileID: 135528155181359871}
+  - component: {fileID: 835860040153889912}
+  - component: {fileID: 3263577936305905755}
+  - component: {fileID: 4727743305634272779}
+  m_Layer: 0
+  m_Name: Casette
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2258110630261476202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+  m_LocalPosition: {x: 2.4922278, y: 1.7758116, z: 10.4484625}
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &3972368198639987453
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  m_Mesh: {fileID: -2746142260806068395, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+--- !u!23 &2907604170231800684
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -8681210883820998450, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &-835718135948232660
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.00549369, y: 0.0017247008, z: 0.0034586866}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &135528155181359871
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  serializedVersion: 5
+  m_Mass: 0.06
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 3
+--- !u!114 &835860040153889912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a69b7f3271e2bc4f85ef664be28a0f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pickupable
+  displayName: Cassette
+  holdPositionOffset: {x: 0, y: 0, z: 0.52}
+  holdRotationOffset: {x: -78, y: -8, z: 5}
+  attachSpeed: 14
+--- !u!114 &3263577936305905755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84f4258385f66fb42a32cc173ab3a541, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Cassette
+  clip: {fileID: 0}
+  normalRecordings:
+  - {fileID: 8300000, guid: db76ac8124a7b89468f0582da65a256b, type: 3}
+  - {fileID: 8300000, guid: 6ea4c86871ab66a41b116e9fdc550a70, type: 3}
+  - {fileID: 8300000, guid: 4e005afe23edac944b6f151a8fd2bb9c, type: 3}
+  - {fileID: 8300000, guid: 477e2c84263ad1e46a249be0a27e3e52, type: 3}
+  - {fileID: 8300000, guid: b862811084a622a47a2fe22e9ca387e5, type: 3}
+  - {fileID: 8300000, guid: 8f864dbf2a1b3504eb32ab5f65ce5d2c, type: 3}
+  - {fileID: 8300000, guid: 95713f5cd349a5e49a1dc4bc7669a039, type: 3}
+  - {fileID: 8300000, guid: 1a93e59b90cb2e44ea88dce10e15aced, type: 3}
+  - {fileID: 8300000, guid: 3e88c819c95347d42aabe38dc1178e89, type: 3}
+  anomalyRecordings:
+  - {fileID: 8300000, guid: 22d2c3dc6f8dc154fab54789710be861, type: 3}
+  - {fileID: 8300000, guid: de3cf96bf272add44b70db4fff92754c, type: 3}
+  - {fileID: 8300000, guid: 3a0231c78c3d84b4f8958475d8094e20, type: 3}
+  - {fileID: 8300000, guid: 442da54ea2baf8246b786dcc82bfe5ad, type: 3}
+  - {fileID: 8300000, guid: 75521996616c5464688bb96fb240e272, type: 3}
+--- !u!114 &4727743305634272779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650863548017960499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357cf7b72866408b874b30bc4303d69f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupPulseOutline
+  outlineMaterial: {fileID: 2100000, guid: 29f9fa1ddf796a4408e0435c32d4cfa5, type: 2}
+  outlineColor: {r: 0.8, g: 1.1, b: 0.9, a: 1}
+  width: 1.35
+  pulseSpeed: 2
+  visibleDistance: 8

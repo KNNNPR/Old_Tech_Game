@@ -58,6 +58,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
+        if (externalInteraction != null) { externalInteraction(); return; }
         Mouse mouse = Mouse.current;
         Keyboard kb = Keyboard.current;
 
@@ -69,7 +70,14 @@ public class PlayerInteractor : MonoBehaviour
             else
                 StopDragging();
 
-            FindTarget();
+            // A moving physical fader can leave the crosshair while it is being dragged.
+            // Keep its readout visible until the mouse button is released.
+            if (dragging is IInteractable draggedTarget)
+            {
+                CurrentTarget = draggedTarget;
+                CurrentPrompt = draggedTarget.GetPrompt(this);
+            }
+            else FindTarget();
             return;
         }
 
