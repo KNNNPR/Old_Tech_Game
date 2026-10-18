@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RobotHelper_CRT
+  m_Shader: {fileID: 4800000, guid: a8b4b42f14264a53a6d79957bb361ec2, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 0
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties:
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 9374e8f93829c094b9e8d8a5830d9afa, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Brightness: 1.6
+    - _IconThreshold: 0.012
+    - _IconDetail: 0
+    - _DataBrightness: 0.55
+    - _DataSpeed: 0.24
+    - _DataStroke: 0.25
+    - _ScanlineStrength: 0.22
+    - _FlickerStrength: 0.035
+    - _GrainStrength: 0.012
+    - _Curvature: 0.035
+    - _EdgeFade: 0.28
+    - _WaveStrength: 0.01
+    - _WaveSpeed: 1.1
+    - _RollStrength: 0.1
+    - _GlowStrength: 0.45
+    - _DistortionPeriod: 5
+    - _DistortionDuration: 0.45
+    - _DistortionStrength: 0.065
+    - _PreviewTime: -1
+    m_Colors:
+    - _PhosphorColor: {r: 0.025, g: 1.15, b: 0.12, a: 1}
+    - _ScreenRect: {r: 0, g: 0.093344, b: 1, a: 0.813312}
+    - _Resolution: {r: 192, g: 156, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

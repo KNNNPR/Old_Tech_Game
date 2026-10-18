@@ -326,7 +326,7 @@ PrefabInstance:
     - target: {fileID: -678588488315902003, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 5672e6c7b8c8cf647b0ec0d9f256e5d6, type: 2}
+      objectReference: {fileID: 2100000, guid: 4711104830ae3344ebdf8bc4c17806c2, type: 2}
     - target: {fileID: -516098083770646512, guid: 9ae2661538fbac048b456f53e2c6a4aa, type: 3}
       propertyPath: m_Name
       value: PrinterIndication
