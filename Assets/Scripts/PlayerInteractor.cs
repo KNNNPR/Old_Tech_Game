@@ -28,6 +28,10 @@ public class PlayerInteractor : MonoBehaviour
     public bool InputEnabled { get; set; } = true;
 
     private IDraggable dragging;
+    private System.Action externalInteraction;
+    public Camera PlayerCamera => playerCamera;
+    public FirstPersonController Controller => controller;
+    public bool HasExternalInteraction => externalInteraction != null;
 
     private void Awake()
     {
@@ -36,6 +40,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
+        if (externalInteraction != null) { externalInteraction(); return; }
         Mouse mouse = Mouse.current;
 
         // Пока тянем — только перетаскивание, всё остальное ждёт.
@@ -46,13 +51,26 @@ public class PlayerInteractor : MonoBehaviour
             else
                 StopDragging();
 
-            FindTarget();
+            // A moving physical fader can leave the crosshair while it is being dragged.
+            // Keep its readout visible until the mouse button is released.
+            if (dragging is IInteractable draggedTarget)
+            {
+                CurrentTarget = draggedTarget;
+                CurrentPrompt = draggedTarget.GetPrompt(this);
+            }
+            else FindTarget();
             return;
         }
 
         FindTarget();
 
         if (!InputEnabled) return;
+
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame && CurrentTarget is IPrimaryInteractable primary && primary.CanPrimaryInteract(this))
+        {
+            primary.PrimaryInteract(this);
+            return;
+        }
 
         // ЛКМ по ползунку — начать перетаскивание.
         if (mouse != null && mouse.leftButton.wasPressedThisFrame && CurrentTarget is IDraggable draggable)
@@ -78,6 +96,23 @@ public class PlayerInteractor : MonoBehaviour
             CurrentTarget.Interact(this);
         else if (kb.gKey.wasPressedThisFrame && HeldItem != null)
             DropHeld();
+    }
+
+    public void BeginExternalInteraction(System.Action updateInput)
+    {
+        if (dragging != null) StopDragging();
+        externalInteraction = updateInput;
+    }
+    public void EndExternalInteraction(System.Action updateInput)
+    {
+        if (externalInteraction == updateInput) externalInteraction = null;
+        CurrentTarget = null;
+        CurrentPrompt = "";
+    }
+    public void SetExternalPrompt(IInteractable target, string prompt)
+    {
+        CurrentTarget = target;
+        CurrentPrompt = prompt;
     }
 
     private void FindTarget()

@@ -17,6 +17,9 @@ public class InteractionHUD : MonoBehaviour
         promptText.text = interactor.CurrentPrompt;
 
         if (crosshair != null)
+        {
+            crosshair.enabled = !interactor.HasExternalInteraction;
             crosshair.color = interactor.CurrentTarget != null ? activeColor : idleColor;
+        }
     }
 }
