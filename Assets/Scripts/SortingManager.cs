@@ -1,27 +1,43 @@
 using System;
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
 /// Считает результаты сортировки и реагирует на ошибки.
+/// Каждая ошибка зажигает следующую лампу из ряда.
 /// Один объект на сцену. Приёмники (SortBin) сообщают сюда каждую карту.
 /// </summary>
 public class SortingManager : MonoBehaviour
 {
+    [Serializable]
+    public class MistakeLamp
+    {
+        [Tooltip("Меш лампы: на нём меняется материал (необязательно).")]
+        public Renderer renderer;
+        [Tooltip("Какой по счёту материал меша менять (0 — первый). Нужно, если у лампы несколько материалов, например стекло и цоколь.")]
+        public int materialIndex;
+        [Tooltip("Источник света лампы (необязательно).")]
+        public Light light;
+    }
+
     public static SortingManager Instance { get; private set; }
 
-    [Header("Реакция на ошибку (всё необязательно)")]
+    [Header("Лампы ошибок")]
+    [Tooltip("По порядку: первая ошибка зажигает первую лампу и т.д.")]
+    [SerializeField] private MistakeLamp[] lamps;
+    [Tooltip("Материал горящей лампы (с Emission).")]
+    [SerializeField] private Material lampOnMaterial;
+    [Tooltip("Материал погасшей лампы.")]
+    [SerializeField] private Material lampOffMaterial;
+
+    [Header("Реакция на ошибку (необязательно)")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip mistakeClip;
-    [Tooltip("Красная лампа, которая мигает при ошибке.")]
+    [Tooltip("Большая красная лампа в комнате, мигает при каждой ошибке.")]
     [SerializeField] private Light warningLight;
     [SerializeField] private float warningDuration = 2f;
     [SerializeField] private float blinkInterval = 0.2f;
-    [Tooltip("Счётчик нарушений, например на табло или на стене.")]
-    [SerializeField] private TMP_Text mistakesLabel;
-    [SerializeField] private string mistakesFormat = "НАРУШЕНИЙ: {0}";
 
     [Header("Реакция на верный ответ (необязательно)")]
     [SerializeField] private AudioClip correctClip;
@@ -29,6 +45,8 @@ public class SortingManager : MonoBehaviour
     [Header("Дополнительно (настраивается в инспекторе)")]
     public UnityEvent onCorrect;
     public UnityEvent onMistake;
+    [Tooltip("Загорелись все лампы.")]
+    public UnityEvent onAllLampsLit;
 
     public int CorrectCount { get; private set; }
     public int MistakeCount { get; private set; }
@@ -42,7 +60,7 @@ public class SortingManager : MonoBehaviour
     {
         Instance = this;
         if (warningLight != null) warningLight.enabled = false;
-        UpdateLabel();
+        UpdateLamps();
     }
 
     private void OnDestroy()
@@ -67,16 +85,54 @@ public class SortingManager : MonoBehaviour
         {
             MistakeCount++;
             Play(mistakeClip);
+            UpdateLamps();
+
             if (warningLight != null)
             {
                 if (warningRoutine != null) StopCoroutine(warningRoutine);
                 warningRoutine = StartCoroutine(WarningRoutine());
             }
+
             onMistake?.Invoke();
+
+            if (lamps != null && lamps.Length > 0 && MistakeCount == lamps.Length)
+                onAllLampsLit?.Invoke();
         }
 
-        UpdateLabel();
         CardSorted?.Invoke(data, correct);
+    }
+
+    /// <summary>Погасить все лампы и обнулить ошибки (например, в начале новой смены).</summary>
+    public void ResetMistakes()
+    {
+        MistakeCount = 0;
+        UpdateLamps();
+    }
+
+    private void UpdateLamps()
+    {
+        if (lamps == null) return;
+
+        for (int i = 0; i < lamps.Length; i++)
+        {
+            bool on = i < MistakeCount;
+            MistakeLamp lamp = lamps[i];
+            if (lamp == null) continue;
+
+            if (lamp.renderer != null)
+            {
+                Material material = on ? lampOnMaterial : lampOffMaterial;
+                if (material != null)
+                {
+                    Material[] materials = lamp.renderer.sharedMaterials;
+                    int index = Mathf.Clamp(lamp.materialIndex, 0, materials.Length - 1);
+                    materials[index] = material;
+                    lamp.renderer.sharedMaterials = materials;
+                }
+            }
+
+            if (lamp.light != null) lamp.light.enabled = on;
+        }
     }
 
     private IEnumerator WarningRoutine()
@@ -87,12 +143,6 @@ public class SortingManager : MonoBehaviour
             yield return new WaitForSeconds(blinkInterval);
         }
         warningLight.enabled = false;
-    }
-
-    private void UpdateLabel()
-    {
-        if (mistakesLabel != null)
-            mistakesLabel.text = string.Format(mistakesFormat, MistakeCount);
     }
 
     private void Play(AudioClip clip)
