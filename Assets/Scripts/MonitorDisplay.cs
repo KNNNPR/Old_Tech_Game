@@ -25,6 +25,14 @@ public class MonitorDisplay : MonoBehaviour
     // Формат надписи сдвига задаётся только в коде, чтобы старые значения из сцены не перекрывали его.
     private const string shiftLabelFormat = DefaultShiftLabelFormat;
 
+    [Header("Карта-«отключка» (Causes Blackout)")]
+    [Tooltip("Кто проигрывает потерю сознания. Если пусто — найдётся в сцене сам.")]
+    [SerializeField] private PlayerFaint playerFaint;
+    [Tooltip("Сколько секунд текст распадается в шум, прежде чем игрок упадёт.")]
+    [SerializeField] private float glitchSeconds = 3.5f;
+    [Tooltip("Звук помех на экране (необязательно, лучше зацикленный короткий шум).")]
+    [SerializeField] private AudioClip glitchClip;
+
     [Header("Устройства вывода")]
     [Tooltip("Фотопринтер. Если задан, изображения с карт печатаются через него.")]
     [SerializeField] private PhotoPrinterSpawner photoPrinter;
@@ -180,6 +188,13 @@ public class MonitorDisplay : MonoBehaviour
         CurrentCard = data;
         ContentStarted?.Invoke(data);
 
+        if (data.causesBlackout)
+        {
+            MarkCurrentViewed();
+            yield return BlackoutRoutine(data);
+            yield break;
+        }
+
         switch (data.type)
         {
             case CardContentType.Text:
@@ -331,6 +346,65 @@ public class MonitorDisplay : MonoBehaviour
         CurrentCard = null;
         Run(TypeText(doneText));
         Extracted?.Invoke(card);
+    }
+
+    // ---------- Карта-«отключка» ----------
+
+    private const string GlitchChars = "#@%&$*+=?!/\\|<>[]{}~^0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    private IEnumerator BlackoutRoutine(CardData data)
+    {
+        if (playerFaint == null) playerFaint = FindFirstObjectByType<PlayerFaint>();
+        if (screenText == null) yield break;
+
+        string source = string.IsNullOrEmpty(data.text) ? "..." : data.text;
+        if (data.encrypted) source = CaesarCipher.Shift(source, Mathf.Max(1, data.cipherKey));
+        screenText.maxVisibleCharacters = int.MaxValue;
+
+        // Красное мерцание и нарастающая тряска — всё время, пока текст распадается.
+        if (playerFaint != null) playerFaint.BeginWarning(glitchSeconds);
+
+        var chars = source.ToCharArray();
+        var builder = new System.Text.StringBuilder(chars.Length * 2);
+        bool faintStarted = false;
+
+        // Шум нарастает: сначала изредка подменяются буквы, потом весь экран — случайные символы.
+        // Продолжается и во время падения, до самой загрузки следующей сцены.
+        for (float t = 0f; ; t += 0.05f)
+        {
+            float corruption = Mathf.Clamp01(t / Mathf.Max(0.1f, glitchSeconds));
+            builder.Clear();
+
+            foreach (char c in chars)
+            {
+                if (c == '\n' || c == ' ' && UnityEngine.Random.value > corruption) { builder.Append(c); continue; }
+                builder.Append(UnityEngine.Random.value < corruption * corruption + 0.03f
+                    ? GlitchChars[UnityEngine.Random.Range(0, GlitchChars.Length)]
+                    : c);
+            }
+
+            // К концу добавляются лишние строки шума, заливающие экран.
+            int extraLines = Mathf.FloorToInt(corruption * 10f);
+            for (int line = 0; line < extraLines; line++)
+            {
+                builder.Append('\n');
+                for (int i = 0; i < 34; i++) builder.Append(GlitchChars[UnityEngine.Random.Range(0, GlitchChars.Length)]);
+            }
+
+            screenText.text = builder.ToString();
+
+            if (glitchClip != null && audioSource != null && UnityEngine.Random.value < 0.25f + corruption * 0.5f)
+                audioSource.PlayOneShot(glitchClip, 0.2f + corruption * 0.6f);
+
+            if (!faintStarted && corruption >= 1f)
+            {
+                faintStarted = true;
+                if (playerFaint != null) playerFaint.Faint();
+                else Debug.LogError("MonitorDisplay: карта-«отключка», но в сцене нет PlayerFaint.", this);
+            }
+
+            yield return new WaitForSeconds(0.05f);
+        }
     }
 
     // ---------- Шифр ----------

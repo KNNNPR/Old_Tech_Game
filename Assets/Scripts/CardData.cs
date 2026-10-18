@@ -30,6 +30,10 @@ public class CardData : ScriptableObject
     [Tooltip("Сдвиг шифра. 0 — случайный при каждом чтении карты.")]
     public int cipherKey = 0;
 
+    [Header("Особое")]
+    [Tooltip("Карта-«отключка»: на мониторе вместо текста нарастает шум из случайных символов, игрок теряет сознание.\nРаботает для Type = Text. Нужен PlayerFaint в сцене.")]
+    public bool causesBlackout;
+
     [Header("Для Image")]
     public Texture2D image;
 

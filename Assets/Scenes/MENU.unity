@@ -492,7 +492,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4289458808
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -771,6 +771,7 @@ MonoBehaviour:
   anchor: {fileID: 1059405558}
   acceptedTag: 
   allowTakeBack: 1
+  insertSpeed: 0
 --- !u!65 &268923299
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1673,8 +1674,12 @@ MonoBehaviour:
   lever: {fileID: 1752126584}
   screenText: {fileID: 394615899}
   extractButton: {fileID: 823647459}
+  cipherDial: {fileID: 0}
+  shiftLabel: {fileID: 0}
+  photoPrinter: {fileID: 0}
   printer: {fileID: 0}
   cassetteDeck: {fileID: 0}
+  cassetteSpawner: {fileID: 0}
   audioSource: {fileID: 0}
   typeClip: {fileID: 0}
   typeVolume: 0.4
@@ -2112,6 +2117,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &493940793
 GameObject:
   m_ObjectHideFlags: 0
@@ -2178,7 +2184,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4289458808
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -2282,11 +2288,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractor
   playerCamera: {fileID: 1109477480}
   holdPoint: {fileID: 1473274244}
+  controller: {fileID: 0}
   interactDistance: 4
   interactMask:
     serializedVersion: 2
     m_Bits: 4294967295
   dropDistance: 0.7
+  focusTransitionTime: 0.5
+  focusCursor: {fileID: 0}
+  cursorHotspot: {x: 0, y: 0}
 --- !u!114 &515159297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2400,6 +2410,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &554179302
 GameObject:
   m_ObjectHideFlags: 0
@@ -2466,7 +2477,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4289458808
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -2940,7 +2951,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4289458808
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -3041,7 +3052,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
   menuCamera: {fileID: 1109477480}
-  gameScene: scene_1
   mainPanel: {fileID: 367119441}
   settingsPanel: {fileID: 308694639}
   startButton: {fileID: 2087351503}
@@ -3148,6 +3158,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &800984568
 GameObject:
   m_ObjectHideFlags: 0
@@ -3441,6 +3452,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &823647457
 GameObject:
   m_ObjectHideFlags: 0
@@ -3655,7 +3667,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4289458808
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -4539,6 +4551,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &987126277
 GameObject:
   m_ObjectHideFlags: 0
@@ -4613,7 +4626,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4292272352
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -4641,7 +4654,7 @@ MonoBehaviour:
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: 3.0
+  m_characterSpacing: 3
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -6038,6 +6051,37 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &1146001001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109477476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a9ab940c792480889878965e90a0e31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuCameraSway
+  positionAmplitude: {x: 0.012, y: 0.01, z: 0.004}
+  angleAmplitude: {x: 0.22, y: 0.3, z: 0.18}
+  speed: 0.65
+  focusedMultiplier: 0.25
+--- !u!114 &1146001002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1527025592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d08df21f6104d6d92d6dc7045359c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuLightSway
+  swingAngles: {x: 6, y: 4}
+  speed: 0.8
+  pendulumLength: 1.2
 --- !u!1 &1147126236
 GameObject:
   m_ObjectHideFlags: 0
@@ -6968,6 +7012,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &1342735600
 GameObject:
   m_ObjectHideFlags: 0
@@ -7742,7 +7787,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 2
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!223 &1495181986
 Canvas:
   m_ObjectHideFlags: 0
@@ -9392,7 +9437,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4292272352
+    rgba: 4284602683
   m_fontColor: {r: 0.23, g: 0.85, b: 0.38, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -9420,7 +9465,7 @@ MonoBehaviour:
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: 3.0
+  m_characterSpacing: 3
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -9743,12 +9788,14 @@ MonoBehaviour:
   cardReturnTime: 0.5
   feedOffset: {x: 0, y: 0.12, z: 0}
   feedDuration: 1.8
+  ejectDuration: 0.8
   hideCardAfterFeed: 1
   audioSource: {fileID: 0}
   pullClip: {fileID: 0}
   punchClip: {fileID: 0}
   cardStepClip: {fileID: 0}
   feedClip: {fileID: 0}
+  ejectClip: {fileID: 0}
 --- !u!65 &1752126585
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9820,6 +9867,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &1777999393
 GameObject:
   m_ObjectHideFlags: 0
@@ -10300,6 +10348,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &1979934616
 GameObject:
   m_ObjectHideFlags: 0
@@ -10864,6 +10913,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!1 &2087351498
 GameObject:
   m_ObjectHideFlags: 0
@@ -11304,6 +11354,7 @@ MonoBehaviour:
   pushStrength: 0.025
   hoverAmplitude: 0.004
   glowColor: {r: 0.52963686, g: 0.5017612, b: 0.41813433, a: 1}
+  collisionBounce: 0.45
 --- !u!114 &2118560666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11567,37 +11618,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2143492691}
   m_Mesh: {fileID: -5082522871635176651, guid: 1e8395e59ceaad5448fc097eafffdc34, type: 3}
---- !u!114 &1146001001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1109477476}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a9ab940c792480889878965e90a0e31, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::MenuCameraSway
-  positionAmplitude: {x: 0.012, y: 0.01, z: 0.004}
-  angleAmplitude: {x: 0.22, y: 0.3, z: 0.18}
-  speed: 0.65
-  focusedMultiplier: 0.25
---- !u!114 &1146001002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1527025592}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d08df21f6104d6d92d6dc7045359c55, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::MenuLightSway
-  swingAngles: {x: 6, y: 4}
-  speed: 0.8
-  pendulumLength: 1.2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

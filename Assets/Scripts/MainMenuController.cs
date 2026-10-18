@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public class MainMenuController : MonoBehaviour
 {
     [SerializeField] private Camera menuCamera;
-    [SerializeField] private string gameScene = "scene_1";
     [SerializeField] private GameObject mainPanel, settingsPanel;
     [SerializeField] private Button startButton, settingsButton, backButton, resetButton;
     [SerializeField] private Slider volumeSlider;
@@ -40,7 +39,7 @@ public class MainMenuController : MonoBehaviour
         settingsButton.onClick.AddListener(OpenSettings);
         backButton.onClick.AddListener(CloseSettings);
         resetButton.onClick.AddListener(ResetKeys);
-        if(exitButton) exitButton.onClick.AddListener(ExitGame);
+        if (exitButton) exitButton.onClick.AddListener(ExitGame);
         for (int i = 0; i < bindingButtons.Length; i++)
         {
             int action = i;
@@ -78,7 +77,7 @@ public class MainMenuController : MonoBehaviour
         }
         if (computerMenu != null)
         {
-            if(keyboard != null && keyboard.escapeKey.wasPressedThisFrame) computerMenu.ReturnToOverview();
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame) computerMenu.ReturnToOverview();
             return;
         }
         if (SettingsOpen)
@@ -104,7 +103,7 @@ public class MainMenuController : MonoBehaviour
 
     public void OpenSettings()
     {
-        if(computerMenu != null && !computerMenu.CanUseMenu) return;
+        if (computerMenu != null && !computerMenu.CanUseMenu) return;
         CancelRebind();
         mainPanel.SetActive(false);
         settingsPanel.SetActive(true);
@@ -148,28 +147,31 @@ public class MainMenuController : MonoBehaviour
 
     public void StartGame()
     {
-        if(computerMenu != null && !computerMenu.CanUseMenu) return;
+        if (computerMenu != null && !computerMenu.CanUseMenu) return;
         if (!loading) StartCoroutine(LoadGame());
     }
 
     public void ExitGame()
     {
-        if(computerMenu != null && !computerMenu.CanUseMenu) return;
-        #if UNITY_EDITOR
+        if (computerMenu != null && !computerMenu.CanUseMenu) return;
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-        #else
+#else
         Application.Quit();
-        #endif
+#endif
     }
 
     private IEnumerator LoadGame()
     {
+        // ѕервый запуск Ч обучение, дальше Ч сразу основна€ сцена (см. GameFlow).
+        string gameScene = GameFlow.SceneAfterMenu();
         if (!Application.CanStreamedLevelBeLoaded(gameScene))
         {
             startLabel.text = "SCENE UNAVAILABLE";
-            Debug.LogError("Add scene_1 to Build Settings.");
+            Debug.LogError("Add " + gameScene + " to Build Settings.");
             yield break;
         }
+        GameFlow.NewGame();
         loading = true;
         startButton.interactable = settingsButton.interactable = false;
         fade.blocksRaycasts = true;

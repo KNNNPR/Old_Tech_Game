@@ -7,16 +7,22 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/MENU.unity
-    guid: 364e356f708ff5048b7b7b6a420f9b60
-  - enabled: 1
+    guid: befca2cd5dca4e84993f401dce5f2bb5
+  - enabled: 0
     path: Assets/Scenes/scene_1.unity
     guid: 63e508ecd0d0ee843bb75bde85703507
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
+    path: Assets/Scenes/scene_1_Kirill.unity
+    guid: fc3c6902c96e052489dbcadbc50ec22f
+  - enabled: 1
     path: Assets/Scenes/Intermission.unity
     guid: ab63e70992f2c6543b1d874d8d6cce3f
+  - enabled: 1
+    path: Assets/Scenes/THE_END.unity
+    guid: 2f07d1420a5918a4fb8a49d660b8272f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
