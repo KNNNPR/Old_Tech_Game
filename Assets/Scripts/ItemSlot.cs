@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public class ItemSlot : MonoBehaviour, IInteractable
 {
-    [SerializeField] private string slotName = "гнездо";
+    [SerializeField] private string slotName = "slot";
 
     [Tooltip("Куда встаёт предмет. Если пусто — в центр этого объекта.")]
     [SerializeField] private Transform anchor;
@@ -26,6 +26,12 @@ public class ItemSlot : MonoBehaviour, IInteractable
     /// <summary>Пока true, игрок не может ни вставить, ни забрать предмет (машина работает).</summary>
     public bool Locked { get; set; }
 
+    /// <summary>
+    /// Дополнительная проверка предмета. Возвращает причину отказа (её увидит игрок под прицелом)
+    /// или null, если предмет можно вставить. Например, урна не берёт непросмотренную карту.
+    /// </summary>
+    public Func<Pickupable, string> RejectReason { get; set; }
+
     public event Action<Pickupable> ItemInserted;
     public event Action<Pickupable> ItemRemoved;
 
@@ -34,8 +40,16 @@ public class ItemSlot : MonoBehaviour, IInteractable
     /// <summary>Точка, куда встаёт предмет (Anchor или сам слот).</summary>
     public Transform AnchorTransform => Anchor;
 
-    public string GetPrompt(PlayerInteractor interactor) =>
-        Current == null ? $"[E] Вставить: {slotName}" : $"[E] Забрать: {slotName}";
+    public string GetPrompt(PlayerInteractor interactor)
+    {
+        if (Current != null) return $"[E] Take: {slotName}";
+
+        string reason = GetRejectReason(interactor.HeldItem);
+        return reason ?? $"[E] Insert: {slotName}";
+    }
+
+    private string GetRejectReason(Pickupable item) =>
+        item != null && RejectReason != null ? RejectReason(item) : null;
 
     public bool CanInteract(PlayerInteractor interactor)
     {
@@ -51,6 +65,9 @@ public class ItemSlot : MonoBehaviour, IInteractable
     {
         if (Current == null)
         {
+            // Отказ: предмет остаётся в руке, причина уже видна в подсказке.
+            if (GetRejectReason(interactor.HeldItem) != null) return;
+
             Insert(interactor.ReleaseHeld());
         }
         else

@@ -11,4 +11,12 @@ public class PunchCard : MonoBehaviour
         get => data;
         set => data = value;
     }
+
+    /// <summary>
+    /// Карту просмотрели на компьютере: расшифровали текст, прочитали его
+    /// или извлекли изображение/аудио. Без этого урны карту не примут.
+    /// </summary>
+    public bool IsViewed { get; private set; }
+
+    public void MarkViewed() => IsViewed = true;
 }

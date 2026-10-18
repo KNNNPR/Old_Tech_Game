@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Pickupable : MonoBehaviour, IInteractable
 {
-    [SerializeField] private string displayName = "предмет";
+    [SerializeField] private string displayName = "item";
 
     [Header("Положение в руке")]
     [SerializeField] private Vector3 holdPositionOffset = Vector3.zero;
@@ -48,7 +48,7 @@ public class Pickupable : MonoBehaviour, IInteractable
         transform.localRotation = Quaternion.Slerp(transform.localRotation, targetLocalRotation, t);
     }
 
-    public string GetPrompt(PlayerInteractor interactor) => $"[E] Взять: {displayName}";
+    public string GetPrompt(PlayerInteractor interactor) => $"[E] Pick up: {displayName}";
 
     public bool CanInteract(PlayerInteractor interactor) => !IsAttached && interactor.HeldItem == null;
 

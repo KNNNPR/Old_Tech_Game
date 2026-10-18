@@ -16,6 +16,11 @@ public class SortBin : MonoBehaviour
     [SerializeField] private ItemSlot slot;
     [SerializeField] private SortVerdict verdict = SortVerdict.Normal;
 
+    [Header("Проверка")]
+    [Tooltip("Не принимать карту, пока её не просмотрели на компьютере.")]
+    [SerializeField] private bool requireViewed = true;
+    [SerializeField] private string notViewedText = "Card not viewed yet";
+
     [Header("Засасывание")]
     [Tooltip("Куда уезжает карта (в координатах родителя Anchor слота).")]
     [SerializeField] private Vector3 suckOffset = new Vector3(0f, -0.15f, 0f);
@@ -31,6 +36,21 @@ public class SortBin : MonoBehaviour
 
     public SortVerdict Verdict => verdict;
     public bool IsBusy { get; private set; }
+
+    private void Awake()
+    {
+        if (slot != null) slot.RejectReason = CheckCard;
+    }
+
+    private string CheckCard(Pickupable item)
+    {
+        if (!requireViewed) return null;
+
+        // Предметы без PunchCard этот приёмник не проверяет (их отсечёт Accepted Tag слота).
+        if (!item.TryGetComponent(out PunchCard card)) return null;
+
+        return card.IsViewed ? null : notViewedText;
+    }
 
     /// <summary>Повесь на On Pressed кнопки этого приёмника.</summary>
     public void Process()

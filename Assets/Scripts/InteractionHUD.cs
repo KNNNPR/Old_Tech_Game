@@ -17,6 +17,10 @@ public class InteractionHUD : MonoBehaviour
         promptText.text = interactor.CurrentPrompt;
 
         if (crosshair != null)
+        {
+            // За компьютером вместо прицела курсор мыши.
+            crosshair.enabled = !interactor.IsFocused;
             crosshair.color = interactor.CurrentTarget != null ? activeColor : idleColor;
+        }
     }
 }
