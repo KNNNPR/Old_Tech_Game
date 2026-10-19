@@ -21,6 +21,16 @@ public class ShiftManager : MonoBehaviour
         public CardData[] cards;
         [Tooltip("Особый день: вместо карт труба выдаёт эти префабы (например, руку). Если заполнено — Cards не используются,\nа день сам не заканчивается (финал запускает FinalHandTrigger).")]
         public GameObject[] spawnInsteadOfCards;
+
+        [Header("Начало дня (необязательно)")]
+        [Tooltip("Где игрок появляется в этот день (синяя ось — куда он смотрит). Пусто — где стоит в сцене.")]
+        public Transform playerStart;
+        [Tooltip("Предмет, который игрок держит в руке с самого начала дня (например, рука в последний день).")]
+        public GameObject giveToPlayer;
+
+        [Header("Конец дня")]
+        [Tooltip("Когда все карты дня отсортированы — прилетает робот и разговаривает с игроком (Helpy Return Dialogue).")]
+        public bool helpyDialogueAtEnd;
     }
 
     [SerializeField] private Shift[] shifts;
@@ -41,6 +51,14 @@ public class ShiftManager : MonoBehaviour
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private float titleFadeSeconds = 1f;
     [SerializeField] private float titleHoldSeconds = 2.5f;
+
+    [Header("Разговор с роботом в конце дня")]
+    [Tooltip("Разговор робота (Helpy return conversation). Если пусто — найдётся в сцене сам.\nОбъект с ним держи выключенным — его включит этот скрипт в нужный день.")]
+    [SerializeField] private HelpyReturnDialogue returnDialogue;
+
+    [Header("Отладка")]
+    [Tooltip("Номер дня с нуля, если нажать Play прямо в этой сцене (0 — день 1, 3 — день 4).\n-1 — как обычно. На игру из меню не влияет.")]
+    [SerializeField] private int testDay = -1;
 
     [Header("Конец смены")]
     [Tooltip("Пауза между последней отсортированной картой и переходом дальше.")]
@@ -66,11 +84,18 @@ public class ShiftManager : MonoBehaviour
         }
         if (tube == null) Debug.LogError("ShiftManager: не задана труба с картами.", this);
 
+        // Play прямо в этой сцене с заданным днём для отладки.
+        if (testDay >= 0 && Time.frameCount <= 1) GameFlow.JumpToDay(testDay);
+
         ShiftIndex = Mathf.Clamp(GameFlow.CurrentShift, 0, shifts.Length - 1);
         shiftCards = shifts[ShiftIndex].cards ?? Array.Empty<CardData>();
         if (titleGroup != null) titleGroup.alpha = 0f;
 
         if (tutorial == null) tutorial = FindFirstObjectByType<HelpyTutorialIntro>(FindObjectsInactive.Include);
+
+        // Разговор робота запускается сам при включении — держим выключенным до конца нужного дня.
+        if (returnDialogue == null) returnDialogue = FindFirstObjectByType<HelpyReturnDialogue>(FindObjectsInactive.Include);
+        if (returnDialogue != null) returnDialogue.gameObject.SetActive(false);
 
         bool playTutorial = tutorial != null && ShiftIndex == 0 && (alwaysPlayTutorial || !GameFlow.TutorialDone);
         if (playTutorial)
@@ -104,6 +129,38 @@ public class ShiftManager : MonoBehaviour
     {
         if (SortingManager.Instance != null) SortingManager.Instance.CardSorted += OnCardSorted;
         else Debug.LogError("ShiftManager: в сцене нет SortingManager, смена не сможет закончиться.", this);
+
+        if (shifts == null || shifts.Length == 0) return;
+        PlacePlayer(shifts[ShiftIndex].playerStart);
+        GiveToPlayer(shifts[ShiftIndex].giveToPlayer);
+    }
+
+    private static void PlacePlayer(Transform start)
+    {
+        if (start == null) return;
+        var player = FindFirstObjectByType<FirstPersonController>();
+        if (player == null) return;
+
+        // CharacterController не даёт двигать объект напрямую — выключаем на время переноса.
+        var body = player.GetComponent<CharacterController>();
+        bool wasEnabled = body != null && body.enabled;
+        if (body != null) body.enabled = false;
+        player.transform.SetPositionAndRotation(start.position, Quaternion.Euler(0f, start.eulerAngles.y, 0f));
+        if (body != null) body.enabled = wasEnabled;
+    }
+
+    private static void GiveToPlayer(GameObject prefab)
+    {
+        if (prefab == null) return;
+        var interactor = FindFirstObjectByType<PlayerInteractor>();
+        if (interactor == null || interactor.HeldItem != null) return;
+
+        Transform cam = interactor.PlayerCamera.transform;
+        GameObject instance = Instantiate(prefab, cam.position + cam.forward * 0.4f, cam.rotation);
+        instance.tag = "Card"; // чтобы слот компьютера принял предмет
+
+        if (instance.TryGetComponent(out Pickupable item)) interactor.Hold(item);
+        else Debug.LogError("ShiftManager: у предмета для игрока нет Pickupable.", instance);
     }
 
     private void Update()
@@ -160,6 +217,18 @@ public class ShiftManager : MonoBehaviour
     {
         ending = true;
         yield return new WaitForSeconds(endDelay);
+
+        if (shifts[ShiftIndex].helpyDialogueAtEnd)
+        {
+            if (returnDialogue != null)
+            {
+                returnDialogue.gameObject.SetActive(true);
+                while (!returnDialogue.HasFinished) yield return null;
+                yield return new WaitForSeconds(1f);
+            }
+            else Debug.LogError("ShiftManager: в конце дня нужен разговор с роботом, но в сцене нет HelpyReturnDialogue.", this);
+        }
+
         onShiftComplete?.Invoke();
         GameFlow.CompleteShift(MistakesThisShift, IsLastShift);
     }

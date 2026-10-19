@@ -8,18 +8,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MENU.unity
     guid: befca2cd5dca4e84993f401dce5f2bb5
-  - enabled: 0
-    path: Assets/Scenes/scene_1.unity
-    guid: 63e508ecd0d0ee843bb75bde85703507
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/scene_1_Kirill.unity
     guid: fc3c6902c96e052489dbcadbc50ec22f
   - enabled: 1
     path: Assets/Scenes/Intermission.unity
     guid: ab63e70992f2c6543b1d874d8d6cce3f
+  - enabled: 1
+    path: Assets/Scenes/Intermission 2.unity
+    guid: b20074eac6719de40b33d96bb297a35f
+  - enabled: 1
+    path: Assets/Scenes/DELIRIUM.unity
+    guid: d39d306ce0756b34891b4cc904c717dd
   - enabled: 1
     path: Assets/Scenes/THE_END.unity
     guid: 2f07d1420a5918a4fb8a49d660b8272f
