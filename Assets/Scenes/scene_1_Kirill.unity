@@ -1341,7 +1341,7 @@ MonoBehaviour:
   automaticSpawning: 0
   initialDelay: 2
   spawnInterval: 8
-  maxLooseCassettes: 3
+  maxLooseCassettes: 20
   spawnAudio: {fileID: 1995414440}
 --- !u!4 &117899606
 Transform:
