@@ -343,7 +343,8 @@ public static class SceneAudioSetup
     }
 
     public static string[] WorldPlayerScenePaths => AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Scenes" })
-        .Select(AssetDatabase.GUIDToAssetPath).Where(p => !string.Equals(Path.GetFileNameWithoutExtension(p), "MENU", StringComparison.OrdinalIgnoreCase)).OrderBy(p => p).ToArray();
+        .Select(AssetDatabase.GUIDToAssetPath).Where(p => !string.Equals(Path.GetFileNameWithoutExtension(p), "MENU", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(Path.GetFileNameWithoutExtension(p), "GAME_OVER", StringComparison.OrdinalIgnoreCase)).OrderBy(p => p).ToArray();
 
     [MenuItem("Tools/Punch Card/Audio/Set Up Player Sounds In All Gameplay Scenes")]
     public static void ApplyWorldPlayerAudio()
