@@ -1449,20 +1449,36 @@ MonoBehaviour:
   - title: Shift_1
     cards:
     - {fileID: 11400000, guid: 53dff3bcd0d2c804288dea069f19448f, type: 2}
+    - {fileID: 11400000, guid: 21f910c89e195e649b38e172ee7ffb9e, type: 2}
+    - {fileID: 11400000, guid: b3dbf71302de5b147845ba30c1475dbe, type: 2}
+    - {fileID: 11400000, guid: 754643c8cfe3ef744ab7771f5d86081b, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 0
   - title: Shift_2
     cards:
-    - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
-    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
+    - {fileID: 11400000, guid: cfa13e7ab7ba2514b990442895518393, type: 2}
+    - {fileID: 11400000, guid: 1738210bcd0003a4cbdc364e57c448ca, type: 2}
+    - {fileID: 11400000, guid: da9c8ead1a03cd0448e69ab920072d45, type: 2}
+    - {fileID: 11400000, guid: 3c6de049ad4b5434483dc0fb35f0cb6e, type: 2}
+    - {fileID: 11400000, guid: acaec431870f7264289d69774cff8a55, type: 2}
+    - {fileID: 11400000, guid: 92b20ae606cf1bb41aa0a0c90984bd37, type: 2}
+    - {fileID: 11400000, guid: ac2dae77bcb1a9d40bd16e1f767e6b47, type: 2}
+    - {fileID: 11400000, guid: e0d45671c370c9b40ac26e3f75eb7514, type: 2}
+    - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
+    - {fileID: 11400000, guid: b3dc46cde3cb0144499273ca94b9ebaf, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 1
   - title: Shift_3
     cards:
+    - {fileID: 11400000, guid: 5f515dd065c92854f98e5c0dd13835f7, type: 2}
+    - {fileID: 11400000, guid: ece6b78ff119cfd49ba82f985cbcc581, type: 2}
+    - {fileID: 11400000, guid: f9bf811cff05f704cbb33b1e33178924, type: 2}
+    - {fileID: 11400000, guid: 95e5365e1690729468879eab8d90ff1b, type: 2}
+    - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
     - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}

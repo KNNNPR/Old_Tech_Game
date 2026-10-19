@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0b9fa4b44ca3f4b9fa68fbe1b02690, type: 3}
+  m_Name: Text_Card_Anomaly_5
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: Text_Card
+  type: 0
+  isAnomaly: 1
+  text: 'LIBRARY NOTICE.
+
+    BOOK OVERDUE: ''HOW TO STOP
+
+    HEARING IT'', VOL.
+    2.
+
+    VOL. 1 WAS NEVER WRITTEN.
+
+    PLEASE RETURN YOUR EYES.'
+  encrypted: 1
+  cipherKey: 12
+  causesBlackout: 0
+  image: {fileID: 0}
+  audio: {fileID: 0}
+  audioCarrier: {fileID: 0}

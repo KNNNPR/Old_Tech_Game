@@ -20,5 +20,5 @@ MonoBehaviour:
   cipherKey: 0
   causesBlackout: 0
   image: {fileID: 0}
-  audio: {fileID: 8300000, guid: 3b7f4ee9592cfa6429ad383a8599e879, type: 3}
+  audio: {fileID: 8300000, guid: 22d2c3dc6f8dc154fab54789710be861, type: 3}
   audioCarrier: {fileID: 0}
