@@ -15,7 +15,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     public sealed class Line
     {
         public Speaker speaker;
-        [TextArea(2,4)] public string text;
+        [TextArea(2, 4)] public string text;
         public Line(Speaker speaker, string text) { this.speaker = speaker; this.text = text; }
     }
 
@@ -35,12 +35,13 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     [SerializeField, Min(.1f)] private float turnDuration = .55f;
     [SerializeField, Min(.1f)] private float approachDuration = 1.5f;
     [SerializeField, Min(.1f)] private float returnDuration = 1.25f;
-    [SerializeField, Range(25,65)] private float closeupFov = 42f;
+    [SerializeField, Range(25, 65)] private float closeupFov = 42f;
     [Header("Readable typewriter / Space advances one line")]
     [SerializeField, Min(.01f)] private float secondsPerCharacter = .075f;
     [SerializeField, Min(1f)] private float minimumLineDuration = 4f;
     [SerializeField] private bool autoAdvance = true;
-    [SerializeField] private Line[] lines =
+    [SerializeField]
+    private Line[] lines =
     {
         new Line(Speaker.Helpy, "Hello again, Operator! How's it going?"),
         new Line(Speaker.Player, "Helpy, what these cards are even <b><i><color=#B5FFA0>about</color></i></b>? It kinds of creeps me out"),
@@ -169,8 +170,8 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         ApplySpeakerStyle(lines[index].speaker);
         lineNumber.text = $"{index + 1:00} / {lines.Length:00}";
         dialogueText.text = lines[index].text; dialogueText.maxVisibleCharacters = 0; dialogueText.ForceMeshUpdate();
-        bool isOperator=lines[index].speaker == Speaker.Player;
-        GetComponent<DialogueVoice>()?.Begin(dialogueText,isOperator,false,isOperator?playerCamera.transform:face.transform);
+        bool isOperator = lines[index].speaker == Speaker.Player;
+        GetComponent<DialogueVoice>()?.Begin(dialogueText, isOperator, false, isOperator ? playerCamera.transform : face.transform);
         int count = dialogueText.textInfo.characterCount;
         float elapsed = 0, duration = count * secondsPerCharacter + Mathf.Max(minimumLineDuration, count * .045f);
         yield return null;
@@ -191,19 +192,19 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     {
         bool isPlayer = speaker == Speaker.Player;
         speakerText.text = isPlayer ? "OPERATOR C" : "HELPY  /  FIELD ASSISTANT";
-        speakerText.color = isPlayer ? OperatorDialogueStyle.Speaker : new Color(.49f,.95f,.63f);
-        dialogueBackground.color = isPlayer ? OperatorDialogueStyle.Background : new Color(.002f,.016f,.009f,.96f);
-        topRule.color = isPlayer ? OperatorDialogueStyle.TopRule : new Color(.24f,.85f,.4f,.5f);
-        bottomRule.color = isPlayer ? OperatorDialogueStyle.BottomRule : new Color(.1f,.5f,.24f,.3f);
-        lineNumber.color = isPlayer ? OperatorDialogueStyle.Secondary : new Color(.25f,.65f,.4f);
-        continueHint.color = isPlayer ? OperatorDialogueStyle.Secondary : new Color(.29f,.68f,.42f);
+        speakerText.color = isPlayer ? OperatorDialogueStyle.Speaker : new Color(.49f, .95f, .63f);
+        dialogueBackground.color = isPlayer ? OperatorDialogueStyle.Background : new Color(.002f, .016f, .009f, .96f);
+        topRule.color = isPlayer ? OperatorDialogueStyle.TopRule : new Color(.24f, .85f, .4f, .5f);
+        bottomRule.color = isPlayer ? OperatorDialogueStyle.BottomRule : new Color(.1f, .5f, .24f, .3f);
+        lineNumber.color = isPlayer ? OperatorDialogueStyle.Secondary : new Color(.25f, .65f, .4f);
+        continueHint.color = isPlayer ? OperatorDialogueStyle.Secondary : new Color(.29f, .68f, .42f);
         if (isPlayer) OperatorDialogueStyle.ApplyText(dialogueText);
         else
         {
             dialogueText.color = Color.white;
             dialogueText.overrideColorTags = false;
             dialogueText.enableVertexGradient = true;
-            dialogueText.colorGradient = new VertexGradient(new Color(.7f,1f,.72f),new Color(.6f,1f,.68f),new Color(.16f,.74f,.34f),new Color(.22f,.85f,.4f));
+            dialogueText.colorGradient = new VertexGradient(new Color(.7f, 1f, .72f), new Color(.6f, 1f, .68f), new Color(.16f, .74f, .34f), new Color(.22f, .85f, .4f));
         }
     }
     private IEnumerator MoveCamera(Vector3 destination, Quaternion rotation, float fov, float seconds, Vector3? first = null, Vector3? second = null)
@@ -213,7 +214,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         for (float elapsed = 0; elapsed < seconds; elapsed += Mathf.Min(Time.unscaledDeltaTime, .1f))
         {
             float t = Mathf.SmoothStep(0, 1, elapsed / seconds), u = 1 - t;
-            Vector3 position = first.HasValue && second.HasValue ? u*u*u*from + 3*u*u*t*first.Value + 3*u*t*t*second.Value + t*t*t*destination : Vector3.Lerp(from, destination, t);
+            Vector3 position = first.HasValue && second.HasValue ? u * u * u * from + 3 * u * u * t * first.Value + 3 * u * t * t * second.Value + t * t * t * destination : Vector3.Lerp(from, destination, t);
             playerCamera.transform.SetPositionAndRotation(position, Quaternion.Slerp(fromRotation, rotation, t));
             playerCamera.fieldOfView = Mathf.Lerp(fromFov, fov, t);
             yield return null;
@@ -248,42 +249,44 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         root.transform.SetParent(transform, false);
         var canvas = root.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 500;
         var scaler = root.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1280,720); scaler.matchWidthOrHeight = .45f;
+        scaler.referenceResolution = new Vector2(1280, 720); scaler.matchWidthOrHeight = .45f;
         subtitles = root.GetComponent<CanvasGroup>(); subtitles.alpha = 0; subtitles.blocksRaycasts = subtitles.interactable = false;
-        var panel = Rect("Dialogue panel", root.transform, new Vector2(.1f,0), new Vector2(.9f,0), new Vector2(0,30), new Vector2(0,170));
-        panel.pivot = new Vector2(.5f,0);
-        dialogueBackground = panel.gameObject.AddComponent<Image>(); dialogueBackground.color = new Color(.002f,.016f,.009f,.96f); dialogueBackground.raycastTarget = false;
-        var shadow = panel.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(0,0,0,.65f); shadow.effectDistance = new Vector2(0,-5);
-        topRule = Rule(panel, 1, new Color(.24f,.85f,.4f,.5f)); bottomRule = Rule(panel, 0, new Color(.1f,.5f,.24f,.3f));
-        speakerText = Text(panel,"Speaker",13,new Vector2(26,-22),new Vector2(650,22),new Vector2(0,1)); speakerText.characterSpacing = 3;
-        lineNumber = Text(panel,"Line",12,new Vector2(-26,-22),new Vector2(110,22),Vector2.one);
-        lineNumber.alignment = TextAlignmentOptions.Right; lineNumber.color = new Color(.25f,.65f,.4f);
-        dialogueText = Text(panel,"Dialogue",27,Vector2.zero,Vector2.zero,new Vector2(.5f,.5f));
+        var panel = Rect("Dialogue panel", root.transform, new Vector2(.1f, 0), new Vector2(.9f, 0), new Vector2(0, 30), new Vector2(0, 170));
+        panel.pivot = new Vector2(.5f, 0);
+        dialogueBackground = panel.gameObject.AddComponent<Image>(); dialogueBackground.color = new Color(.002f, .016f, .009f, .96f); dialogueBackground.raycastTarget = false;
+        var shadow = panel.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(0, 0, 0, .65f); shadow.effectDistance = new Vector2(0, -5);
+        topRule = Rule(panel, 1, new Color(.24f, .85f, .4f, .5f)); bottomRule = Rule(panel, 0, new Color(.1f, .5f, .24f, .3f));
+        speakerText = Text(panel, "Speaker", 13, new Vector2(26, -22), new Vector2(650, 22), new Vector2(0, 1)); speakerText.characterSpacing = 3;
+        lineNumber = Text(panel, "Line", 12, new Vector2(-26, -22), new Vector2(110, 22), Vector2.one);
+        lineNumber.gameObject.SetActive(false); // счётчик реплик убран
+        lineNumber.alignment = TextAlignmentOptions.Right; lineNumber.color = new Color(.25f, .65f, .4f);
+        dialogueText = Text(panel, "Dialogue", 27, Vector2.zero, Vector2.zero, new Vector2(.5f, .5f));
         var body = dialogueText.rectTransform; body.anchorMin = Vector2.zero; body.anchorMax = Vector2.one;
-        body.offsetMin = new Vector2(26,36); body.offsetMax = new Vector2(-26,-44);
+        body.offsetMin = new Vector2(26, 36); body.offsetMax = new Vector2(-26, -44);
         dialogueText.alignment = TextAlignmentOptions.MidlineLeft; dialogueText.enableVertexGradient = true;
-        dialogueText.colorGradient = new VertexGradient(new Color(.7f,1f,.72f),new Color(.6f,1f,.68f),new Color(.16f,.74f,.34f),new Color(.22f,.85f,.4f));
+        dialogueText.colorGradient = new VertexGradient(new Color(.7f, 1f, .72f), new Color(.6f, 1f, .68f), new Color(.16f, .74f, .34f), new Color(.22f, .85f, .4f));
         dialogueText.gameObject.AddComponent<RetroSubtitleText>();
-        var hint = Text(panel,"Continue hint",12,new Vector2(-26,14),new Vector2(550,20),Vector2.right);
-        hint.alignment = TextAlignmentOptions.Right; hint.text = "[ SPACE ]  NEXT LINE"; hint.characterSpacing = 2; hint.color = new Color(.29f,.68f,.42f);
+        var hint = Text(panel, "Continue hint", 12, new Vector2(-26, 14), new Vector2(550, 20), Vector2.right);
+        hint.alignment = TextAlignmentOptions.Right; hint.text = "[ SPACE ]  NEXT LINE"; hint.characterSpacing = 2; hint.color = new Color(.29f, .68f, .42f);
         continueHint = hint;
     }
     private TMP_Text Text(Transform parent, string name, float size, Vector2 position, Vector2 dimensions, Vector2 anchor)
     {
-        var rect = Rect(name,parent,anchor,anchor,position,dimensions); rect.pivot = anchor;
+        var rect = Rect(name, parent, anchor, anchor, position, dimensions); rect.pivot = anchor;
         var text = rect.gameObject.AddComponent<TextMeshProUGUI>(); text.font = subtitleFont ? subtitleFont : TMP_Settings.defaultFontAsset;
         text.fontSize = size; text.color = Color.white; text.raycastTarget = false; text.richText = true; text.textWrappingMode = TextWrappingModes.Normal;
         return text;
     }
     private static RectTransform Rect(string name, Transform parent, Vector2 min, Vector2 max, Vector2 position, Vector2 size)
     {
-        var rect = new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>(); rect.SetParent(parent,false);
+        var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>(); rect.SetParent(parent, false);
         rect.anchorMin = min; rect.anchorMax = max; rect.anchoredPosition = position; rect.sizeDelta = size; return rect;
     }
     private static Image Rule(RectTransform panel, float y, Color color)
     {
-        var rule = Rect("Phosphor rule",panel,new Vector2(0,y),new Vector2(1,y),Vector2.zero,new Vector2(0,1));
+        var rule = Rect("Phosphor rule", panel, new Vector2(0, y), new Vector2(1, y), Vector2.zero, new Vector2(0, 1));
         var image = rule.gameObject.AddComponent<Image>(); image.color = color; image.raycastTarget = false;
+        image.enabled = false; // зелёные полоски убраны
         return image;
     }
 }

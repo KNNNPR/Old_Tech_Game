@@ -40,7 +40,8 @@ public sealed class IntermissionCinematic : MonoBehaviour
     [SerializeField] private AudioSource streetMaleAudio;
     [SerializeField] private AudioSource collapseMusic;
     [SerializeField, Min(.5f)] private float runSpeed = 2.8f;
-    [SerializeField, TextArea(2,4)] private string[] secondLines =
+    [SerializeField, TextArea(2, 4)]
+    private string[] secondLines =
     {
         "What the hell is this... Why is it happening to me?",
         "I was supposed to just sort stupid <b>punchcards</b>, not to interfere with the <i>apocalypse</i>...",
@@ -102,7 +103,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         }
         if (secondIntermission && (!buildingCollapse || secondLines == null || secondLines.Length != 9))
         {
-            Debug.LogError("Second Intermission needs its building collapse and nine monologue lines.",this);
+            Debug.LogError("Second Intermission needs its building collapse and nine monologue lines.", this);
             enabled = false;
             return;
         }
@@ -221,69 +222,69 @@ public sealed class IntermissionCinematic : MonoBehaviour
     {
         if (cigaretteSmoke) cigaretteSmoke.Play();
         CurrentShot = Shot.Opening;
-        yield return FadeTo(0,.8f);
+        yield return FadeTo(0, .8f);
         StartCoroutine(FirstDrag());
-        yield return Say(0,8f);
-        yield return Say(1,12f);
-        yield return Say(2,10f);
+        yield return Say(0, 8f);
+        yield return Say(1, 12f);
+        yield return Say(2, 10f);
         yield return TakeDrag();
         CurrentShot = Shot.LookingUp;
-        Vector3 skyDirection=Vector3.ProjectOnPlane(openingPose.forward,Vector3.up).normalized+Vector3.up*.9f;
-        var skyTurn=StartCoroutine(MoveCamera(desiredPosition,Quaternion.LookRotation(skyDirection,Vector3.up),1.1f));
-        yield return Say(3,7f);
+        Vector3 skyDirection = Vector3.ProjectOnPlane(openingPose.forward, Vector3.up).normalized + Vector3.up * .9f;
+        var skyTurn = StartCoroutine(MoveCamera(desiredPosition, Quaternion.LookRotation(skyDirection, Vector3.up), 1.1f));
+        yield return Say(3, 7f);
         yield return skyTurn;
 
         CurrentShot = Shot.Screams;
-        if(collapseMusic&&collapseMusic.clip){collapseMusicGain=.055f;collapseMusic.volume=collapseMusicGain;collapseMusic.loop=true;collapseMusic.Play();}
-        if (streetAudio && streetScreamClip) streetAudio.PlayOneShot(streetScreamClip,.7f);
+        if (collapseMusic && collapseMusic.clip) { collapseMusicGain = .055f; collapseMusic.volume = collapseMusicGain; collapseMusic.loop = true; collapseMusic.Play(); }
+        if (streetAudio && streetScreamClip) streetAudio.PlayOneShot(streetScreamClip, .7f);
         if (streetMaleAudio && streetMaleAudio.clip) StartCoroutine(DistantMaleScream());
-        yield return Say(4,2.8f);
+        yield return Say(4, 2.8f);
         CurrentShot = Shot.Collapse;
         // Optical zoom: turn and narrow the lens while staying at the balcony's original viewpoint.
-        yield return MoveCamera(desiredPosition,Quaternion.LookRotation(buildingCollapse.TrackingPoint-desiredPosition,Vector3.up),1.1f,34);
+        yield return MoveCamera(desiredPosition, Quaternion.LookRotation(buildingCollapse.TrackingPoint - desiredPosition, Vector3.up), 1.1f, 34);
         buildingCollapse.BeginCollapse();
         panic = .3f;
         while (!buildingCollapse.HasLanded)
         {
-            desiredRotation = Quaternion.Slerp(desiredRotation,Quaternion.LookRotation(buildingCollapse.TrackingPoint-desiredPosition,Vector3.up),1-Mathf.Exp(-Step*9));
-            panic = Mathf.Lerp(.3f,.85f,buildingCollapse.Progress);
-            collapseMusicGain=Mathf.Lerp(.09f,.58f,Mathf.SmoothStep(0,1,buildingCollapse.Progress));
+            desiredRotation = Quaternion.Slerp(desiredRotation, Quaternion.LookRotation(buildingCollapse.TrackingPoint - desiredPosition, Vector3.up), 1 - Mathf.Exp(-Step * 9));
+            panic = Mathf.Lerp(.3f, .85f, buildingCollapse.Progress);
+            collapseMusicGain = Mathf.Lerp(.09f, .58f, Mathf.SmoothStep(0, 1, buildingCollapse.Progress));
             yield return null;
         }
         yield return Pause(.6f);
-        yield return Say(5,3.8f);
+        yield return Say(5, 3.8f);
 
         CurrentShot = Shot.Recoiling;
         StartCoroutine(ThrowCigarette());
-        Vector3 back = Vector3.ProjectOnPlane(openingPose.forward,Vector3.up).normalized;
-        yield return MoveCamera(openingPose.position-back*.75f-Vector3.up*.08f,openingPose.rotation,.7f,63);
+        Vector3 back = Vector3.ProjectOnPlane(openingPose.forward, Vector3.up).normalized;
+        yield return MoveCamera(openingPose.position - back * .75f - Vector3.up * .08f, openingPose.rotation, .7f, 63);
         CurrentShot = Shot.Panic;
-        yield return Say(6,4.5f);
-        yield return Say(7,4.5f);
-        yield return Say(8,6f);
+        yield return Say(6, 4.5f);
+        yield return Say(7, 4.5f);
+        yield return Say(8, 6f);
 
         CurrentShot = Shot.Running;
-        yield return MoveCamera(desiredPosition,Quaternion.LookRotation(doorFocus.position-desiredPosition,Vector3.up),.38f,66);
+        yield return MoveCamera(desiredPosition, Quaternion.LookRotation(doorFocus.position - desiredPosition, Vector3.up), .38f, 66);
         Vector3 start = desiredPosition;
-        Vector3 corner = walkCorner ? walkCorner.position : Vector3.Lerp(start,doorStop.position,.5f);
-        float seconds = Mathf.Max(1,(Vector3.Distance(start,corner)+Vector3.Distance(corner,doorStop.position))/runSpeed);
+        Vector3 corner = walkCorner ? walkCorner.position : Vector3.Lerp(start, doorStop.position, .5f);
+        float seconds = Mathf.Max(1, (Vector3.Distance(start, corner) + Vector3.Distance(corner, doorStop.position)) / runSpeed);
         GameplaySceneAudio.For(this)?.SetScriptedWalking(true, playerCamera.transform);
-        for (float elapsed=0;elapsed<seconds;elapsed+=Step)
+        for (float elapsed = 0; elapsed < seconds; elapsed += Step)
         {
-            float t=Ease(elapsed/seconds),u=1-t;
-            desiredPosition=u*u*start+2*u*t*corner+t*t*doorStop.position;
-            desiredRotation=Quaternion.LookRotation(doorFocus.position-desiredPosition,Vector3.up);
-            walking=Mathf.Sin(t*Mathf.PI); yield return null;
+            float t = Ease(elapsed / seconds), u = 1 - t;
+            desiredPosition = u * u * start + 2 * u * t * corner + t * t * doorStop.position;
+            desiredRotation = Quaternion.LookRotation(doorFocus.position - desiredPosition, Vector3.up);
+            walking = Mathf.Sin(t * Mathf.PI); yield return null;
         }
-        walking=0; desiredPosition=doorStop.position;
-        desiredRotation=Quaternion.LookRotation(doorFocus.position-desiredPosition,Vector3.up);
+        walking = 0; desiredPosition = doorStop.position;
+        desiredRotation = Quaternion.LookRotation(doorFocus.position - desiredPosition, Vector3.up);
         GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
-        CurrentShot=Shot.Fading;
+        CurrentShot = Shot.Fading;
         var doorSound = GameplaySceneAudio.For(this)?.PlayEntranceDoor(true);
-        yield return FadeTo(1,fadeSeconds);
+        yield return FadeTo(1, fadeSeconds);
         if (doorSound != null) yield return doorSound;
         if (windAudio) windAudio.Stop();
-        panic=0; CurrentShot=Shot.Finished; HasFinished=true;
+        panic = 0; CurrentShot = Shot.Finished; HasFinished = true;
         onFinished.Invoke();
     }
 
@@ -295,63 +296,63 @@ public sealed class IntermissionCinematic : MonoBehaviour
 
     private IEnumerator ThrowCigarette()
     {
-        for(float elapsed=0;elapsed<.14f;elapsed+=Step)
+        for (float elapsed = 0; elapsed < .14f; elapsed += Step)
         {
-            cigaretteThrow=Ease(elapsed/.14f);
+            cigaretteThrow = Ease(elapsed / .14f);
             yield return null;
         }
-        inHand=false; CigaretteDropped=true;
+        inHand = false; CigaretteDropped = true;
         // Fit the collider to the visible mesh, whose centre can differ from the prop's pivot.
-        Bounds bounds=CigaretteLocalBounds();
-        Vector3 size=bounds.size;
-        int axis=size.x>size.y?(size.x>size.z?0:2):(size.y>size.z?1:2);
-        float radius=Mathf.Max(.002f,Mathf.Max(size[(axis+1)%3],size[(axis+2)%3])*.5f);
-        droppedCigaretteCollider=cigarette.gameObject.AddComponent<CapsuleCollider>();
-        droppedCigaretteCollider.center=bounds.center;
-        droppedCigaretteCollider.direction=axis;
-        droppedCigaretteCollider.radius=radius;
-        droppedCigaretteCollider.height=Mathf.Max(size[axis],radius*2);
-        droppedCigaretteCollider.contactOffset=.001f;
+        Bounds bounds = CigaretteLocalBounds();
+        Vector3 size = bounds.size;
+        int axis = size.x > size.y ? (size.x > size.z ? 0 : 2) : (size.y > size.z ? 1 : 2);
+        float radius = Mathf.Max(.002f, Mathf.Max(size[(axis + 1) % 3], size[(axis + 2) % 3]) * .5f);
+        droppedCigaretteCollider = cigarette.gameObject.AddComponent<CapsuleCollider>();
+        droppedCigaretteCollider.center = bounds.center;
+        droppedCigaretteCollider.direction = axis;
+        droppedCigaretteCollider.radius = radius;
+        droppedCigaretteCollider.height = Mathf.Max(size[axis], radius * 2);
+        droppedCigaretteCollider.contactOffset = .001f;
         // The released prop must not land on the invisible player capsule.
-        foreach(var behaviour in gameplayToSuspend)
-            if(behaviour&&(behaviour is FirstPersonController||behaviour is PlayerInteractor))
-                foreach(var collider in behaviour.GetComponentsInChildren<Collider>(true))
-                    Physics.IgnoreCollision(droppedCigaretteCollider,collider,true);
-        droppedCigaretteBody=cigarette.gameObject.AddComponent<Rigidbody>();
-        droppedCigaretteBody.mass=.005f;
-        droppedCigaretteBody.useGravity=true;
-        droppedCigaretteBody.interpolation=RigidbodyInterpolation.Interpolate;
-        droppedCigaretteBody.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
-        droppedCigaretteBody.linearDamping=.025f;
-        droppedCigaretteBody.angularDamping=.12f;
-        droppedCigaretteBody.maxAngularVelocity=20;
-        Vector3 forward=Vector3.ProjectOnPlane(openingPose.forward,Vector3.up).normalized;
-        droppedCigaretteBody.linearVelocity=forward*7+openingPose.right*.18f+Vector3.up*2.8f;
-        droppedCigaretteBody.angularVelocity=openingPose.right*7+forward*4;
+        foreach (var behaviour in gameplayToSuspend)
+            if (behaviour && (behaviour is FirstPersonController || behaviour is PlayerInteractor))
+                foreach (var collider in behaviour.GetComponentsInChildren<Collider>(true))
+                    Physics.IgnoreCollision(droppedCigaretteCollider, collider, true);
+        droppedCigaretteBody = cigarette.gameObject.AddComponent<Rigidbody>();
+        droppedCigaretteBody.mass = .005f;
+        droppedCigaretteBody.useGravity = true;
+        droppedCigaretteBody.interpolation = RigidbodyInterpolation.Interpolate;
+        droppedCigaretteBody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        droppedCigaretteBody.linearDamping = .025f;
+        droppedCigaretteBody.angularDamping = .12f;
+        droppedCigaretteBody.maxAngularVelocity = 20;
+        Vector3 forward = Vector3.ProjectOnPlane(openingPose.forward, Vector3.up).normalized;
+        droppedCigaretteBody.linearVelocity = forward * 7 + openingPose.right * .18f + Vector3.up * 2.8f;
+        droppedCigaretteBody.angularVelocity = openingPose.right * 7 + forward * 4;
         yield return Pause(.9f);
-        heat=.08f;
-        if(cigaretteSmoke)cigaretteSmoke.Stop(true,ParticleSystemStopBehavior.StopEmitting);
-        while(cigarette&&droppedCigaretteBody&&!droppedCigaretteBody.IsSleeping())
+        heat = .08f;
+        if (cigaretteSmoke) cigaretteSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        while (cigarette && droppedCigaretteBody && !droppedCigaretteBody.IsSleeping())
         {
-            if(cigarette.position.y<openingPose.position.y-40){cigarette.gameObject.SetActive(false);yield break;}
+            if (cigarette.position.y < openingPose.position.y - 40) { cigarette.gameObject.SetActive(false); yield break; }
             yield return null;
         }
     }
 
     private Bounds CigaretteLocalBounds()
     {
-        Bounds result=new Bounds(Vector3.zero,new Vector3(.014f,.014f,.14f));
-        bool found=false;
-        foreach(var filter in cigarette.GetComponentsInChildren<MeshFilter>(true))
+        Bounds result = new Bounds(Vector3.zero, new Vector3(.014f, .014f, .14f));
+        bool found = false;
+        foreach (var filter in cigarette.GetComponentsInChildren<MeshFilter>(true))
         {
-            if(!filter.sharedMesh||filter.name=="Ember")continue;
-            Bounds mesh=filter.sharedMesh.bounds;
-            Matrix4x4 matrix=cigarette.worldToLocalMatrix*filter.transform.localToWorldMatrix;
-            for(int i=0;i<8;i++)
+            if (!filter.sharedMesh || filter.name == "Ember") continue;
+            Bounds mesh = filter.sharedMesh.bounds;
+            Matrix4x4 matrix = cigarette.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+            for (int i = 0; i < 8; i++)
             {
-                Vector3 corner=mesh.center+Vector3.Scale(mesh.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
-                Vector3 point=matrix.MultiplyPoint3x4(corner);
-                if(!found){result=new Bounds(point,Vector3.zero);found=true;}else result.Encapsulate(point);
+                Vector3 corner = mesh.center + Vector3.Scale(mesh.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                Vector3 point = matrix.MultiplyPoint3x4(corner);
+                if (!found) { result = new Bounds(point, Vector3.zero); found = true; } else result.Encapsulate(point);
             }
         }
         return result;
@@ -383,11 +384,11 @@ public sealed class IntermissionCinematic : MonoBehaviour
     private IEnumerator Say(int index, float seconds)
     {
         CurrentLine = index;
-        var script=secondIntermission?secondLines:Lines;
+        var script = secondIntermission ? secondLines : Lines;
         subtitle.text = script[index];
         lineNumber.text = $"{index + 1:00} / {script.Length:00}";
         subtitle.fontSize = secondIntermission ? (index == 5 ? 31 : 25) : (index == 2 ? 42 : 25);
-        subtitleMotion.SetFear(secondIntermission&&index>=5?1:0);
+        subtitleMotion.SetFear(secondIntermission && index >= 5 ? 1 : 0);
         subtitleGroup.alpha = 1;
         subtitle.ForceMeshUpdate();
         if (!script[index].StartsWith("[")) GetComponent<DialogueVoice>()?.Begin(subtitle, true, true);
@@ -421,7 +422,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         }
         desiredRotation = Quaternion.LookRotation(target - desiredPosition, Vector3.up);
     }
-    private IEnumerator MoveCamera(Vector3 destination, Quaternion rotation, float seconds, float targetFov=58)
+    private IEnumerator MoveCamera(Vector3 destination, Quaternion rotation, float seconds, float targetFov = 58)
     {
         Vector3 from = desiredPosition;
         Quaternion facing = desiredRotation;
@@ -447,25 +448,25 @@ public sealed class IntermissionCinematic : MonoBehaviour
         float still = HasFinished ? 0 : 1;
         Vector3 sway = new Vector3(Mathf.Sin(t * .7f) * .004f, Mathf.Sin(t * 1.1f) * .005f, 0) * still;
         sway += new Vector3(Mathf.Sin(t * 5.3f) * .009f, Mathf.Sin(t * 10.6f) * .018f, 0) * walking;
-        if(secondIntermission)
+        if (secondIntermission)
         {
-            sway += new Vector3(Mathf.Sin(t*24.3f)*.009f,Mathf.Sin(t*29.7f)*.012f,0)*panic
-                +Vector3.up*Mathf.Sin(t*16.5f)*.028f*walking;
-            if(collapseMusic&&collapseMusic.isPlaying)collapseMusic.volume=collapseMusicGain*(1-Mathf.Clamp01(FadeAmount));
+            sway += new Vector3(Mathf.Sin(t * 24.3f) * .009f, Mathf.Sin(t * 29.7f) * .012f, 0) * panic
+                + Vector3.up * Mathf.Sin(t * 16.5f) * .028f * walking;
+            if (collapseMusic && collapseMusic.isPlaying) collapseMusic.volume = collapseMusicGain * (1 - Mathf.Clamp01(FadeAmount));
         }
-        float collapseShake=secondIntermission&&CurrentShot==Shot.Collapse?Mathf.Sin(buildingCollapse.Progress*Mathf.PI)*.8f:0;
+        float collapseShake = secondIntermission && CurrentShot == Shot.Collapse ? Mathf.Sin(buildingCollapse.Progress * Mathf.PI) * .8f : 0;
         playerCamera.transform.SetPositionAndRotation(desiredPosition + desiredRotation * sway,
-            desiredRotation * Quaternion.Euler(Mathf.Sin(t*22.7f)*(.24f*panic+collapseShake*.3f),Mathf.Sin(t*17.3f)*.18f*panic,Mathf.Sin(t * .8f) * .12f * still+Mathf.Sin(t*15.1f)*(.28f*panic+collapseShake)));
+            desiredRotation * Quaternion.Euler(Mathf.Sin(t * 22.7f) * (.24f * panic + collapseShake * .3f), Mathf.Sin(t * 17.3f) * .18f * panic, Mathf.Sin(t * .8f) * .12f * still + Mathf.Sin(t * 15.1f) * (.28f * panic + collapseShake)));
         if (inHand)
         {
             Vector3 pose = Vector3.Lerp(heldPosition, new Vector3(.07f, -.045f, .25f), drag);
             pose.y += Mathf.Sin(t * 1.3f) * .004f;
-            pose += new Vector3(Mathf.Sin(t*18)*.012f,Mathf.Sin(t*24)*.009f,0)*panic;
-            pose += new Vector3(0,.12f,.18f)*cigaretteThrow;
+            pose += new Vector3(Mathf.Sin(t * 18) * .012f, Mathf.Sin(t * 24) * .009f, 0) * panic;
+            pose += new Vector3(0, .12f, .18f) * cigaretteThrow;
             // The second scene's head turns and zoom do not carry the hand around the world.
-            Transform handFrame=secondIntermission?openingPose:playerCamera.transform;
+            Transform handFrame = secondIntermission ? openingPose : playerCamera.transform;
             cigarette.position = handFrame.TransformPoint(pose);
-            cigarette.rotation = handFrame.rotation * Quaternion.Euler(heldEuler + new Vector3(-32*cigaretteThrow, 0, drag * 8));
+            cigarette.rotation = handFrame.rotation * Quaternion.Euler(heldEuler + new Vector3(-32 * cigaretteThrow, 0, drag * 8));
         }
         if (cigaretteSmoke) cigaretteSmoke.transform.rotation = Quaternion.LookRotation(Vector3.up);
         if (ember)
@@ -515,27 +516,27 @@ public sealed class IntermissionCinematic : MonoBehaviour
         panel.rectTransform.sizeDelta = new Vector2(0, 170);
         var shadow = panel.gameObject.AddComponent<Shadow>();
         shadow.effectColor = new Color(0, 0, 0, .65f); shadow.effectDistance = new Vector2(0, -5);
-        ImageRect("Top dialogue rule", panel.transform, new Vector2(0, 1), Vector2.one, OperatorDialogueStyle.TopRule).rectTransform.sizeDelta = new Vector2(0, 1);
-        ImageRect("Bottom dialogue rule", panel.transform, Vector2.zero, Vector2.right, OperatorDialogueStyle.BottomRule).rectTransform.sizeDelta = new Vector2(0, 1);
+        // Полоски сверху и снизу окна диалога убраны.
         var speaker = DialogueLabel(panel.transform, "Speaker", "OPERATOR C", 13, new Vector2(26, -22), new Vector2(650, 22), new Vector2(0, 1));
         speaker.color = OperatorDialogueStyle.Speaker; speaker.characterSpacing = 3;
         lineNumber = DialogueLabel(panel.transform, "Line", "", 12, new Vector2(-26, -22), new Vector2(110, 22), Vector2.one);
+        lineNumber.gameObject.SetActive(false); // счётчик реплик убран
         lineNumber.alignment = TextAlignmentOptions.Right; lineNumber.color = OperatorDialogueStyle.Secondary;
         subtitleGroup = panel.gameObject.AddComponent<CanvasGroup>();
         subtitleGroup.alpha = 0;
         subtitleGroup.blocksRaycasts = subtitleGroup.interactable = false;
         var rect = new GameObject("Monologue", typeof(RectTransform)).GetComponent<RectTransform>();
-        rect.SetParent(panel.transform, false);rect.anchorMin = Vector2.zero;rect.anchorMax = Vector2.one;
-        rect.offsetMin = new Vector2(26, 36);rect.offsetMax = new Vector2(-26, -44);
+        rect.SetParent(panel.transform, false); rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+        rect.offsetMin = new Vector2(26, 36); rect.offsetMax = new Vector2(-26, -44);
         subtitle = rect.gameObject.AddComponent<TextMeshProUGUI>();
         subtitle.font = subtitleFont ? subtitleFont : TMP_Settings.defaultFontAsset;
         subtitle.alignment = TextAlignmentOptions.MidlineLeft;
         subtitle.textWrappingMode = TextWrappingModes.Normal;
         OperatorDialogueStyle.ApplyText(subtitle);
-        subtitle.richText=true;
-        if(secondIntermission)subtitle.overrideColorTags=false;
+        subtitle.richText = true;
+        if (secondIntermission) subtitle.overrideColorTags = false;
         subtitle.raycastTarget = false;
-        subtitleMotion=subtitle.gameObject.AddComponent<RetroSubtitleText>();
+        subtitleMotion = subtitle.gameObject.AddComponent<RetroSubtitleText>();
         var hint = DialogueLabel(panel.transform, "Continue hint", "[ SPACE ]  NEXT LINE", 12, new Vector2(-26, 14), new Vector2(550, 20), Vector2.right);
         hint.alignment = TextAlignmentOptions.Right; hint.characterSpacing = 2; hint.color = OperatorDialogueStyle.Secondary;
         fade = ImageRect("Fade to black", root.transform, Vector2.zero, Vector2.one, Color.clear);
@@ -553,8 +554,8 @@ public sealed class IntermissionCinematic : MonoBehaviour
     private static Image ImageRect(string name, Transform parent, Vector2 min, Vector2 max, Color color)
     {
         var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
-        rect.SetParent(parent, false);rect.anchorMin = min;rect.anchorMax = max;rect.offsetMin = rect.offsetMax = Vector2.zero;
-        var image = rect.gameObject.AddComponent<Image>();image.color = color;image.raycastTarget = false;
+        rect.SetParent(parent, false); rect.anchorMin = min; rect.anchorMax = max; rect.offsetMin = rect.offsetMax = Vector2.zero;
+        var image = rect.gameObject.AddComponent<Image>(); image.color = color; image.raycastTarget = false;
         return image;
     }
 
@@ -567,16 +568,16 @@ public sealed class IntermissionCinematic : MonoBehaviour
         GetComponent<DialogueVoice>()?.End();
         if (!initialized) return;
         StopAllCoroutines();
-        if(droppedCigaretteBody)
+        if (droppedCigaretteBody)
         {
-            droppedCigaretteBody.isKinematic=true;droppedCigaretteBody.detectCollisions=false;
+            droppedCigaretteBody.isKinematic = true; droppedCigaretteBody.detectCollisions = false;
             Destroy(droppedCigaretteBody);
         }
-        if(droppedCigaretteCollider){droppedCigaretteCollider.enabled=false;Destroy(droppedCigaretteCollider);}
-        if(secondIntermission&&streetAudio)streetAudio.Stop();
-        if(secondIntermission&&streetMaleAudio)streetMaleAudio.Stop();
-        if(collapseMusic)collapseMusic.Stop();
-        if(secondIntermission&&buildingCollapse)buildingCollapse.enabled=false;
+        if (droppedCigaretteCollider) { droppedCigaretteCollider.enabled = false; Destroy(droppedCigaretteCollider); }
+        if (secondIntermission && streetAudio) streetAudio.Stop();
+        if (secondIntermission && streetMaleAudio) streetMaleAudio.Stop();
+        if (collapseMusic) collapseMusic.Stop();
+        if (secondIntermission && buildingCollapse) buildingCollapse.enabled = false;
         if (cigaretteSmoke) cigaretteSmoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         if (playerCamera) { playerCamera.transform.SetPositionAndRotation(savedCameraPosition, savedCameraRotation); playerCamera.fieldOfView = savedFov; }
         if (cigarette) { cigarette.SetPositionAndRotation(savedCigarettePosition, savedCigaretteRotation); cigarette.localScale = savedCigaretteScale; cigarette.gameObject.SetActive(savedCigaretteActive); }
