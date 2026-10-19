@@ -64,6 +64,15 @@ half3 CelLight(Light light, half3 normalWS, half noise)
     return (light.color / intensity) * band;
 }
 
+#if defined(OLD_TECH_CEL_GLOSS)
+half3 CelGlossLight(Light light,half3 normal,half3 view,half3 albedo)
+{
+    half3 halfway=SafeNormalize(light.direction+view);
+    half shine=pow(saturate(dot(normal,halfway)),exp2(3+_Smoothness*6));
+    shine*=step(.001,dot(normal,light.direction))*light.shadowAttenuation*light.distanceAttenuation;
+    return light.color*shine*lerp(half3(.08,.08,.08),albedo,_Metallic);
+}
+#endif
 half4 CelFragment(CelVaryings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
@@ -108,6 +117,24 @@ half4 CelFragment(CelVaryings input) : SV_Target
     half lightAmount = saturate(Luminance(direct));
     half3 tint = lerp(_ShadowTint.rgb, half3(1, 1, 1), lightAmount);
     half3 color = albedo * tint * (ambient * ao.indirectAmbientOcclusion + direct * ao.directAmbientOcclusion);
+    #if defined(OLD_TECH_CEL_GLOSS)
+        // Keep the same cel diffuse bands; add only a narrow wet highlight.
+        half3 gloss = CelGlossLight(mainLight,normalWS,inputData.viewDirectionWS,albedo);
+        #if defined(_ADDITIONAL_LIGHTS) || defined(_ADDITIONAL_LIGHTS_VERTEX)
+            #if USE_CLUSTER_LIGHT_LOOP
+                [loop] for (uint lightIndex=0;lightIndex<min(URP_FP_DIRECTIONAL_LIGHTS_COUNT,MAX_VISIBLE_LIGHTS);++lightIndex)
+                {
+                    CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
+                    gloss += CelGlossLight(GetAdditionalLight(lightIndex,input.positionWS,shadowMask),normalWS,inputData.viewDirectionWS,albedo);
+                }
+            #endif
+            uint glossCount=GetAdditionalLightsCount();
+            LIGHT_LOOP_BEGIN(glossCount)
+                gloss += CelGlossLight(GetAdditionalLight(lightIndex,input.positionWS,shadowMask),normalWS,inputData.viewDirectionWS,albedo);
+            LIGHT_LOOP_END
+        #endif
+        color += gloss * ao.directAmbientOcclusion;
+    #endif
     color += SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb;
     #if defined(OLD_TECH_CRT_SCREEN)
         half screenMask;

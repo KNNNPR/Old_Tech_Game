@@ -10,6 +10,9 @@ public sealed class RetroSubtitleText : MonoBehaviour
     private TMP_Text textComponent;
     private TMP_MeshInfo[] source;
     private bool refresh = true;
+    private float fear;
+    public float Fear => fear;
+    public void SetFear(float strength) => fear=Mathf.Clamp01(strength);
 
     private void OnEnable()
     {
@@ -34,12 +37,15 @@ public sealed class RetroSubtitleText : MonoBehaviour
             if (!character.isVisible) continue;
             int mesh = character.materialReferenceIndex;
             int vertex = character.vertexIndex;
-            float phase = Time.unscaledTime * 1.8f - (i / 3) * .42f;
-            float rise = Mathf.Round(Mathf.Sin(phase) * amplitude / stepSize) * stepSize;
+            float phase = Time.unscaledTime * Mathf.Lerp(1.8f,6.5f,fear) - (i / 3) * .42f;
+            float rise = Mathf.Round(Mathf.Sin(phase) * Mathf.Lerp(amplitude,4.5f,fear) / stepSize) * stepSize;
+            float tick=Mathf.Floor(Time.unscaledTime*18);
+            Vector3 tremor=new Vector3(Mathf.Sin(tick*2.17f)*.9f+Mathf.Sin(tick*3.77f+i*1.4f)*.6f,
+                Mathf.Sin(tick*2.57f)*1.3f+Mathf.Sin(tick*1.91f+i*1.7f)*.7f,0)*fear;
             float glow = .93f + .07f * Mathf.Sin(Time.unscaledTime * 2.1f - i * .17f);
             for (int corner=0;corner<4;corner++)
             {
-                info.meshInfo[mesh].vertices[vertex+corner] = source[mesh].vertices[vertex+corner] + Vector3.up * rise;
+                info.meshInfo[mesh].vertices[vertex+corner] = source[mesh].vertices[vertex+corner] + Vector3.up * rise+tremor;
                 Color color = source[mesh].colors32[vertex+corner];
                 color.r *= glow;color.g *= glow;color.b *= glow;
                 info.meshInfo[mesh].colors32[vertex+corner] = color;

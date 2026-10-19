@@ -15,6 +15,10 @@ CBUFFER_START(UnityPerMaterial)
     half _BandDither;
     half _Cutoff;
     half _Cull;
+    #if defined(OLD_TECH_CEL_GLOSS)
+        half _Smoothness;
+        half _Metallic;
+    #endif
     #if defined(OLD_TECH_CRT_SCREEN)
         float4 _BaseMap_TexelSize;
         float4 _ScreenRect;

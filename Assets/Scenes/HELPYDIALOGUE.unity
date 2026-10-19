@@ -332,6 +332,9 @@ MonoBehaviour:
   extractButton: {fileID: 823647459}
   cipherDial: {fileID: 0}
   shiftLabel: {fileID: 0}
+  playerFaint: {fileID: 0}
+  glitchSeconds: 3.5
+  glitchClip: {fileID: 0}
   photoPrinter: {fileID: 0}
   printer: {fileID: 0}
   cassetteDeck: {fileID: 0}
@@ -1194,14 +1197,14 @@ MonoBehaviour:
     text: Hello again, Operator! How's it going?
   - speaker: 1
     text: Helpy, what these cards are even <b><i><color=#B5FFA0>about</color></i></b>?
-      It kinds of creeps me out
+      It kind of creeps me out
   - speaker: 0
-    text: No worries! They can't harm you, despite the <i><color=#B5FFA0>defective</color></i>
+    text: No worries! They can't harm you, despite the <i><color=#B5FFA0>corrupted</color></i>
       down there
   - speaker: 1
     text: D-Down WHAT?
   - speaker: 0
-    text: Well the people that consumed the <i><color=#B5FFA0>deffection</color></i>
+    text: Well the people that consumed the <i><color=#B5FFA0>corruption</color></i>
       info got...  <b><i><color=#B5FFA0>Mesmerized</color></i></b>
   - speaker: 0
     text: That's why you are <i><color=#B5FFA0>sorting</color></i> them right here

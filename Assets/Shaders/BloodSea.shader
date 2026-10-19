@@ -14,6 +14,7 @@ Shader "Old Tech/Blood Sea"
         _Smoothness ("Wet gloss", Range(0,1)) = 0.84
         _ReflectionStrength ("Red sky reflection", Range(0,2)) = 0.8
         _AmbientStrength ("Ambient lighting", Range(0,1)) = 0.4
+        _CelShadeSteps ("Cel light bands (0 = smooth)", Float) = 0
         _SkyMap ("Sky reflection texture", 2D) = "black" {}
         _SkyRotation ("Sky rotation", Float) = 0
         _SkyDrift ("Sky drift", Float) = 0.22
@@ -41,6 +42,7 @@ Shader "Old Tech/Blood Sea"
             half4 _BaseColor, _DeepColor;
             float _WaveHeight, _WaveLength, _WaveSpeed, _RippleStrength, _FlowDistortion;
             float _Smoothness, _ReflectionStrength, _AmbientStrength;
+            float _CelShadeSteps;
             float _SkyRotation, _SkyDrift, _SkyDistortion, _SkySpeed, _PreviewTime;
             float4 _BeaconPosition, _BeaconForward, _BeaconSize;
             half4 _BeaconColor;
@@ -121,6 +123,15 @@ Shader "Old Tech/Blood Sea"
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            half3 SeaCelLight(Light light,half3 normal,float2 pixel)
+            {
+                half steps=max(2,_CelShadeSteps)-1;
+                float intensity=max(Luminance(light.color),.0001);
+                half noise=frac(52.9829189*frac(dot(floor(pixel),float2(.06711056,.00583715))))-.5;
+                half level=saturate(dot(normal,light.direction))*light.shadowAttenuation*light.distanceAttenuation*intensity;
+                half band=saturate(floor(saturate(level)*steps+.5+noise*.32)/steps);
+                return light.color/intensity*band;
+            }
             half4 SeaFragment(Varyings input) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
@@ -153,7 +164,29 @@ Shader "Old Tech/Blood Sea"
                 // Supply the moving sky reflection below, instead of URP's static sky fallback.
                 surface.occlusion = 0;
                 surface.normalTS = half3(0,0,1);
-                half3 color = UniversalFragmentPBR(data,surface).rgb + albedo * max(data.bakedGI, half3(0.06,0.015,0.02));
+                half3 color;
+                half3 ambient=max(data.bakedGI,half3(0.06,0.015,0.02));
+                if(_CelShadeSteps>=2)
+                {
+                    half3 direct=SeaCelLight(GetMainLight(data.shadowCoord,input.positionWS,data.shadowMask),normal,input.positionCS.xy);
+                    #if defined(_ADDITIONAL_LIGHTS) || defined(_ADDITIONAL_LIGHTS_VERTEX)
+                        #if USE_CLUSTER_LIGHT_LOOP
+                            [loop] for (uint lightIndex=0;lightIndex<min(URP_FP_DIRECTIONAL_LIGHTS_COUNT,MAX_VISIBLE_LIGHTS);++lightIndex)
+                            {
+                                CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
+                                direct+=SeaCelLight(GetAdditionalLight(lightIndex,input.positionWS,data.shadowMask),normal,input.positionCS.xy);
+                            }
+                        #endif
+                        InputData inputData=data;
+                        uint lightCount=GetAdditionalLightsCount();
+                        LIGHT_LOOP_BEGIN(lightCount)
+                            direct+=SeaCelLight(GetAdditionalLight(lightIndex,input.positionWS,data.shadowMask),normal,input.positionCS.xy);
+                        LIGHT_LOOP_END
+                    #endif
+                    SurfaceData highlights=surface;highlights.albedo=0;
+                    color=albedo*(ambient+direct)+UniversalFragmentPBR(data,highlights).rgb;
+                }
+                else color=UniversalFragmentPBR(data,surface).rgb+albedo*ambient;
                 float3 reflected = reflect(-view,normal);
                 float2 skyUV = OminousSkyUV(reflected,time,_SkyRotation,_SkyDrift,_SkyDistortion,_SkySpeed);
                 half3 sky = OminousSkySample(TEXTURE2D_ARGS(_SkyMap,sampler_SkyMap),skyUV,2);

@@ -49,9 +49,13 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
     {
         "Greetings partner!",
         "Call me Helpy and I'm here to help of course!",
-        "Sometimes people get bad punch cards that are somehow <i><color=#B5FFA0>defective</color></i>.",
-        "All you need to do is find <i><color=#B5FFA0>defective</color></i> punch cards.",
+        "Sometimes people get bad punch cards that are somehow <i><color=#B5FFA0>corrupted</color></i>.",
+        "All you need to do is find <i><color=#B5FFA0>corrupted</color></i> punch cards.",
         "Let me show you!"
+    };
+    [SerializeField, TextArea(2,4)] private string[] closingLines =
+    {
+        "Okay, hope you won't need to go outside! Goodbye!"
     };
 
     public bool IsPlaying { get; private set; }
@@ -184,7 +188,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
         Objective("Insert your punch card into the reader, then pull the lever.","[ E ]  INSERT / PULL LEVER");
         while (!cardInserted || !cardFed) yield return null;
         Stage=TourStage.ReaderComplete;
-        yield return Say("Great! Now you need to analyze it and throw it away if it's <i><color=#B5FFA0>defective</color></i>...");
+        yield return Say("Great! Now you need to analyze it and throw it away if it's <i><color=#B5FFA0>corrupted</color></i>...");
 
         subtitles.alpha=0;
         Stage=TourStage.MovingToRecorder;yield return PlayRobot(movement[2],movementSpeed);StartIdle();
@@ -196,7 +200,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
         Stage=TourStage.MovingToObserver;yield return PlayRobot(movement[3],movementSpeed);StartIdle();
         Stage=TourStage.Observer;
         yield return Say("And here you <i><color=#B5FFA0>observe</color></i> your punch card!");
-        yield return Say("Okay, hope you won't need to go outside! Goodbye!");
+        foreach (var line in closingLines) yield return Say(line);
         subtitles.alpha=0;CurrentLine=-1;
         Stage=TourStage.Departing;
         yield return PlayRobot(appearance,-1f,true);
@@ -305,7 +309,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
     {
         subtitles.alpha=1;CurrentLine=spokenLines++;
         dialogueText.text=line;dialogueText.maxVisibleCharacters=0;dialogueText.ForceMeshUpdate();
-        lineNumber.text=$"{spokenLines:00} / {lines.Length+8:00}";
+        lineNumber.text=$"{spokenLines:00} / {lines.Length+7+closingLines.Length:00}";
         continueHint.text="[ SPACE ]  NEXT LINE";
         int count=dialogueText.textInfo.characterCount;
         float elapsed=0,typedSeconds=count*secondsPerCharacter;

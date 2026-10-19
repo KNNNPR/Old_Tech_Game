@@ -35,6 +35,7 @@ Material:
     m_Floats:
     - _AmbientStrength: 0.4
     - _BeaconReflection: 1.1
+    - _CelShadeSteps: 4
     - _FlowDistortion: 0.045
     - _PreviewTime: -1
     - _ReflectionStrength: 0.92

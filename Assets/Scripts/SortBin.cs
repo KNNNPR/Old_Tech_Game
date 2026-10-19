@@ -36,6 +36,7 @@ public class SortBin : MonoBehaviour
 
     public SortVerdict Verdict => verdict;
     public bool IsBusy { get; private set; }
+    public event System.Action ProcessingStarted;
 
     private void Awake()
     {
@@ -70,6 +71,7 @@ public class SortBin : MonoBehaviour
     {
         IsBusy = true;
         slot.Locked = true;
+        ProcessingStarted?.Invoke();
 
         Pickupable card = slot.Current;
         Transform anchor = slot.AnchorTransform;

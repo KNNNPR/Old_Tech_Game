@@ -923,8 +923,8 @@ MonoBehaviour:
   lines:
   - Greetings partner!
   - Call me Helpy and I'm here to help of course!
-  - Sometimes people get bad punch cards that are somehow <i><color=#B5FFA0>defective</color></i>.
-  - All you need to do is find <i><color=#B5FFA0>defective</color></i> punch cards.
+  - Sometimes people get bad punch cards that are somehow <i><color=#B5FFA0>corrupted</color></i>.
+  - All you need to do is find <i><color=#B5FFA0>corrupted</color></i> punch cards.
   - Let me show you!
 --- !u!1 &910204399
 GameObject:

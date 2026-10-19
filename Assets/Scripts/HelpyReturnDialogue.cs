@@ -44,9 +44,9 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     {
         new Line(Speaker.Helpy, "Hello again, Operator! How's it going?"),
         new Line(Speaker.Player, "Helpy, what these cards are even <b><i><color=#B5FFA0>about</color></i></b>? It kinds of creeps me out"),
-        new Line(Speaker.Helpy, "No worries! They can't harm you, despite the <i><color=#B5FFA0>defective</color></i> down there"),
+        new Line(Speaker.Helpy, "No worries! They can't harm you, despite the <i><color=#B5FFA0>corrupted</color></i> down there"),
         new Line(Speaker.Player, "D-Down WHAT?"),
-        new Line(Speaker.Helpy, "Well the people that consumed the <i><color=#B5FFA0>deffection</color></i> info got...  <b><i><color=#B5FFA0>Mesmerized</color></i></b>"),
+        new Line(Speaker.Helpy, "Well the people that consumed the <i><color=#B5FFA0>corruption</color></i> info got...  <b><i><color=#B5FFA0>Mesmerized</color></i></b>"),
         new Line(Speaker.Helpy, "That's why you are here <i><color=#B5FFA0>sorting</color></i> them right here"),
         new Line(Speaker.Player, ". . ."),
         new Line(Speaker.Helpy, "You didn't read the <b><i><color=#B5FFA0>fine print</color></i></b>, did you?"),
@@ -69,6 +69,8 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     private bool[] animatorEnabled;
     private CanvasGroup subtitles;
     private TMP_Text dialogueText, speakerText, lineNumber;
+    private TMP_Text continueHint;
+    private Image dialogueBackground, topRule, bottomRule;
     private Vector3? approachControl, faceControl;
 
     private IEnumerator Start()
@@ -164,8 +166,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     private IEnumerator Say(int index)
     {
         CurrentLine = index; subtitles.alpha = 1; advanceRequested = false;
-        speakerText.text = lines[index].speaker == Speaker.Helpy ? "HELPY  /  FIELD ASSISTANT" : "OPERATOR C";
-        speakerText.color = lines[index].speaker == Speaker.Helpy ? new Color(.49f,.95f,.63f) : new Color(.74f,.93f,.8f);
+        ApplySpeakerStyle(lines[index].speaker);
         lineNumber.text = $"{index + 1:00} / {lines.Length:00}";
         dialogueText.text = lines[index].text; dialogueText.maxVisibleCharacters = 0; dialogueText.ForceMeshUpdate();
         int count = dialogueText.textInfo.characterCount;
@@ -182,6 +183,25 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     public void AdvanceLine()
     {
         if (IsPlaying && CurrentLine >= 0) advanceRequested = true;
+    }
+    private void ApplySpeakerStyle(Speaker speaker)
+    {
+        bool isPlayer = speaker == Speaker.Player;
+        speakerText.text = isPlayer ? "OPERATOR C" : "HELPY  /  FIELD ASSISTANT";
+        speakerText.color = isPlayer ? OperatorDialogueStyle.Speaker : new Color(.49f,.95f,.63f);
+        dialogueBackground.color = isPlayer ? OperatorDialogueStyle.Background : new Color(.002f,.016f,.009f,.96f);
+        topRule.color = isPlayer ? OperatorDialogueStyle.TopRule : new Color(.24f,.85f,.4f,.5f);
+        bottomRule.color = isPlayer ? OperatorDialogueStyle.BottomRule : new Color(.1f,.5f,.24f,.3f);
+        lineNumber.color = isPlayer ? OperatorDialogueStyle.Secondary : new Color(.25f,.65f,.4f);
+        continueHint.color = isPlayer ? OperatorDialogueStyle.Secondary : new Color(.29f,.68f,.42f);
+        if (isPlayer) OperatorDialogueStyle.ApplyText(dialogueText);
+        else
+        {
+            dialogueText.color = Color.white;
+            dialogueText.overrideColorTags = false;
+            dialogueText.enableVertexGradient = true;
+            dialogueText.colorGradient = new VertexGradient(new Color(.7f,1f,.72f),new Color(.6f,1f,.68f),new Color(.16f,.74f,.34f),new Color(.22f,.85f,.4f));
+        }
     }
     private IEnumerator MoveCamera(Vector3 destination, Quaternion rotation, float fov, float seconds, Vector3? first = null, Vector3? second = null)
     {
@@ -228,9 +248,9 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         subtitles = root.GetComponent<CanvasGroup>(); subtitles.alpha = 0; subtitles.blocksRaycasts = subtitles.interactable = false;
         var panel = Rect("Dialogue panel", root.transform, new Vector2(.1f,0), new Vector2(.9f,0), new Vector2(0,30), new Vector2(0,170));
         panel.pivot = new Vector2(.5f,0);
-        var background = panel.gameObject.AddComponent<Image>(); background.color = new Color(.002f,.016f,.009f,.96f); background.raycastTarget = false;
+        dialogueBackground = panel.gameObject.AddComponent<Image>(); dialogueBackground.color = new Color(.002f,.016f,.009f,.96f); dialogueBackground.raycastTarget = false;
         var shadow = panel.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(0,0,0,.65f); shadow.effectDistance = new Vector2(0,-5);
-        Rule(panel, 1, new Color(.24f,.85f,.4f,.5f)); Rule(panel, 0, new Color(.1f,.5f,.24f,.3f));
+        topRule = Rule(panel, 1, new Color(.24f,.85f,.4f,.5f)); bottomRule = Rule(panel, 0, new Color(.1f,.5f,.24f,.3f));
         speakerText = Text(panel,"Speaker",13,new Vector2(26,-22),new Vector2(650,22),new Vector2(0,1)); speakerText.characterSpacing = 3;
         lineNumber = Text(panel,"Line",12,new Vector2(-26,-22),new Vector2(110,22),Vector2.one);
         lineNumber.alignment = TextAlignmentOptions.Right; lineNumber.color = new Color(.25f,.65f,.4f);
@@ -242,6 +262,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         dialogueText.gameObject.AddComponent<RetroSubtitleText>();
         var hint = Text(panel,"Continue hint",12,new Vector2(-26,14),new Vector2(550,20),Vector2.right);
         hint.alignment = TextAlignmentOptions.Right; hint.text = "[ SPACE ]  NEXT LINE"; hint.characterSpacing = 2; hint.color = new Color(.29f,.68f,.42f);
+        continueHint = hint;
     }
     private TMP_Text Text(Transform parent, string name, float size, Vector2 position, Vector2 dimensions, Vector2 anchor)
     {
@@ -255,9 +276,10 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         var rect = new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>(); rect.SetParent(parent,false);
         rect.anchorMin = min; rect.anchorMax = max; rect.anchoredPosition = position; rect.sizeDelta = size; return rect;
     }
-    private static void Rule(RectTransform panel, float y, Color color)
+    private static Image Rule(RectTransform panel, float y, Color color)
     {
         var rule = Rect("Phosphor rule",panel,new Vector2(0,y),new Vector2(1,y),Vector2.zero,new Vector2(0,1));
         var image = rule.gameObject.AddComponent<Image>(); image.color = color; image.raycastTarget = false;
+        return image;
     }
 }
