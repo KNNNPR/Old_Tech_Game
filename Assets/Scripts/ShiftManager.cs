@@ -45,6 +45,8 @@ public class ShiftManager : MonoBehaviour
     [SerializeField] private GameObject[] tutorialObjects;
     [Tooltip("Показывать обучение каждый раз (для проверки).")]
     [SerializeField] private bool alwaysPlayTutorial;
+    [Tooltip("Модели робота в сцене. Прячутся всегда, кроме экскурсии и разговора (те показывают робота сами).\nЕсли пусто — найдутся сами: робот экскурсии, робот разговора и все объекты с именем robot_helper.")]
+    [SerializeField] private GameObject[] robotModels;
 
     [Header("Заставка в начале смены (необязательно)")]
     [SerializeField] private CanvasGroup titleGroup;
@@ -98,6 +100,12 @@ public class ShiftManager : MonoBehaviour
         if (returnDialogue != null) returnDialogue.gameObject.SetActive(false);
 
         bool playTutorial = tutorial != null && ShiftIndex == 0 && (alwaysPlayTutorial || !GameFlow.TutorialDone);
+
+        // Робот виден только во время экскурсии (её робот) и разговора (разговор включит его сам).
+        GameObject tutorialRobot = playTutorial ? RobotOf(tutorial) : null;
+        foreach (GameObject robot in FindRobots())
+            if (robot != null && robot != tutorialRobot) robot.SetActive(false);
+        if (tutorialRobot != null) tutorialRobot.SetActive(true);
         if (playTutorial)
         {
             // Пока идёт экскурсия, труба молчит и выдаёт только учебную карту (по запросу робота
@@ -133,6 +141,30 @@ public class ShiftManager : MonoBehaviour
         if (shifts == null || shifts.Length == 0) return;
         PlacePlayer(shifts[ShiftIndex].playerStart);
         GiveToPlayer(shifts[ShiftIndex].giveToPlayer);
+    }
+
+    private System.Collections.Generic.List<GameObject> FindRobots()
+    {
+        var result = new System.Collections.Generic.List<GameObject>();
+        void Add(GameObject robot) { if (robot != null && !result.Contains(robot)) result.Add(robot); }
+
+        if (robotModels != null) foreach (GameObject robot in robotModels) Add(robot);
+        Add(RobotOf(tutorial));
+        Add(RobotOf(returnDialogue));
+
+        foreach (Transform t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (string.Equals(t.name, "robot_helper", StringComparison.OrdinalIgnoreCase)) Add(t.gameObject);
+
+        return result;
+    }
+
+    // Поле robot у скриптов робота закрытое — читаем его, не меняя их код.
+    private static GameObject RobotOf(MonoBehaviour owner)
+    {
+        if (owner == null) return null;
+        var field = owner.GetType().GetField("robot",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+        return field?.GetValue(owner) is Transform robot && robot != null ? robot.gameObject : null;
     }
 
     private static void PlacePlayer(Transform start)
