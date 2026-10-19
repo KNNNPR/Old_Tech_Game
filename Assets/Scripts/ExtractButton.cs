@@ -29,6 +29,23 @@ public class ExtractButton : MonoBehaviour, IInteractable, IRequiresFocus
         foreach (Collider c in colliders) c.enabled = visible;
     }
 
+    /// <summary>
+    /// Кнопка видна, но приглушена и не нажимается (dimmed = true), либо обычная (false).
+    /// </summary>
+    public void SetDimmed(bool dimmed, float dimAlpha = 0.25f)
+    {
+        if (colliders == null) colliders = GetComponents<Collider>();
+
+        IsVisible = !dimmed;
+        if (visual != null)
+        {
+            visual.SetActive(true);
+            if (!visual.TryGetComponent(out CanvasGroup group)) group = visual.AddComponent<CanvasGroup>();
+            group.alpha = dimmed ? dimAlpha : 1f;
+        }
+        foreach (Collider c in colliders) c.enabled = !dimmed;
+    }
+
     public string GetPrompt(PlayerInteractor interactor) => prompt;
 
     public bool CanInteract(PlayerInteractor interactor) => IsVisible;

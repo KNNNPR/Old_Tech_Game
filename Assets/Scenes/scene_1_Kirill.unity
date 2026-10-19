@@ -1473,19 +1473,20 @@ MonoBehaviour:
     spawnInsteadOfCards:
     - {fileID: 0}
     playerStart: {fileID: 469362217}
-    giveToPlayer: {fileID: 919132149155446097, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+    giveToPlayer: {fileID: 1668418816724480201, guid: 09c5d5edf5a450b419c4727a76e2d2c1, type: 3}
     helpyDialogueAtEnd: 0
   tube: {fileID: 1605404918}
   tutorial: {fileID: 1098284447}
   tutorialCard: {fileID: 11400000, guid: 6cbdf0e5fbdb1204186dbab3a8b8c6a9, type: 2}
   tutorialObjects: []
   alwaysPlayTutorial: 1
+  robotModels: []
   titleGroup: {fileID: 0}
   titleText: {fileID: 0}
   titleFadeSeconds: 1
   titleHoldSeconds: 2.5
   returnDialogue: {fileID: 0}
-  testDay: -1
+  testDay: 3
   endDelay: 3
   onShiftComplete:
     m_PersistentCalls:
@@ -21225,29 +21226,15 @@ MonoBehaviour:
   readingText: 'HAND DETECTED.
 
     READING...'
-  matchText: 'PATTERN MATCH: OPERATOR
-
-    WELCOME HOME.'
-  readingSeconds: 3
-  shotDistances:
-  - 0.9
-  - 0.55
-  - 0.45
-  - 0.3
-  - 0.16
-  shotSeconds:
-  - 1.3
-  - 0.9
-  - 0.7
-  - 0.5
-  - 0.9
-  pushIn: 0.25
-  startFov: 55
-  endFov: 30
-  flyInSeconds: 0.9
+  shakeSeconds: 1.8
+  shakeDegrees: 1.5
+  flySeconds: 0.7
+  stopDistance: 0.02
+  fadeFrom: 0.75
+  fovKick: 15
   audioSource: {fileID: 0}
   acceptClip: {fileID: 0}
-  cutClip: {fileID: 0}
+  shakeClip: {fileID: 0}
   flyInClip: {fileID: 0}
   onHandInserted:
     m_PersistentCalls:
