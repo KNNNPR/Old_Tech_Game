@@ -169,7 +169,8 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         ApplySpeakerStyle(lines[index].speaker);
         lineNumber.text = $"{index + 1:00} / {lines.Length:00}";
         dialogueText.text = lines[index].text; dialogueText.maxVisibleCharacters = 0; dialogueText.ForceMeshUpdate();
-        GetComponent<DialogueVoice>()?.Begin(dialogueText, lines[index].speaker == Speaker.Player);
+        bool isOperator=lines[index].speaker == Speaker.Player;
+        GetComponent<DialogueVoice>()?.Begin(dialogueText,isOperator,false,isOperator?playerCamera.transform:face.transform);
         int count = dialogueText.textInfo.characterCount;
         float elapsed = 0, duration = count * secondsPerCharacter + Mathf.Max(minimumLineDuration, count * .045f);
         yield return null;

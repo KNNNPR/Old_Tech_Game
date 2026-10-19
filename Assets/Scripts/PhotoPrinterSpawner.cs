@@ -13,6 +13,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
     [Tooltip("Pickup trigger in front of the surrounding machine's coarse collision box.")]
     [SerializeField] private Collider pickupTarget;
     [SerializeField, Min(.1f)] private float feedSeconds = 1.6f;
+    [SerializeField] private AudioSource printingAudio;
     [Header("Temporary automatic printing; turn off when gameplay events call TryPrintPhoto")]
     [SerializeField] private bool automaticPrinting = true;
     [SerializeField, Min(0)] private float initialDelay = 2f;
@@ -26,6 +27,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
     private bool[] colliderStates;
     private float timer, progress;
     private bool ready;
+    private float printingVolume;
     public bool IsPrinting => feeding != null;
     public DevelopingPhoto OutputPhoto { get; private set; }
     public DevelopingPhoto LastPrintedPhoto { get; private set; }
@@ -50,6 +52,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
         ready = photoPrefab && photoPrefab.GetComponent<DevelopingPhoto>() && photoPrefab.GetComponent<Pickupable>()
             && photoPrefab.GetComponent<Rigidbody>() && feedStart && outputPose;
         timer = initialDelay;
+        if(printingAudio)printingVolume=printingAudio.volume;
         SetPickupTarget(false);
         if (!ready) Debug.LogError("PhotoPrinterSpawner needs the Photo prefab and its two feed poses.", this);
     }
@@ -61,6 +64,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
         {
             progress = Mathf.Min(1, progress + Time.deltaTime / feedSeconds);
             MoveSheet(progress);
+            if(printingAudio)printingAudio.volume=printingVolume*Mathf.SmoothStep(0,1,(1-progress)*feedSeconds/.15f);
             if (progress >= 1) CompletePrint();
             return;
         }
@@ -106,6 +110,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
         issued.Add(feeding);
         LastPrintedPhoto = feeding;
         progress = 0;
+        if(printingAudio&&printingAudio.clip){printingAudio.volume=printingVolume;printingAudio.loop=true;printingAudio.Play();}
         timer = printInterval;
         MoveSheet(0);
         return true;
@@ -120,6 +125,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
     private void CompletePrint()
     {
         var photo = feeding;
+        if(printingAudio)printingAudio.Stop();
         if (!photo || !feedingBody) { feeding = null; return; }
         MoveSheet(1);
         for (int i = 0; i < feedingColliders.Length; i++)
@@ -135,6 +141,7 @@ public sealed class PhotoPrinterSpawner : MonoBehaviour, IInteractable
 
     private void OnDisable()
     {
+        if(printingAudio)printingAudio.Stop();
         if (feeding) CompletePrint();
         SetPickupTarget(false);
     }

@@ -827,13 +827,43 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 180504629}
   m_SourcePrefab: {fileID: 100100000, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
 --- !u!4 &180504627 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
   m_PrefabInstance: {fileID: 180504626}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &180504628 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+  m_PrefabInstance: {fileID: 180504626}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &180504629
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180504628}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1dc5deb30d595424f8292ed406baba5f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &218438443
 GameObject:
   m_ObjectHideFlags: 0
@@ -879,6 +909,7 @@ MonoBehaviour:
   cassetteDeck: {fileID: 0}
   cassetteSpawner: {fileID: 0}
   audioSource: {fileID: 0}
+  extractionAudio: {fileID: 0}
   typeClip: {fileID: 0}
   typeVolume: 0.4
   charDelay: 0.03
@@ -1641,6 +1672,11 @@ MonoBehaviour:
   bobFrequency: 1.6
   bobAmplitude: 0.035
   bobReturnSpeed: 8
+  strafeTilt: 1.5
+  turnTilt: 1.2
+  tiltSpeed: 6
+  breathAmplitude: 0.006
+  breathFrequency: 0.25
 --- !u!143 &709247593
 CharacterController:
   m_ObjectHideFlags: 0
@@ -7350,6 +7386,7 @@ MonoBehaviour:
   outputPose: {fileID: 795744695}
   pickupTarget: {fileID: 540032270}
   feedSeconds: 1.6
+  printingAudio: {fileID: 0}
   automaticPrinting: 1
   initialDelay: 2
   printInterval: 8
@@ -9340,6 +9377,7 @@ MonoBehaviour:
   reading: {fileID: 0}
   cameraMove: {fileID: 0}
   footsteps: {fileID: 1706756384}
+  ambientVolume: 0.5
   itemHandling: {fileID: 0}
   entranceDoorAudio: {fileID: 0}
   entranceDoorOpenAudio: {fileID: 0}

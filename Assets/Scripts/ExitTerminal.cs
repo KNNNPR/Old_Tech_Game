@@ -11,7 +11,7 @@ using UnityEngine.UI;
 ///    кнопка EXIT загорается (до этого она видна, но тусклая и не нажимается).
 /// 2. Первые нажатия кнопка прыгает по краям экрана, без надписей.
 /// 3. Когда кнопку всё-таки нажали — из компьютера к игроку вылезает его рука,
-///    чернота, надпись и возврат в меню.
+///    крик, мгновенная чернота и титры.
 ///
 /// Вешается на любой объект сцены THE_END (удобно — на монитор).
 /// </summary>
@@ -45,7 +45,7 @@ public class ExitTerminal : MonoBehaviour
 
     [Header("Прыгающая кнопка")]
     [Tooltip("Сколько раз кнопка отпрыгнет, прежде чем нажаться.")]
-    [SerializeField] private int dodges = 3;
+    [SerializeField] private int dodges = 11;
     [Tooltip("Время одного прыжка (сек).")]
     [SerializeField] private float jumpSeconds = 0.12f;
     [Tooltip("Отступ от краёв экрана, чтобы кнопка не уезжала за край.")]
@@ -80,20 +80,22 @@ public class ExitTerminal : MonoBehaviour
     [Tooltip("Насколько голова откидывается вверх (градусы).")]
     [SerializeField] private float flinchPitch = 8f;
     [SerializeField] private float flinchSeconds = 0.18f;
-    [Tooltip("Пауза перед чернотой, когда рука уже у лица.")]
-    [SerializeField] private float holdBeforeBlack = 0.6f;
-
-    [Header("Конец")]
-    [TextArea, SerializeField] private string endTitle = "THE END";
-    [SerializeField] private float endHoldSeconds = 5f;
-    [Tooltip("Вернуться в меню после надписи.")]
-    [SerializeField] private bool returnToMenu = true;
 
     [Header("Звук (необязательно)")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip grantedClip;
-    [SerializeField] private AudioClip dodgeClip;
-    [SerializeField] private AudioClip handClip;
+    [SerializeField] private AudioSource errorAudio, backAudio, tensionMusic, breathingAudio, heartbeatAudio, screamAudio;
+    [SerializeField] private EndCreditsRoll credits;
+    public int PressCount {get;private set;}
+    public int RequiredPresses=>dodges+1;
+    public bool HasBlackedOut {get;private set;}
+    private CanvasGroup endOverlay;
+    private bool wasFocused;
+    private Camera blackCamera;
+    private int savedCullingMask;
+    private CameraClearFlags savedClearFlags;
+    private Color savedCameraColour;
+    private bool screamTriggered;
 
     private enum State { Decoding, ButtonActive, Ending }
 
@@ -137,6 +139,10 @@ public class ExitTerminal : MonoBehaviour
     {
         if (exitButton != null) exitButton.Pressed -= OnExitPressed;
         if (cipherDial != null) cipherDial.ValueChanged -= OnDialChanged;
+        StopAllCoroutines();
+        foreach(var source in new[]{audioSource,errorAudio,backAudio,tensionMusic,breathingAudio,heartbeatAudio,screamAudio})if(source)source.Stop();
+        if(endOverlay)Destroy(endOverlay.gameObject);
+        if(blackCamera){blackCamera.cullingMask=savedCullingMask;blackCamera.clearFlags=savedClearFlags;blackCamera.backgroundColor=savedCameraColour;}
     }
 
     private void Start()
@@ -208,6 +214,17 @@ public class ExitTerminal : MonoBehaviour
 
     private void LateUpdate()
     {
+        bool focused=interactor&&interactor.IsFocused;
+        if(wasFocused&&!focused&&state!=State.Ending&&backAudio&&backAudio.clip)backAudio.PlayOneShot(backAudio.clip);
+        wasFocused=focused;
+        if(HasBlackedOut)return;
+        if(shaking&&state==State.ButtonActive)
+        {
+            float level=Mathf.Clamp01((PressCount-1)/(float)Mathf.Max(1,dodges));
+            shakeAmount=Mathf.MoveTowards(shakeAmount,Mathf.Lerp(.15f,1,level),Time.unscaledDeltaTime*.6f);
+            Raise(tensionMusic,Mathf.Lerp(.055f,.65f,level));Raise(breathingAudio,Mathf.Lerp(.08f,.46f,level));Raise(heartbeatAudio,Mathf.Lerp(.12f,.5f,level));
+            if(heartbeatAudio)heartbeatAudio.pitch=Mathf.Lerp(.9f,1.75f,level);
+        }
         if (!cameraOverride || cam == null) return;
 
         // Игрок встал из-за компьютера (Esc) — камеру не держим, тряска продолжится, когда сядет снова.
@@ -251,7 +268,8 @@ public class ExitTerminal : MonoBehaviour
         shaking = true;
         if (screenText != null) screenText.text = "";
         TakeCamera();
-        shakeRoutine = StartCoroutine(Ramp(v => shakeAmount = v, 0f, 1f, shakeRampSeconds, false));
+        shakeRoutine = StartCoroutine(Ramp(v => shakeAmount = v, 0f, .15f, shakeRampSeconds, false));
+        BeginLoop(tensionMusic,.055f);BeginLoop(breathingAudio,.08f);BeginLoop(heartbeatAudio,.12f);
     }
 
     private IEnumerator Ramp(System.Action<float> set, float from, float to, float seconds, bool easeOut)
@@ -270,12 +288,13 @@ public class ExitTerminal : MonoBehaviour
     private void OnExitPressed()
     {
         if (state != State.ButtonActive) return;
+        PressCount++;
+        if(errorAudio&&errorAudio.clip){errorAudio.Stop();errorAudio.Play();}
         StartShaking();
 
         if (dodgesDone < dodges)
         {
             dodgesDone++;
-            Play(dodgeClip);
             if (screenText != null) screenText.text = "";
             Jump();
             return;
@@ -341,7 +360,11 @@ public class ExitTerminal : MonoBehaviour
 
     private IEnumerator Ending()
     {
-        if (interactor != null) interactor.InputEnabled = false;
+        if (interactor != null)
+        {
+            interactor.InputEnabled=false;interactor.StopAllCoroutines();
+            if(interactor.Controller){interactor.Controller.SetControlEnabled(false);interactor.Controller.enabled=false;}
+        }
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         TakeCamera();
@@ -354,16 +377,16 @@ public class ExitTerminal : MonoBehaviour
 
         yield return new WaitForSeconds(1.2f);
 
-        // Рука вылезает из экрана к лицу игрока: сначала медленно, в конце — рывок.
+        // Резкий выпад из экрана, затем мгновенная чернота.
         // Конечная поза считается один раз — так движение ровное, без дёрганья.
         if (handOut != null && interactor != null && interactor.PlayerCamera != null)
         {
             handOut.gameObject.SetActive(true);
+            PlayScream();
             if (handOut.TryGetComponent(out Rigidbody body)) body.isKinematic = true;
             foreach (var c in handOut.GetComponentsInChildren<Collider>()) c.enabled = false;
             foreach (var p in handOut.GetComponentsInChildren<Pickupable>()) p.enabled = false;
 
-            Play(handClip);
             Vector3 center = FinalHand.ModelCenter(handOut);
             Vector3 scaledCenter = Vector3.Scale(handOut.lossyScale, center);
 
@@ -377,7 +400,7 @@ public class ExitTerminal : MonoBehaviour
 
             for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.1f, handSeconds))
             {
-                float k = t * t * t;                   // разгон
+                float k = 1f-Mathf.Pow(1f-t,3f);
                 float turn = Mathf.SmoothStep(0f, 1f, t); // поворот плавнее, заранее
                 Quaternion rotation = Quaternion.Slerp(fromRotation, toRotation, turn);
                 Vector3 centerNow = Vector3.Lerp(fromCenter, toCenter, k);
@@ -389,21 +412,29 @@ public class ExitTerminal : MonoBehaviour
                     flinched = true;
                     StartCoroutine(Ramp(v => flinch = v, 0f, 1f, flinchSeconds, true));
                 }
+                if(t>=.85f)break;
                 yield return null;
             }
-            handOut.SetPositionAndRotation(toCenter - toRotation * scaledCenter, toRotation);
-            if (!flinched) yield return Ramp(v => flinch = v, 0f, 1f, flinchSeconds, true);
-            yield return new WaitForSeconds(holdBeforeBlack);
         }
 
-        // Резкая чернота и надпись.
-        CanvasGroup overlay = CreateEndOverlay();
-        overlay.alpha = 1f;
-        AudioListener.volume = 0f;
-        yield return new WaitForSeconds(endHoldSeconds);
-        AudioListener.volume = GameSettings.Volume;
-
-        if (returnToMenu) GameFlow.BackToMenu();
+        HasBlackedOut=true;endOverlay=CreateEndOverlay();endOverlay.alpha=1;
+        foreach(var root in gameObject.scene.GetRootGameObjects())
+        {
+            foreach(var printer in root.GetComponentsInChildren<PhotoPrinterSpawner>(true))printer.enabled=false;
+            foreach(var spawner in root.GetComponentsInChildren<CassetteTubeSpawner>(true))spawner.enabled=false;
+            foreach(var source in root.GetComponentsInChildren<AudioSource>(true))if(source!=screamAudio)source.Stop();
+        }
+        if(interactor&&interactor.PlayerCamera)
+        {
+            blackCamera=interactor.PlayerCamera;savedCullingMask=blackCamera.cullingMask;savedClearFlags=blackCamera.clearFlags;savedCameraColour=blackCamera.backgroundColor;
+            blackCamera.cullingMask=0;blackCamera.clearFlags=CameraClearFlags.SolidColor;blackCamera.backgroundColor=Color.black;
+        }
+        if(!screamTriggered)PlayScream();
+        yield return null;
+        while(screamAudio&&screamAudio.isPlaying)yield return null;
+        yield return new WaitForSecondsRealtime(.45f);
+        if(credits)credits.Play();
+        else Debug.LogError("THE_END is missing its credits roll.",this);
     }
 
     private CanvasGroup CreateEndOverlay()
@@ -411,26 +442,21 @@ public class ExitTerminal : MonoBehaviour
         var canvasObject = new GameObject("End Overlay", typeof(Canvas), typeof(CanvasGroup));
         var canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 32000;
+        canvas.sortingOrder = 32760;
 
         var background = new GameObject("Black", typeof(RectTransform), typeof(Image));
         background.transform.SetParent(canvasObject.transform, false);
         Stretch(background.GetComponent<RectTransform>());
         background.GetComponent<Image>().color = Color.black;
 
-        var title = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
-        title.transform.SetParent(canvasObject.transform, false);
-        Stretch(title.GetComponent<RectTransform>());
-        var label = title.GetComponent<TextMeshProUGUI>();
-        label.text = endTitle;
-        label.fontSize = 64;
-        label.characterSpacing = 12f;
-        label.alignment = TextAlignmentOptions.Center;
-        label.color = new Color(0.93f, 0.91f, 0.83f);
-        if (screenText != null) label.font = screenText.font;
-
         return canvasObject.GetComponent<CanvasGroup>();
     }
+    private static void BeginLoop(AudioSource source,float volume)
+    {if(source&&source.clip){source.volume=volume;source.loop=true;source.Play();}}
+    private static void Raise(AudioSource source,float volume)
+    {if(source)source.volume=Mathf.MoveTowards(source.volume,volume,Time.unscaledDeltaTime*.5f);}
+    private void PlayScream()
+    {screamTriggered=true;if(screamAudio&&screamAudio.clip){screamAudio.loop=false;screamAudio.Play();}}
 
     private static void Stretch(RectTransform rect)
     {

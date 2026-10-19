@@ -25,6 +25,8 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
     [SerializeField] private Transform doorHinge;
     [SerializeField] private float doorOpenAngle = 90f;
     [SerializeField, Min(1f)] private float entryWalkSeconds = 5.2f;
+    [SerializeField] private AnimationClip enteringRoom;
+    [SerializeField, Range(.1f,1f)] private float enteringRoomSpeed = .45f;
 
     [Header("Helpy's authored clips")]
     [SerializeField] private AnimationClip appearance;
@@ -89,7 +91,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
 
     private IEnumerator Start()
     {
-        if (!playerCamera || !player || !interactor || !robot || !entranceStart || entranceRoute == null || entranceRoute.Length == 0 || !roomCentre || !entranceDoor || !doorHinge
+        if (!playerCamera || !player || !interactor || !robot || (!enteringRoom && (!entranceStart || entranceRoute == null || entranceRoute.Length == 0 || !roomCentre)) || !entranceDoor || !doorHinge
             || !appearance || !idle || movement == null || movement.Length != 4 || !tube || !cardReader || !cardLever || lines == null || lines.Length == 0)
         {
             Debug.LogError("Helpy tour is missing its TUTORIAL scene references or authored clips.",this);
@@ -214,12 +216,30 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
     private IEnumerator EnterRoom()
     {
         Stage=TourStage.Entering;
-        player.transform.SetPositionAndRotation(entranceStart.position,entranceStart.rotation);
+        if(enteringRoom)enteringRoom.SampleAnimation(player.gameObject,0);
+        else player.transform.SetPositionAndRotation(entranceStart.position,entranceStart.rotation);
         playerCamera.transform.localPosition=homePosition;playerCamera.transform.localRotation=homeRotation;
         BuildEntranceFade();
         for(float t=0;t<.6f;t+=Time.unscaledDeltaTime) { entranceFade.alpha=1-t/.6f;yield return null; }
         entranceFade.alpha=0;
         yield return SwingDoor(0,doorOpenAngle,.8f);
+        if(enteringRoom)
+        {
+            GameplaySceneAudio.For(this)?.SetScriptedWalking(true);
+            float speed=Mathf.Max(.1f,enteringRoomSpeed);
+            for(float time=0;time<enteringRoom.length;time+=Time.unscaledDeltaTime*speed)
+            {
+                enteringRoom.SampleAnimation(player.gameObject,time);
+                yield return null;
+            }
+            // A looping clip samples its first frame at exactly length. Stop just before the wrap.
+            enteringRoom.SampleAnimation(player.gameObject,Mathf.Max(0,enteringRoom.length-.0001f));
+            GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
+            playerCamera.transform.localPosition=homePosition;playerCamera.transform.localRotation=homeRotation;
+            player.SetLookDirection(greetingPosition-playerCamera.transform.position);
+            yield return SwingDoor(doorOpenAngle,0,.7f);
+            yield break;
+        }
         var points=new Vector3[entranceRoute.Length+2];
         points[0]=player.transform.position;
         for(int i=0;i<entranceRoute.Length;i++)points[i+1]=entranceRoute[i].position;
@@ -312,7 +332,8 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
     {
         subtitles.alpha=1;CurrentLine=spokenLines++;
         dialogueText.text=line;dialogueText.maxVisibleCharacters=0;dialogueText.ForceMeshUpdate();
-        GetComponent<DialogueVoice>()?.Begin(dialogueText, false);
+        var speakingFace=FindFace();
+        GetComponent<DialogueVoice>()?.Begin(dialogueText,false,false,speakingFace?speakingFace.transform:robot);
         lineNumber.text=$"{spokenLines:00} / {lines.Length+7+closingLines.Length:00}";
         continueHint.text="[ SPACE ]  NEXT LINE";
         int count=dialogueText.textInfo.characterCount;

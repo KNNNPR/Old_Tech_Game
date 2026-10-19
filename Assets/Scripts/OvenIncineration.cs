@@ -15,16 +15,21 @@ public sealed class OvenIncineration : MonoBehaviour
     [SerializeField] private AudioSource fireAudio, biteAudio;
     [SerializeField] private float[] biteTimes;
     [SerializeField, Min(.1f)] private float fireFadeSeconds = 2f;
+    [SerializeField, Min(0)] private float biteStartSeconds = .06f;
+    [SerializeField, Min(.05f)] private float biteSoundSeconds = .28f;
 
     public bool IsPlaying { get; private set; }
     public float Duration => incinerate ? incinerate.length : 0;
     private Vector3[] restPositions;
     private bool animatorWasEnabled;
     private float fireVolume;
+    private float biteVolume;
+    private double biteEndsAt;
 
     private void OnEnable()
     {
         if (fireAudio) fireVolume = fireAudio.volume;
+        if (biteAudio) biteVolume = biteAudio.volume;
         restPositions = new Vector3[animatedParts == null ? 0 : animatedParts.Length];
         for (int i = 0; i < restPositions.Length; i++)
             if (animatedParts[i]) restPositions[i] = animatedParts[i].localPosition;
@@ -35,7 +40,7 @@ public sealed class OvenIncineration : MonoBehaviour
             ovenAnimator.enabled = false;
         }
         StopFire();
-        if (biteAudio) biteAudio.Stop();
+        StopMetal();
         if (bin) bin.ProcessingStarted += Begin;
     }
 
@@ -44,7 +49,7 @@ public sealed class OvenIncineration : MonoBehaviour
         if (bin) bin.ProcessingStarted -= Begin;
         StopAllCoroutines();
         Restore();
-        if (biteAudio) biteAudio.Stop();
+        StopMetal();
         if (ovenAnimator) ovenAnimator.enabled = animatorWasEnabled;
     }
 
@@ -69,9 +74,12 @@ public sealed class OvenIncineration : MonoBehaviour
             incinerate.SampleAnimation(gameObject, time);
             while (biteTimes != null && nextBite < biteTimes.Length && time >= biteTimes[nextBite])
             {
-                if (biteAudio && biteAudio.clip) { biteAudio.Stop(); biteAudio.Play(); }
+                float following=nextBite+1<biteTimes.Length?biteTimes[nextBite+1]:duration;
+                PlayMetal(Mathf.Min(biteSoundSeconds,Mathf.Max(.05f,following-time-.015f)));
                 nextBite++;
             }
+            if(biteAudio&&biteAudio.isPlaying)
+                biteAudio.volume=biteVolume*Mathf.Clamp01((float)(biteEndsAt-AudioSettings.dspTime)/.035f);
             if (fireAudio)
                 fireAudio.volume = fireVolume * (1f - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(Mathf.Max(0, duration - fireFadeSeconds), duration, time)));
             float envelope = Mathf.SmoothStep(0, 1, time / .1f) * Mathf.SmoothStep(0, 1, (duration - time) / .28f);
@@ -96,9 +104,23 @@ public sealed class OvenIncineration : MonoBehaviour
         if (fireLight) { fireLight.intensity = 0; fireLight.enabled = false; }
     }
 
+    private void PlayMetal(float seconds)
+    {
+        if(!biteAudio||!biteAudio.clip)return;
+        biteAudio.Stop();biteAudio.loop=false;biteAudio.volume=biteVolume;
+        biteAudio.time=Mathf.Min(biteStartSeconds,Mathf.Max(0,biteAudio.clip.length-.05f));
+        biteAudio.Play();biteEndsAt=AudioSettings.dspTime+seconds;biteAudio.SetScheduledEndTime(biteEndsAt);
+    }
+    private void StopMetal()
+    {
+        if(!biteAudio)return;
+        biteAudio.Stop();biteAudio.volume=biteVolume;
+    }
+
     private void Restore()
     {
         StopFire();
+        StopMetal();
         if (restPositions != null)
             for (int i = 0; i < restPositions.Length; i++)
                 if (animatedParts[i]) animatedParts[i].localPosition = restPositions[i];

@@ -87,6 +87,7 @@ public static class GameFlow
     /// <summary>Перейти к следующему шагу сюжета и загрузить его сцену.</summary>
     public static void Advance()
     {
+        if(BlockSceneTransition.IsRunning)return;
         SyncWithActiveScene();
         StepIndex++;
 
@@ -102,7 +103,8 @@ public static class GameFlow
         Debug.Log(step.day >= 0
             ? $"GameFlow: шаг {StepIndex + 1}/{Steps.Length} — день {step.day + 1}."
             : $"GameFlow: шаг {StepIndex + 1}/{Steps.Length} — сцена «{step.scene}».");
-        Load(step.scene);
+        if(step.scene==IntermissionScene||step.scene==Intermission2Scene)BlockSceneTransition.Load(step.scene);
+        else Load(step.scene);
     }
 
     /// <summary>Для отладки: считать, что сейчас идёт указанный день (Play прямо в основной сцене).</summary>
