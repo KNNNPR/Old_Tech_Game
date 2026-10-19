@@ -1341,7 +1341,7 @@ MonoBehaviour:
   automaticSpawning: 0
   initialDelay: 2
   spawnInterval: 8
-  maxLooseCassettes: 3
+  maxLooseCassettes: 20
   spawnAudio: {fileID: 1995414440}
 --- !u!4 &117899606
 Transform:
@@ -1985,7 +1985,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
     - {fileID: 11400000, guid: b3dc46cde3cb0144499273ca94b9ebaf, type: 2}
     spawnInsteadOfCards: []
-    playerStart: {fileID: 0}
+    playerStart: {fileID: 1062985000}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 1
   - title: Shift_3
@@ -1997,7 +1997,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
     - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
     spawnInsteadOfCards: []
-    playerStart: {fileID: 0}
+    playerStart: {fileID: 1062985000}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 0
   - title: Shift_4
@@ -2018,7 +2018,7 @@ MonoBehaviour:
   titleFadeSeconds: 1
   titleHoldSeconds: 2.5
   returnDialogue: {fileID: 0}
-  testDay: -1
+  testDay: 1
   endDelay: 3
   onShiftComplete:
     m_PersistentCalls:
@@ -13083,6 +13083,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.12, y: 0.075, z: 0.16}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1062984999
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1062985000}
+  m_Layer: 0
+  m_Name: PLayerSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1062985000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1062984999}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 11.98, y: 3.99, z: 8.585}
+  m_LocalScale: {x: 100.00002, y: 100.00002, z: 100.00007}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!65 &1084159765
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -40523,6 +40554,7 @@ SceneRoots:
   - {fileID: 1808945429}
   - {fileID: 1399232948}
   - {fileID: 1947967474}
+  - {fileID: 1062985000}
   - {fileID: 54279297}
   - {fileID: 2058897028}
   - {fileID: 1443768978}
