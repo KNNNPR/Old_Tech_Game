@@ -11,6 +11,7 @@ public sealed class PhotoExposureStation : MonoBehaviour, IInteractable
     [SerializeField, Min(.02f)] private float flashSeconds = .14f;
     [SerializeField, Min(1)] private float flashMultiplier = 2.2f;
     [SerializeField] private AudioSource exposureAudio;
+    [SerializeField] private AudioSource handlingAudio;
 
     private Color lampColor;
     private float lampIntensity;
@@ -34,6 +35,7 @@ public sealed class PhotoExposureStation : MonoBehaviour, IInteractable
     public void Interact(PlayerInteractor interactor)
     {
         if (!CanInteract(interactor)) return;
+        if(handlingAudio&&handlingAudio.clip)handlingAudio.PlayOneShot(handlingAudio.clip);
         if (Current)
         {
             var item = Current.Item;

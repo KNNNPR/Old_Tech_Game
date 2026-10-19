@@ -57,6 +57,7 @@ public class FeedLever : MonoBehaviour, IInteractable
     [Header("Звук (необязательно)")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioSource punchAudioSource;
+    [SerializeField] private AudioSource transportAudio;
     [SerializeField] private AudioClip pullClip;
     [SerializeField] private AudioClip punchClip;
     [SerializeField] private AudioClip cardStepClip;
@@ -130,6 +131,7 @@ public class FeedLever : MonoBehaviour, IInteractable
             yield return PunchRoutine(anchor, anchorStart);
 
         Play(feedClip);
+        if(transportAudio&&transportAudio.clip)transportAudio.PlayOneShot(transportAudio.clip);
         yield return MoveLocal(anchor, anchorStart, anchorStart + feedOffset, feedDuration);
 
         slot.Remove();
@@ -157,6 +159,7 @@ public class FeedLever : MonoBehaviour, IInteractable
 
         // Выталкиваем карту обратно наружу.
         Play(ejectClip);
+        if(transportAudio&&transportAudio.clip)transportAudio.PlayOneShot(transportAudio.clip);
         yield return MoveLocal(anchor, anchorStart + feedOffset, anchorStart, ejectDuration);
 
         CardEjected?.Invoke(card);

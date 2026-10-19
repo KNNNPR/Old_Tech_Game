@@ -15,9 +15,10 @@ MonoBehaviour:
   cardName: Card
   type: 0
   isAnomaly: 0
-  text: HELLO OPERATOR!
+  text: APPLES WILL BE DELIVERED TOMMOROW
   encrypted: 0
   cipherKey: 0
+  causesBlackout: 0
   image: {fileID: 0}
   audio: {fileID: 0}
   audioCarrier: {fileID: 0}

@@ -18,6 +18,7 @@ public sealed class SortingFailureCinematic : MonoBehaviour
     [SerializeField] private AudioSource knockAudio, openingAudio;
     [SerializeField] private float[] knockTimes;
     [SerializeField] private float openingStart = 1.0833334f;
+    [SerializeField, Min(.05f)] private float knockSoundSeconds = .25f;
     public Phase CurrentPhase { get; private set; }
     public bool IsPlaying => CurrentPhase != Phase.Waiting;
     public int KnocksPlayed { get; private set; }
@@ -61,14 +62,14 @@ public sealed class SortingFailureCinematic : MonoBehaviour
             doorMotion.SampleAnimation(balconyDoor.gameObject,time);
             while (knockTimes != null && nextKnock < knockTimes.Length && time >= knockTimes[nextKnock])
             {
-                if (knockAudio && knockAudio.clip) knockAudio.PlayOneShot(knockAudio.clip);
+                PlayKnock();
                 nextKnock++; KnocksPlayed++;
             }
             yield return null;
         }
         while (knockTimes != null && nextKnock < knockTimes.Length)
         {
-            if (knockAudio && knockAudio.clip) knockAudio.PlayOneShot(knockAudio.clip);
+            PlayKnock();
             nextKnock++; KnocksPlayed++;
         }
         doorMotion.SampleAnimation(balconyDoor.gameObject,openingStart);
@@ -101,6 +102,12 @@ public sealed class SortingFailureCinematic : MonoBehaviour
         for(float elapsed=0;elapsed<duration;elapsed+=Time.unscaledDeltaTime)
         { poseRotation=Quaternion.Slerp(from,target,Mathf.SmoothStep(0,1,elapsed/duration));yield return null; }
         poseRotation=target;
+    }
+    private void PlayKnock()
+    {
+        if(!knockAudio||!knockAudio.clip)return;
+        knockAudio.Stop();knockAudio.Play();
+        knockAudio.SetScheduledEndTime(AudioSettings.dspTime+Mathf.Min(knockSoundSeconds,knockAudio.clip.length));
     }
     private void LateUpdate() { if(IsPlaying && view)view.transform.SetPositionAndRotation(posePosition,poseRotation); }
     private CanvasGroup BlackOverlay()

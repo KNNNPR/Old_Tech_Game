@@ -7,6 +7,7 @@ using UnityEngine;
 public sealed class GameplaySceneAudio : MonoBehaviour
 {
     [SerializeField] private AudioSource ambient, computerHum, reading, cameraMove, footsteps;
+    [SerializeField, Range(0,1)] private float ambientVolume = .5f;
     [SerializeField] private AudioSource itemHandling, entranceDoorAudio, entranceDoorOpenAudio;
     [SerializeField] private AudioSource[] dropImpacts;
     [SerializeField, Min(.25f)] private float stepInterval = .62f;
@@ -33,7 +34,7 @@ public sealed class GameplaySceneAudio : MonoBehaviour
         scenes[gameObject.scene.handle] = this;
         foreach (var source in new[] { ambient, computerHum, reading, cameraMove, footsteps, itemHandling, entranceDoorAudio, entranceDoorOpenAudio })
             if (source) { source.ignoreListenerVolume = false; source.dopplerLevel = 0; }
-        if (ambient && ambient.clip) { ambient.loop = true; ambient.Play(); }
+        if (ambient && ambient.clip) { ambient.volume = ambientVolume; ambient.spatialBlend = 0; ambient.loop = true; ambient.Play(); }
         if (computerHum && computerHum.clip) { computerHum.loop = true; computerHum.Play(); }
         if (reading) readingVolume = reading.volume;
         if (entranceDoorOpenAudio) entranceOpenVolume = entranceDoorOpenAudio.volume;

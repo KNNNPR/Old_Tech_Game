@@ -109,7 +109,7 @@ public static class SceneAudioSetup
         var root = scene.GetRootGameObjects().FirstOrDefault(r => r.name == "Room audio");
         if (!root) { root = new GameObject("Room audio"); SceneManager.MoveGameObjectToScene(root, scene); }
         var room = root.GetComponent<GameplaySceneAudio>(); if (!room) room = root.AddComponent<GameplaySceneAudio>();
-        var ambient = Source(root.transform, "Room ambient audio", .18f, Clip("ambient.mp3")); ambient.spatialBlend = 0; ambient.loop = true;
+        var ambient = Source(root.transform, "Room ambient audio", .5f, Clip("ambient.mp3")); ambient.spatialBlend = 0; ambient.loop = true;
         var hum = Source(computer, "Computer ironlungs audio", .28f, Clip("ironlungs.mp3")); hum.loop = true; hum.minDistance = .7f; hum.maxDistance = 6f;
         var reading = Source(computer, "Card reading audio", .45f, Clip("reading.wav"));
         var camera = Source(interactor.PlayerCamera ? interactor.PlayerCamera.transform : player.transform, "Station camera audio", .45f, Clip("camera move.mp3"));

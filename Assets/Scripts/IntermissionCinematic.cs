@@ -38,6 +38,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
     [SerializeField] private AudioSource streetAudio;
     [SerializeField] private AudioClip streetScreamClip;
     [SerializeField] private AudioSource streetMaleAudio;
+    [SerializeField] private AudioSource collapseMusic;
     [SerializeField, Min(.5f)] private float runSpeed = 2.8f;
     [SerializeField, TextArea(2,4)] private string[] secondLines =
     {
@@ -89,6 +90,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
     private float cigaretteThrow;
     private bool takingDrag;
     private float windVolume;
+    private float collapseMusicGain;
 
     private void Awake()
     {
@@ -232,6 +234,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         yield return skyTurn;
 
         CurrentShot = Shot.Screams;
+        if(collapseMusic&&collapseMusic.clip){collapseMusicGain=.055f;collapseMusic.volume=collapseMusicGain;collapseMusic.loop=true;collapseMusic.Play();}
         if (streetAudio && streetScreamClip) streetAudio.PlayOneShot(streetScreamClip,.7f);
         if (streetMaleAudio && streetMaleAudio.clip) StartCoroutine(DistantMaleScream());
         yield return Say(4,2.8f);
@@ -244,6 +247,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         {
             desiredRotation = Quaternion.Slerp(desiredRotation,Quaternion.LookRotation(buildingCollapse.TrackingPoint-desiredPosition,Vector3.up),1-Mathf.Exp(-Step*9));
             panic = Mathf.Lerp(.3f,.85f,buildingCollapse.Progress);
+            collapseMusicGain=Mathf.Lerp(.09f,.58f,Mathf.SmoothStep(0,1,buildingCollapse.Progress));
             yield return null;
         }
         yield return Pause(.6f);
@@ -444,10 +448,14 @@ public sealed class IntermissionCinematic : MonoBehaviour
         Vector3 sway = new Vector3(Mathf.Sin(t * .7f) * .004f, Mathf.Sin(t * 1.1f) * .005f, 0) * still;
         sway += new Vector3(Mathf.Sin(t * 5.3f) * .009f, Mathf.Sin(t * 10.6f) * .018f, 0) * walking;
         if(secondIntermission)
+        {
             sway += new Vector3(Mathf.Sin(t*24.3f)*.009f,Mathf.Sin(t*29.7f)*.012f,0)*panic
                 +Vector3.up*Mathf.Sin(t*16.5f)*.028f*walking;
+            if(collapseMusic&&collapseMusic.isPlaying)collapseMusic.volume=collapseMusicGain*(1-Mathf.Clamp01(FadeAmount));
+        }
+        float collapseShake=secondIntermission&&CurrentShot==Shot.Collapse?Mathf.Sin(buildingCollapse.Progress*Mathf.PI)*.8f:0;
         playerCamera.transform.SetPositionAndRotation(desiredPosition + desiredRotation * sway,
-            desiredRotation * Quaternion.Euler(Mathf.Sin(t*22.7f)*.24f*panic,Mathf.Sin(t*17.3f)*.18f*panic,Mathf.Sin(t * .8f) * .12f * still+Mathf.Sin(t*15.1f)*.28f*panic));
+            desiredRotation * Quaternion.Euler(Mathf.Sin(t*22.7f)*(.24f*panic+collapseShake*.3f),Mathf.Sin(t*17.3f)*.18f*panic,Mathf.Sin(t * .8f) * .12f * still+Mathf.Sin(t*15.1f)*(.28f*panic+collapseShake)));
         if (inHand)
         {
             Vector3 pose = Vector3.Lerp(heldPosition, new Vector3(.07f, -.045f, .25f), drag);
@@ -567,6 +575,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         if(droppedCigaretteCollider){droppedCigaretteCollider.enabled=false;Destroy(droppedCigaretteCollider);}
         if(secondIntermission&&streetAudio)streetAudio.Stop();
         if(secondIntermission&&streetMaleAudio)streetMaleAudio.Stop();
+        if(collapseMusic)collapseMusic.Stop();
         if(secondIntermission&&buildingCollapse)buildingCollapse.enabled=false;
         if (cigaretteSmoke) cigaretteSmoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         if (playerCamera) { playerCamera.transform.SetPositionAndRotation(savedCameraPosition, savedCameraRotation); playerCamera.fieldOfView = savedFov; }

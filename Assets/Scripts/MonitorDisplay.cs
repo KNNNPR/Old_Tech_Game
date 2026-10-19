@@ -43,6 +43,7 @@ public class MonitorDisplay : MonoBehaviour
 
     [Header("Звук печати текста")]
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioSource extractionAudio;
     [SerializeField] private AudioClip typeClip;
     [SerializeField, Range(0f, 1f)] private float typeVolume = 0.4f;
 
@@ -266,6 +267,7 @@ public class MonitorDisplay : MonoBehaviour
         SetButton(false);
         Run(TypeText(extractingText));
 
+        PlayExtractionSound();
         dispenser.Dispense(
             instance => ConfigureOutput(instance, card),
             () =>
@@ -301,6 +303,7 @@ public class MonitorDisplay : MonoBehaviour
         }
 
         photoPrinter.LastPrintedPhoto.AssignImage(card.image, card.isAnomaly);
+        PlayExtractionSound();
         pendingPhotoCard = card;
         MarkCurrentViewed();
 
@@ -336,6 +339,7 @@ public class MonitorDisplay : MonoBehaviour
         }
 
         cassetteSpawner.LastSpawnedCassette.AssignRecording(card.audio, card.isAnomaly, card.audioCarrier);
+        PlayExtractionSound();
         pendingCassetteCard = card;
         MarkCurrentViewed();
 
@@ -354,6 +358,11 @@ public class MonitorDisplay : MonoBehaviour
         CurrentCard = null;
         Run(TypeText(doneText));
         Extracted?.Invoke(card);
+    }
+
+    private void PlayExtractionSound()
+    {
+        if(extractionAudio&&extractionAudio.clip)extractionAudio.PlayOneShot(extractionAudio.clip);
     }
 
     // ---------- Карта-«отключка» ----------
