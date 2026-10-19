@@ -86,9 +86,9 @@ public class ExitTerminal : MonoBehaviour
     [SerializeField] private AudioClip grantedClip;
     [SerializeField] private AudioSource errorAudio, backAudio, tensionMusic, breathingAudio, heartbeatAudio, screamAudio;
     [SerializeField] private EndCreditsRoll credits;
-    public int PressCount {get;private set;}
-    public int RequiredPresses=>dodges+1;
-    public bool HasBlackedOut {get;private set;}
+    public int PressCount { get; private set; }
+    public int RequiredPresses => dodges + 1;
+    public bool HasBlackedOut { get; private set; }
     private CanvasGroup endOverlay;
     private bool wasFocused;
     private Camera blackCamera;
@@ -140,9 +140,9 @@ public class ExitTerminal : MonoBehaviour
         if (exitButton != null) exitButton.Pressed -= OnExitPressed;
         if (cipherDial != null) cipherDial.ValueChanged -= OnDialChanged;
         StopAllCoroutines();
-        foreach(var source in new[]{audioSource,errorAudio,backAudio,tensionMusic,breathingAudio,heartbeatAudio,screamAudio})if(source)source.Stop();
-        if(endOverlay)Destroy(endOverlay.gameObject);
-        if(blackCamera){blackCamera.cullingMask=savedCullingMask;blackCamera.clearFlags=savedClearFlags;blackCamera.backgroundColor=savedCameraColour;}
+        foreach (var source in new[] { audioSource, errorAudio, backAudio, tensionMusic, breathingAudio, heartbeatAudio, screamAudio }) if (source) source.Stop();
+        if (endOverlay) Destroy(endOverlay.gameObject);
+        if (blackCamera) { blackCamera.cullingMask = savedCullingMask; blackCamera.clearFlags = savedClearFlags; blackCamera.backgroundColor = savedCameraColour; }
     }
 
     private void Start()
@@ -214,16 +214,16 @@ public class ExitTerminal : MonoBehaviour
 
     private void LateUpdate()
     {
-        bool focused=interactor&&interactor.IsFocused;
-        if(wasFocused&&!focused&&state!=State.Ending&&backAudio&&backAudio.clip)backAudio.PlayOneShot(backAudio.clip);
-        wasFocused=focused;
-        if(HasBlackedOut)return;
-        if(shaking&&state==State.ButtonActive)
+        bool focused = interactor && interactor.IsFocused;
+        if (wasFocused && !focused && state != State.Ending && backAudio && backAudio.clip) backAudio.PlayOneShot(backAudio.clip);
+        wasFocused = focused;
+        if (HasBlackedOut) return;
+        if (shaking && state == State.ButtonActive)
         {
-            float level=Mathf.Clamp01((PressCount-1)/(float)Mathf.Max(1,dodges));
-            shakeAmount=Mathf.MoveTowards(shakeAmount,Mathf.Lerp(.15f,1,level),Time.unscaledDeltaTime*.6f);
-            Raise(tensionMusic,Mathf.Lerp(.055f,.65f,level));Raise(breathingAudio,Mathf.Lerp(.08f,.46f,level));Raise(heartbeatAudio,Mathf.Lerp(.12f,.5f,level));
-            if(heartbeatAudio)heartbeatAudio.pitch=Mathf.Lerp(.9f,1.75f,level);
+            float level = Mathf.Clamp01((PressCount - 1) / (float)Mathf.Max(1, dodges));
+            shakeAmount = Mathf.MoveTowards(shakeAmount, Mathf.Lerp(.15f, 1, level), Time.unscaledDeltaTime * .6f);
+            Raise(tensionMusic, Mathf.Lerp(.055f, .65f, level)); Raise(breathingAudio, Mathf.Lerp(.08f, .46f, level)); Raise(heartbeatAudio, Mathf.Lerp(.12f, .5f, level));
+            if (heartbeatAudio) heartbeatAudio.pitch = Mathf.Lerp(.9f, 1.75f, level);
         }
         if (!cameraOverride || cam == null) return;
 
@@ -269,7 +269,7 @@ public class ExitTerminal : MonoBehaviour
         if (screenText != null) screenText.text = "";
         TakeCamera();
         shakeRoutine = StartCoroutine(Ramp(v => shakeAmount = v, 0f, .15f, shakeRampSeconds, false));
-        BeginLoop(tensionMusic,.055f);BeginLoop(breathingAudio,.08f);BeginLoop(heartbeatAudio,.12f);
+        BeginLoop(tensionMusic, .055f); BeginLoop(breathingAudio, .08f); BeginLoop(heartbeatAudio, .12f);
     }
 
     private IEnumerator Ramp(System.Action<float> set, float from, float to, float seconds, bool easeOut)
@@ -289,7 +289,7 @@ public class ExitTerminal : MonoBehaviour
     {
         if (state != State.ButtonActive) return;
         PressCount++;
-        if(errorAudio&&errorAudio.clip){errorAudio.Stop();errorAudio.Play();}
+        if (errorAudio && errorAudio.clip) { errorAudio.Stop(); errorAudio.Play(); }
         StartShaking();
 
         if (dodgesDone < dodges)
@@ -362,8 +362,8 @@ public class ExitTerminal : MonoBehaviour
     {
         if (interactor != null)
         {
-            interactor.InputEnabled=false;interactor.StopAllCoroutines();
-            if(interactor.Controller){interactor.Controller.SetControlEnabled(false);interactor.Controller.enabled=false;}
+            interactor.InputEnabled = false; interactor.StopAllCoroutines();
+            if (interactor.Controller) { interactor.Controller.SetControlEnabled(false); interactor.Controller.enabled = false; }
         }
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -387,6 +387,15 @@ public class ExitTerminal : MonoBehaviour
             foreach (var c in handOut.GetComponentsInChildren<Collider>()) c.enabled = false;
             foreach (var p in handOut.GetComponentsInChildren<Pickupable>()) p.enabled = false;
 
+            // У руки есть своя анимация (Animator) — она и есть вылет. Играем её ровно один раз
+            // и замираем на последнем кадре. Скриптовый полёт тогда не нужен — он бы с ней спорил.
+            var handAnimator = handOut.GetComponentInChildren<Animator>();
+            if (handAnimator != null && handAnimator.runtimeAnimatorController != null && handAnimator.enabled)
+            {
+                yield return PlayHandAnimationOnce(handAnimator);
+                goto Blackout;
+            }
+
             Vector3 center = FinalHand.ModelCenter(handOut);
             Vector3 scaledCenter = Vector3.Scale(handOut.lossyScale, center);
 
@@ -400,7 +409,7 @@ public class ExitTerminal : MonoBehaviour
 
             for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.1f, handSeconds))
             {
-                float k = 1f-Mathf.Pow(1f-t,3f);
+                float k = 1f - Mathf.Pow(1f - t, 3f);
                 float turn = Mathf.SmoothStep(0f, 1f, t); // поворот плавнее, заранее
                 Quaternion rotation = Quaternion.Slerp(fromRotation, toRotation, turn);
                 Vector3 centerNow = Vector3.Lerp(fromCenter, toCenter, k);
@@ -412,29 +421,54 @@ public class ExitTerminal : MonoBehaviour
                     flinched = true;
                     StartCoroutine(Ramp(v => flinch = v, 0f, 1f, flinchSeconds, true));
                 }
-                if(t>=.85f)break;
+                if (t >= .85f) break;
                 yield return null;
             }
         }
 
-        HasBlackedOut=true;endOverlay=CreateEndOverlay();endOverlay.alpha=1;
-        foreach(var root in gameObject.scene.GetRootGameObjects())
+    Blackout:
+        HasBlackedOut = true; endOverlay = CreateEndOverlay(); endOverlay.alpha = 1;
+        foreach (var root in gameObject.scene.GetRootGameObjects())
         {
-            foreach(var printer in root.GetComponentsInChildren<PhotoPrinterSpawner>(true))printer.enabled=false;
-            foreach(var spawner in root.GetComponentsInChildren<CassetteTubeSpawner>(true))spawner.enabled=false;
-            foreach(var source in root.GetComponentsInChildren<AudioSource>(true))if(source!=screamAudio)source.Stop();
+            foreach (var printer in root.GetComponentsInChildren<PhotoPrinterSpawner>(true)) printer.enabled = false;
+            foreach (var spawner in root.GetComponentsInChildren<CassetteTubeSpawner>(true)) spawner.enabled = false;
+            foreach (var source in root.GetComponentsInChildren<AudioSource>(true)) source.Stop(); // скример тоже — обрываем с концом руки
         }
-        if(interactor&&interactor.PlayerCamera)
+        if (interactor && interactor.PlayerCamera)
         {
-            blackCamera=interactor.PlayerCamera;savedCullingMask=blackCamera.cullingMask;savedClearFlags=blackCamera.clearFlags;savedCameraColour=blackCamera.backgroundColor;
-            blackCamera.cullingMask=0;blackCamera.clearFlags=CameraClearFlags.SolidColor;blackCamera.backgroundColor=Color.black;
+            blackCamera = interactor.PlayerCamera; savedCullingMask = blackCamera.cullingMask; savedClearFlags = blackCamera.clearFlags; savedCameraColour = blackCamera.backgroundColor;
+            blackCamera.cullingMask = 0; blackCamera.clearFlags = CameraClearFlags.SolidColor; blackCamera.backgroundColor = Color.black;
         }
-        if(!screamTriggered)PlayScream();
-        yield return null;
-        while(screamAudio&&screamAudio.isPlaying)yield return null;
         yield return new WaitForSecondsRealtime(.45f);
-        if(credits)credits.Play();
-        else Debug.LogError("THE_END is missing its credits roll.",this);
+        // Дальше — сцена TITLES (картинка END под музыку), оттуда в меню.
+        GameFlow.Advance();
+    }
+
+    private IEnumerator PlayHandAnimationOnce(Animator animator)
+    {
+        animator.Rebind();
+        animator.speed = 1f;
+        animator.Play(0, 0, 0f);
+        animator.Update(0f);
+
+        bool flinched = false;
+        while (true)
+        {
+            var info = animator.GetCurrentAnimatorStateInfo(0);
+            float t = info.normalizedTime; // у зацикленного клипа идёт дальше 1 — нам нужен только первый проход
+            if (!flinched && t >= flinchAt)
+            {
+                flinched = true;
+                StartCoroutine(Ramp(v => flinch = v, 0f, 1f, flinchSeconds, true));
+            }
+            if (t >= 1f) break;
+            yield return null;
+        }
+
+        // Последний кадр — и стоп, без второго проигрывания.
+        animator.Play(0, 0, 0.999f);
+        animator.Update(0f);
+        animator.speed = 0f;
     }
 
     private CanvasGroup CreateEndOverlay()
@@ -451,12 +485,12 @@ public class ExitTerminal : MonoBehaviour
 
         return canvasObject.GetComponent<CanvasGroup>();
     }
-    private static void BeginLoop(AudioSource source,float volume)
-    {if(source&&source.clip){source.volume=volume;source.loop=true;source.Play();}}
-    private static void Raise(AudioSource source,float volume)
-    {if(source)source.volume=Mathf.MoveTowards(source.volume,volume,Time.unscaledDeltaTime*.5f);}
+    private static void BeginLoop(AudioSource source, float volume)
+    { if (source && source.clip) { source.volume = volume; source.loop = true; source.Play(); } }
+    private static void Raise(AudioSource source, float volume)
+    { if (source) source.volume = Mathf.MoveTowards(source.volume, volume, Time.unscaledDeltaTime * .5f); }
     private void PlayScream()
-    {screamTriggered=true;if(screamAudio&&screamAudio.clip){screamAudio.loop=false;screamAudio.Play();}}
+    { screamTriggered = true; if (screamAudio && screamAudio.clip) { screamAudio.loop = false; screamAudio.Play(); } }
 
     private static void Stretch(RectTransform rect)
     {

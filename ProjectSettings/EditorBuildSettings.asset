@@ -24,6 +24,9 @@ EditorBuildSettings:
     path: Assets/Scenes/THE_END.unity
     guid: 2f07d1420a5918a4fb8a49d660b8272f
   - enabled: 1
+    path: Assets/Scenes/TITLES.unity
+    guid: 65db081ecddd7ca459db081d52e58455
+  - enabled: 1
     path: Assets/Scenes/GAME_OVER.unity
     guid: b5f2c30e0c3f72c42aac9d282a0db6b4
   m_configObjects:
