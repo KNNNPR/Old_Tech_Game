@@ -2018,7 +2018,7 @@ MonoBehaviour:
   titleFadeSeconds: 1
   titleHoldSeconds: 2.5
   returnDialogue: {fileID: 0}
-  testDay: 3
+  testDay: 1
   endDelay: 3
   onShiftComplete:
     m_PersistentCalls:
