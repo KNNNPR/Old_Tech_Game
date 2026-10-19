@@ -65,6 +65,9 @@ public class FeedLever : MonoBehaviour, IInteractable
     [SerializeField, Range(0f, 1f)] private float pullVolume = 1f;
 
     public event Action FeedStarted;
+    public event Action<Pickupable> PunchLanded;
+    /// <summary>A story camera can hold the reading briefly before the first physical stroke.</summary>
+    public bool FeedPaused { get; set; }
 
     /// <summary>Карта ушла в машину.</summary>
     public event Action<Pickupable> CardFed;
@@ -119,6 +122,7 @@ public class FeedLever : MonoBehaviour, IInteractable
     private IEnumerator FeedRoutine(Pickupable card)
     {
         FeedStarted?.Invoke();
+        while (FeedPaused) yield return null;
         Transform anchor = slot.AnchorTransform;
         Vector3 anchorStart = anchor.localPosition;
 
@@ -172,6 +176,7 @@ public class FeedLever : MonoBehaviour, IInteractable
 
             if (punchAudioSource && punchClip) { punchAudioSource.Stop(); punchAudioSource.clip = punchClip; punchAudioSource.Play(); }
             else Play(punchClip);
+            PunchLanded?.Invoke(slot.Current);
 
             if (punchHead != null)
                 yield return MoveLocal(punchHead, punchHeadRest + punchStroke, punchHeadRest, punchUpTime);

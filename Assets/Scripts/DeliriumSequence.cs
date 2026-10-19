@@ -9,13 +9,19 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(200)]
 public sealed class DeliriumSequence : MonoBehaviour,IInteractable
 {
-    public enum Phase { Approach,CardPlaced,Focusing,Locked,Blackout }
+    public enum Phase { Approach,CardPlaced,Focusing,Locked,Blackout,FinalBite }
     [SerializeField] private PlayerInteractor interactor;
     [SerializeField] private FirstPersonController controller;
     [SerializeField] private Camera view;
     [SerializeField] private Transform oven,cardRest,focusPose,respawnPose;
     [SerializeField] private Pickupable offering;
     [SerializeField] private PressButton button;
+    [SerializeField] private DeliriumOvenBite bite;
+    [SerializeField] private AudioSource splashAudio, heartbeatAudio;
+    [SerializeField] private AudioSource voidAudio, windAudio;
+    [SerializeField] private AudioSource ritualTrack;
+    [SerializeField] private AudioSource placementAudio;
+    [SerializeField, Range(0,1)] private float trackQuiet = .06f, trackLoud = .65f;
     [SerializeField] private Renderer buttonRenderer;
     [SerializeField] private TMP_FontAsset font;
     [SerializeField] private float reach=4.5f,fallLimit=-3;
@@ -23,7 +29,7 @@ public sealed class DeliriumSequence : MonoBehaviour,IInteractable
     public Phase CurrentPhase {get;private set;}
     public int PressCount {get;private set;}
     public bool HasFinished=>CurrentPhase==Phase.Blackout;
-    public bool IsLocked=>CurrentPhase==Phase.Focusing||CurrentPhase==Phase.Locked||HasFinished;
+    public bool IsLocked=>CurrentPhase==Phase.Focusing||CurrentPhase==Phase.Locked||CurrentPhase==Phase.FinalBite||HasFinished;
     private static readonly string[] Demands=
     {
         "Destroy it.","<b>DESTROY IT.</b>","That card knows what you did.","Do not keep it. <b>PRESS AGAIN.</b>",
@@ -62,6 +68,8 @@ public sealed class DeliriumSequence : MonoBehaviour,IInteractable
         interactor.BeginExternalInteraction(Tick);
         Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;
         initialized=true;
+        if(voidAudio&&voidAudio.clip){voidAudio.loop=true;voidAudio.Play();}
+        if(windAudio&&windAudio.clip){windAudio.loop=true;windAudio.Play();}
         yield return null;
     }
     public string GetPrompt(PlayerInteractor player)=>CurrentPhase==Phase.Approach?"[ E ] PLACE THE CARD":"[ LMB ] LOOK CLOSER";
@@ -73,6 +81,7 @@ public sealed class DeliriumSequence : MonoBehaviour,IInteractable
         interactor.ReleaseHeld();
         offering.AttachTo(cardRest,Vector3.zero,Quaternion.identity,8);
         offering.transform.localScale=cardWorldScale;
+        if(placementAudio&&placementAudio.clip)placementAudio.PlayOneShot(placementAudio.clip);
         CurrentPhase=Phase.CardPlaced;UpdateDemand();return true;
     }
     public void BeginFocus()
@@ -89,19 +98,46 @@ public sealed class DeliriumSequence : MonoBehaviour,IInteractable
     public void RegisterPress()
     {
         if(CurrentPhase!=Phase.Locked||PressCount>=10)return;
+        if(bite&&!bite.Bite())return;
         PressCount++;flash=1;pulse=1;
+        if(PressCount==1)
+        {
+            if(windAudio)windAudio.Stop();
+            if(ritualTrack&&ritualTrack.clip){ritualTrack.volume=trackQuiet;ritualTrack.loop=true;ritualTrack.Play();}
+        }
+        if(splashAudio&&splashAudio.clip)splashAudio.PlayOneShot(splashAudio.clip);
+        if(heartbeatAudio&&heartbeatAudio.clip)
+        {
+            heartbeatAudio.pitch=Mathf.Lerp(.85f,1.8f,(PressCount-1)/9f);
+            if(!heartbeatAudio.isPlaying){heartbeatAudio.loop=true;heartbeatAudio.Play();}
+        }
         if(PressCount==10)
         {
-            CurrentPhase=Phase.Blackout;veil.color=Color.black;motion.enabled=false;demand.enabled=hint.enabled=crosshair.enabled=false;
+            veil.color=Color.black;motion.enabled=false;demand.enabled=hint.enabled=crosshair.enabled=false;
             Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;
-            onFinished.Invoke();return;
+            CurrentPhase=Phase.FinalBite;StartCoroutine(FinishFinalBite());return;
         }
         UpdateDemand();
+    }
+    private IEnumerator FinishFinalBite()
+    {
+        while(bite&&bite.IsPlaying)yield return null;
+        CurrentPhase=Phase.Blackout;veil.color=Color.black;motion.enabled=false;demand.enabled=hint.enabled=crosshair.enabled=false;
+        if(heartbeatAudio)heartbeatAudio.Stop();
+        Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;
+        onFinished.Invoke();
+        if(ritualTrack)
+        {
+            float from=ritualTrack.volume;
+            for(float t=0;t<.6f;t+=Time.unscaledDeltaTime){ritualTrack.volume=Mathf.Lerp(from,0,t/.6f);yield return null;}
+            ritualTrack.Stop();
+        }
     }
     private void Tick()
     {
         if(!initialized)return;
         if(CurrentPhase==Phase.Blackout){interactor.SetExternalPrompt(null,"");return;}
+        if(CurrentPhase==Phase.FinalBite){interactor.SetExternalPrompt(null,"");return;}
         if(CurrentPhase==Phase.Focusing)
         {
             transitionTime+=Time.unscaledDeltaTime;
@@ -157,9 +193,12 @@ public sealed class DeliriumSequence : MonoBehaviour,IInteractable
     private void LateUpdate()
     {
         if(!initialized||HasFinished)return;
+        if(CurrentPhase==Phase.FinalBite){veil.color=Color.black;return;}
+        if(ritualTrack&&ritualTrack.isPlaying)
+            ritualTrack.volume=Mathf.MoveTowards(ritualTrack.volume,Mathf.Lerp(trackQuiet,trackLoud,Mathf.Clamp01((PressCount-1)/9f)),Time.unscaledDeltaTime*.7f);
         float level=PressCount/10f,t=Time.unscaledTime;
         flash=Mathf.MoveTowards(flash,0,Time.unscaledDeltaTime*2.8f);pulse=Mathf.MoveTowards(pulse,0,Time.unscaledDeltaTime*2.1f);
-        if(CurrentPhase==Phase.Locked)
+        if(CurrentPhase==Phase.Locked||CurrentPhase==Phase.FinalBite)
         {
             approach=Mathf.SmoothDamp(approach,Mathf.Min(PressCount,9)/9f,ref approachVelocity,.18f,Mathf.Infinity,Time.unscaledDeltaTime);
             Vector3 fromButton=focusPose.position-buttonAim;
@@ -217,6 +256,8 @@ public sealed class DeliriumSequence : MonoBehaviour,IInteractable
     }
     private void OnDisable()
     {
+        StopAllCoroutines();
+        foreach(var source in new[]{splashAudio,heartbeatAudio,voidAudio,windAudio,ritualTrack})if(source)source.Stop();
         if(!initialized)return;
         if(interactor){interactor.EndExternalInteraction(Tick);interactor.InputEnabled=savedInput;}
         if(view){view.transform.localPosition=cameraLocalPosition;view.transform.localRotation=cameraLocalRotation;view.fieldOfView=cameraFov;}

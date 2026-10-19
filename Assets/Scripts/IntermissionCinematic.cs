@@ -37,6 +37,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
     [SerializeField] private IntermissionBuildingCollapse buildingCollapse;
     [SerializeField] private AudioSource streetAudio;
     [SerializeField] private AudioClip streetScreamClip;
+    [SerializeField] private AudioSource streetMaleAudio;
     [SerializeField, Min(.5f)] private float runSpeed = 2.8f;
     [SerializeField, TextArea(2,4)] private string[] secondLines =
     {
@@ -232,6 +233,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
 
         CurrentShot = Shot.Screams;
         if (streetAudio && streetScreamClip) streetAudio.PlayOneShot(streetScreamClip,.7f);
+        if (streetMaleAudio && streetMaleAudio.clip) StartCoroutine(DistantMaleScream());
         yield return Say(4,2.8f);
         CurrentShot = Shot.Collapse;
         // Optical zoom: turn and narrow the lens while staying at the balcony's original viewpoint.
@@ -279,6 +281,12 @@ public sealed class IntermissionCinematic : MonoBehaviour
         if (windAudio) windAudio.Stop();
         panic=0; CurrentShot=Shot.Finished; HasFinished=true;
         onFinished.Invoke();
+    }
+
+    private IEnumerator DistantMaleScream()
+    {
+        yield return new WaitForSecondsRealtime(.65f);
+        if (streetMaleAudio && streetMaleAudio.clip) streetMaleAudio.PlayOneShot(streetMaleAudio.clip);
     }
 
     private IEnumerator ThrowCigarette()
@@ -558,6 +566,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         }
         if(droppedCigaretteCollider){droppedCigaretteCollider.enabled=false;Destroy(droppedCigaretteCollider);}
         if(secondIntermission&&streetAudio)streetAudio.Stop();
+        if(secondIntermission&&streetMaleAudio)streetMaleAudio.Stop();
         if(secondIntermission&&buildingCollapse)buildingCollapse.enabled=false;
         if (cigaretteSmoke) cigaretteSmoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         if (playerCamera) { playerCamera.transform.SetPositionAndRotation(savedCameraPosition, savedCameraRotation); playerCamera.fieldOfView = savedFov; }

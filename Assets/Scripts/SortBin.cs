@@ -36,12 +36,23 @@ public class SortBin : MonoBehaviour
     [SerializeField, Min(0)] private float processingSoundSeconds;
     [SerializeField, Min(0)] private float processingFadeStart;
     [SerializeField] private AudioSource acceptedAudio;
+    [SerializeField] private AudioSource placementAudio;
     private Coroutine processingSound;
     private float processingVolume;
 
     public SortVerdict Verdict => verdict;
     public bool IsBusy { get; private set; }
     public event System.Action ProcessingStarted;
+
+    private void OnEnable()
+    {
+        if(slot)slot.ItemInserted+=OnCardPlaced;
+    }
+    private void OnCardPlaced(Pickupable item)
+    {
+        if(item && item.TryGetComponent<PunchCard>(out _) && placementAudio && placementAudio.clip)
+            placementAudio.PlayOneShot(placementAudio.clip);
+    }
 
     private void Awake()
     {
@@ -132,6 +143,7 @@ public class SortBin : MonoBehaviour
     }
     private void OnDisable()
     {
+        if(slot)slot.ItemInserted-=OnCardPlaced;
         if (processingSound != null) StopCoroutine(processingSound);
         processingSound = null;
         if (processingSoundSeconds > 0 && audioSource) { audioSource.Stop(); audioSource.loop = false; audioSource.volume = processingVolume; }

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -48,6 +49,8 @@ public class PlayerFaint : MonoBehaviour
 
     [Header("Звук (необязательно)")]
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioSource heartbeatAudio, breakdownAudio;
+    [SerializeField] private AudioSource breathingAudio, ringingAudio;
     [Tooltip("Звон в ушах / гул — когда начинается тряска.")]
     [SerializeField] private AudioClip ringClip;
     [Tooltip("Удар о пол — в конце падения.")]
@@ -71,6 +74,15 @@ public class PlayerFaint : MonoBehaviour
     private Quaternion poseRotation;
     private CanvasGroup black;
     private bool alarmRunning;
+    private bool subjectiveAudio;
+    private sealed class DuckedSound
+    {
+        public AudioSource source;
+        public float volume, cutoff;
+        public AudioLowPassFilter filter;
+        public bool addedFilter, filterWasEnabled;
+    }
+    private readonly List<DuckedSound> duckedSounds = new List<DuckedSound>();
 
     private void Awake()
     {
@@ -154,6 +166,13 @@ public class PlayerFaint : MonoBehaviour
         if (!IsWarning) { Play(ringClip); StartAlarm(); }
         TakeControl();
 
+        if (GameFlow.CurrentShift == 2)
+        {
+            if (heartbeatAudio && heartbeatAudio.clip) heartbeatAudio.Play();
+            if (breakdownAudio && breakdownAudio.clip) breakdownAudio.Play();
+            BeginSubjectiveAudio();
+        }
+
         Vector3 startPosition = posePosition = cam.position;
         Quaternion startRotation = poseRotation = cam.rotation;
         float startVolume = AudioListener.volume;
@@ -175,6 +194,7 @@ public class PlayerFaint : MonoBehaviour
             poseRotation = Quaternion.Slerp(poseRotation, lurchTarget, 18f * Time.deltaTime);
             posePosition = startPosition + Vector3.down * (0.15f * k);
             black.alpha = Blink(t * 2f, 0.25f + 0.45f * k);
+            UpdateSubjectiveAudio(t / Mathf.Max(.01f, lurchSeconds + fallSeconds));
             yield return null;
         }
 
@@ -190,7 +210,8 @@ public class PlayerFaint : MonoBehaviour
             posePosition = Vector3.Lerp(fromPosition, fallenPosition, k);
             poseRotation = Quaternion.Slerp(fromRotation, fallen, k);
             black.alpha = Mathf.Max(Blink(t * 3f, 0.6f + 0.4f * t), t);
-            if (fadeOutAllAudio) AudioListener.volume = Mathf.Lerp(startVolume, 0f, t);
+            if (subjectiveAudio) UpdateSubjectiveAudio((lurchSeconds + t * fallSeconds) / Mathf.Max(.01f, lurchSeconds + fallSeconds));
+            else if (fadeOutAllAudio) AudioListener.volume = Mathf.Lerp(startVolume, 0f, t);
             yield return null;
         }
 
@@ -199,11 +220,20 @@ public class PlayerFaint : MonoBehaviour
         black.alpha = 1f;
         StopAlarm();
         Play(thudClip);
-
-        yield return new WaitForSeconds(holdBlackSeconds);
+        if (subjectiveAudio) UpdateSubjectiveAudio(1);
+        for (float elapsed=0;elapsed<holdBlackSeconds;elapsed+=Time.deltaTime)
+        {
+            if(subjectiveAudio)
+            {
+                float tail=1-Mathf.Clamp01((elapsed-(holdBlackSeconds-.7f))/.7f);
+                breathingAudio.volume=.65f*tail;ringingAudio.volume=.55f*tail;
+            }
+            yield return null;
+        }
 
         onFainted?.Invoke();
-        AudioListener.volume = startVolume; // громкость глобальная — вернуть до смены сцены
+        if(!subjectiveAudio)AudioListener.volume = startVolume;
+        RestoreSubjectiveAudio();
 
         if (string.IsNullOrEmpty(sceneToLoad)) GameFlow.WakeUpNextDay();
         else GameFlow.Load(sceneToLoad);
@@ -277,6 +307,53 @@ public class PlayerFaint : MonoBehaviour
     private void StopAlarm() => alarmRunning = false;
 
     // ---------- Служебное ----------
+
+    private void BeginSubjectiveAudio()
+    {
+        if(!breathingAudio||!breathingAudio.clip||!ringingAudio||!ringingAudio.clip)return;
+        subjectiveAudio=true;
+        var filters=new HashSet<AudioLowPassFilter>();
+        foreach(var source in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+        {
+            if(source==breathingAudio||source==ringingAudio)continue;
+            var filter=source.GetComponent<AudioLowPassFilter>();bool added=!filter;
+            if(added)filter=source.gameObject.AddComponent<AudioLowPassFilter>();
+            bool first=filters.Add(filter);
+            duckedSounds.Add(new DuckedSound{source=source,volume=source.volume,filter=first?filter:null,addedFilter=added,
+                cutoff=filter.cutoffFrequency,filterWasEnabled=filter.enabled});
+            filter.enabled=true;
+        }
+        breathingAudio.loop=ringingAudio.loop=true;UpdateSubjectiveAudio(0);
+        breathingAudio.Play();ringingAudio.Play();
+    }
+    private void UpdateSubjectiveAudio(float progress)
+    {
+        if(!subjectiveAudio)return;
+        float t=Mathf.SmoothStep(0,1,Mathf.Clamp01(progress));
+        breathingAudio.volume=Mathf.Lerp(.1f,.65f,t);ringingAudio.volume=Mathf.Lerp(.025f,.55f,t);
+        foreach(var sound in duckedSounds)
+        {
+            if(sound.source)sound.source.volume=sound.volume*Mathf.Lerp(1,.06f,t);
+            if(sound.filter)sound.filter.cutoffFrequency=Mathf.Lerp(sound.cutoff,500,t);
+        }
+    }
+    private void RestoreSubjectiveAudio()
+    {
+        if(breathingAudio)breathingAudio.Stop();if(ringingAudio)ringingAudio.Stop();
+        foreach(var sound in duckedSounds)
+        {
+            if(sound.source)sound.source.volume=sound.volume;
+            if(!sound.filter)continue;
+            sound.filter.cutoffFrequency=sound.cutoff;sound.filter.enabled=sound.filterWasEnabled;
+            if(sound.addedFilter){sound.filter.enabled=false;Destroy(sound.filter);}
+        }
+        duckedSounds.Clear();subjectiveAudio=false;
+    }
+    private void OnDisable()
+    {
+        RestoreSubjectiveAudio();
+        if(heartbeatAudio)heartbeatAudio.Stop();if(breakdownAudio)breakdownAudio.Stop();
+    }
 
     private void TakeControl()
     {

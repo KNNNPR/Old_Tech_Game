@@ -385,7 +385,7 @@ public static class SceneAudioSetup
         }
         var steps = (AudioSource)new SerializedObject(room).FindProperty("footsteps").objectReferenceValue;
         if (!steps) { steps = Source(player.transform, "Player footsteps audio", .4f); steps.minDistance = 1.5f; }
-        steps.clip = Clip("step_concrete.mp3"); steps.spatialBlend = 1; steps.ignoreListenerVolume = false; steps.dopplerLevel = 0;
+        steps.clip = Clip(scene.name == "THE_END" ? "slimestep.mp3" : "step_concrete.mp3"); steps.spatialBlend = 1; steps.ignoreListenerVolume = false; steps.dopplerLevel = 0;
         Ref(room, "footsteps", steps); Ref(room, "player", player); Ref(room, "character", player.GetComponent<CharacterController>());
         foreach (var cinematic in all.Select(t => t.GetComponent<IntermissionCinematic>()).Where(c => c))
         {

@@ -5,6 +5,7 @@ using UnityEngine;
 public sealed class PhotoClothespin : MonoBehaviour, IInteractable
 {
     [SerializeField] private Transform paperAnchor;
+    [SerializeField] private AudioSource hangAudio;
     public DevelopingPhoto Current { get; private set; }
 
     public string GetPrompt(PlayerInteractor interactor) => Current
@@ -34,6 +35,7 @@ public sealed class PhotoClothespin : MonoBehaviour, IInteractable
             Current = item.GetComponent<DevelopingPhoto>();
             item.AttachTo(paperAnchor, Vector3.zero, Quaternion.identity);
             Current.HangOn(this);
+            if (hangAudio && hangAudio.clip) hangAudio.Play();
         }
     }
 

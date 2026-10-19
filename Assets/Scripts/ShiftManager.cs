@@ -238,17 +238,19 @@ public class ShiftManager : MonoBehaviour
 
         if (tube != null)
         {
-            GameObject[] special = shifts[ShiftIndex].spawnInsteadOfCards;
-            if (special != null && special.Length > 0)
-            {
-                shiftCards = Array.Empty<CardData>(); // особый день не заканчивается сортировкой
-                tube.SetPrefabs(special);
-            }
+            if(ShiftIndex==3 && shifts[ShiftIndex].giveToPlayer && shifts[ShiftIndex].giveToPlayer.GetComponent<FinalHand>())
+            { tube.AutomaticSpawning=false; tube.enabled=false; shiftCards=Array.Empty<CardData>(); }
             else
             {
-                tube.SetCardData(shiftCards);
+                GameObject[] special = shifts[ShiftIndex].spawnInsteadOfCards;
+                if (special != null && special.Length > 0)
+                {
+                    shiftCards = Array.Empty<CardData>(); // особый день не заканчивается сортировкой
+                    tube.SetPrefabs(special);
+                }
+                else tube.SetCardData(shiftCards);
+                tube.AutomaticSpawning = true;
             }
-            tube.AutomaticSpawning = true;
         }
 
         if (titleGroup != null && titleText != null)
@@ -270,6 +272,15 @@ public class ShiftManager : MonoBehaviour
 
         if (!ending && SortedCount >= shiftCards.Length)
             StartCoroutine(EndShift());
+    }
+
+    /// <summary>A fatal sorting mistake takes precedence over the normal end-of-shift transition.</summary>
+    public void AbortShift()
+    {
+        shiftStarted = false; waitingForTutorial = false; ending = true;
+        StopAllCoroutines();
+        if (tube) tube.AutomaticSpawning = false;
+        if (titleGroup) titleGroup.alpha = 0;
     }
 
     private IEnumerator EndShift()

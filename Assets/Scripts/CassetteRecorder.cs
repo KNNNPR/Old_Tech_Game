@@ -13,6 +13,7 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
     [SerializeField] private AudioSource carrierSource;
     [SerializeField] private AudioSource hiddenSource;
     [SerializeField] private AudioSource buttonSource;
+    [SerializeField] private AudioSource insertSource;
     [SerializeField] private AudioClip buttonClip;
     [SerializeField] private RecorderSignalProcessor carrierProcessor;
     [SerializeField] private RecorderSignalProcessor hiddenProcessor;
@@ -33,7 +34,7 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
     private void Awake()
     {
         GameSettings.Load();
-        foreach (var source in new[] { carrierSource, hiddenSource, buttonSource })
+        foreach (var source in new[] { carrierSource, hiddenSource, buttonSource, insertSource })
             if (source) { source.ignoreListenerVolume = false; source.spatialBlend = 1; source.dopplerLevel = 0; }
         if (!inspectionView) inspectionView = GetComponent<RecorderInspectionView>();
         if (playButton) buttonRest = playButton.localPosition;
@@ -67,6 +68,7 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
             for (int i = 0; i < values.Length; i++) values[i] = sliders != null && i < sliders.Length && sliders[i] ? sliders[i].Value : .5f;
             Current.PrepareTuning(values);
             RefreshQuality();
+            if (insertSource && insertSource.clip) insertSource.PlayOneShot(insertSource.clip);
         }
         else if (IsPlaying || !hasPlayed) TogglePlayback();
         else

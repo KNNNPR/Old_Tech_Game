@@ -10,6 +10,7 @@ public sealed class IntermissionBuildingCollapse : MonoBehaviour
     [SerializeField] private Animator buildingAnimator;
     [SerializeField] private Bounds buildingBounds;
     [SerializeField] private ParticleSystem dustCloud, debris;
+    [SerializeField] private AudioSource collapseAudio;
     private Vector3 savedPosition,savedScale,localFocus,cloudCentre;
     private Quaternion savedRotation;
     private bool animatorWasEnabled;
@@ -41,6 +42,7 @@ public sealed class IntermissionBuildingCollapse : MonoBehaviour
     {
         if(!initialized||falling||HasLanded)return;
         elapsed=nextDust=0; falling=true;
+        if(collapseAudio&&collapseAudio.clip)collapseAudio.Play();
         if(dustCloud)dustCloud.Play();
         if(debris)debris.Play();
         fallAnimation.SampleAnimation(animatedBuilding.gameObject,0);
@@ -87,6 +89,7 @@ public sealed class IntermissionBuildingCollapse : MonoBehaviour
     private void OnDisable()
     {
         falling=false;
+        if(collapseAudio)collapseAudio.Stop();
         if(dustCloud)dustCloud.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
         if(debris)debris.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
         if(!initialized)return;

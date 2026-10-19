@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Финальный предмет (рука из последнего дня). Вешается на префаб руки рядом с Pickupable.
-/// Когда его вставляют в компьютер, FinalHandTrigger запускает финал.
+/// После вставки в компьютер рычаг запускает FinalHandTrigger.
 ///
 /// Ещё задаёт, как рука лежит в руке игрока и в слоте компьютера. Повороты считаются вокруг
 /// центра самой модели, а не её точки опоры из Blender, поэтому рука не «уезжает» при повороте.
@@ -28,6 +28,11 @@ public class FinalHand : MonoBehaviour, IAttachPose
     private PlayerInteractor interactor;
     private bool hasCenter;
     private Vector3 centerLocal;
+    private float modelRadius;
+    private float inspection, inspectionTurn;
+
+    public void SetInspection(float amount, float turn)
+    { inspection = Mathf.Clamp01(amount); inspectionTurn = turn; }
 
     private void Awake()
     {
@@ -37,11 +42,29 @@ public class FinalHand : MonoBehaviour, IAttachPose
     public bool TryGetPose(Transform parent, out Vector3 localPosition, out Quaternion localRotation)
     {
         if (interactor == null) interactor = FindFirstObjectByType<PlayerInteractor>();
-        if (!hasCenter) { centerLocal = ModelCenter(transform); hasCenter = true; }
+        if (!hasCenter)
+        {
+            centerLocal = ModelCenter(transform);
+            Bounds bounds = default; bool any = false;
+            foreach(var renderer in GetComponentsInChildren<Renderer>())
+            { if(!any){bounds=renderer.bounds;any=true;}else bounds.Encapsulate(renderer.bounds); }
+            modelRadius=any?bounds.extents.magnitude:.5f;hasCenter = true;
+        }
 
         bool inHand = interactor != null && interactor.HeldItem == item;
         localRotation = Quaternion.Euler(inHand ? handRotation : slotRotation);
         Vector3 meters = inHand ? handPosition : slotPosition;
+
+        if (inHand && inspection > 0 && interactor.PlayerCamera)
+        {
+            localRotation = Quaternion.Slerp(localRotation,Quaternion.Euler(78,handRotation.y+inspectionTurn*.4f,-12),inspection);
+            float distance=Mathf.Max(1.1f,modelRadius/Mathf.Sin(interactor.PlayerCamera.fieldOfView*Mathf.Deg2Rad*.5f)*1.12f);
+            Vector3 inFront = parent.InverseTransformPoint(interactor.PlayerCamera.transform.TransformPoint(new Vector3(.02f,-.12f,distance)));
+            Vector3 normal = ToParentUnits(parent,meters);
+            Vector3 centre = localRotation * Vector3.Scale(transform.localScale,centerLocal);
+            localPosition = Vector3.Lerp(normal,inFront,inspection)-centre;
+            return true;
+        }
 
         // Центр модели должен оказаться в нужной точке → точка опоры смещается на повёрнутый центр.
         Vector3 center = localRotation * Vector3.Scale(transform.localScale, centerLocal);
