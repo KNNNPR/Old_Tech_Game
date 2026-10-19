@@ -151,6 +151,14 @@ public class MonitorDisplay : MonoBehaviour
         if (currentPunchCard != null) currentPunchCard.MarkViewed();
     }
 
+    /// <summary>Напечатать на экране произвольный текст (для сюжетных сцен).</summary>
+    public void ShowSystemText(string text)
+    {
+        SetButton(false);
+        ResetCipher();
+        Run(TypeText(text));
+    }
+
     /// <summary>Показать карту. null — ошибка чтения.</summary>
     public void Show(CardData data) => Run(ShowRoutine(data));
 

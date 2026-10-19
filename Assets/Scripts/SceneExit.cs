@@ -2,59 +2,50 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Переход из перебивки (Intermission) в следующий день.
-/// Ждёт, пока кат-сцена закончится (HasFinished), выдерживает паузу и загружает основную сцену.
-/// Вешается на любой объект сцены Intermission. Сам находит кат-сцену.
-/// (Режим Tutorial — для старой отдельной сцены TUTORIAL, сейчас не используется.)
+/// Переход к следующему шагу сюжета, когда сцена отыграла.
+/// Сам находит в сцене то, что в ней «играет» (перебивка, разговор с роботом, DELIRIUM),
+/// ждёт его окончания (HasFinished), выдерживает паузу и вызывает GameFlow.Advance().
+///
+/// Вешается на любой активный объект сцен: Intermission, Intermission 2, HELPYDIALOGUE, DELIRIUM.
 /// </summary>
 public class SceneExit : MonoBehaviour
 {
-    public enum After { Auto, Intermission, Tutorial }
-
-    [Tooltip("Auto — определить по тому, что есть в сцене (кат-сцена Intermission или обучение).")]
-    [SerializeField] private After after = After.Auto;
-
-    [Tooltip("Если пусто — найдётся в сцене сам.")]
-    [SerializeField] private IntermissionCinematic intermission;
-    [Tooltip("Если пусто — найдётся в сцене сам.")]
-    [SerializeField] private HelpyTutorialIntro tutorial;
-
-    [Tooltip("Пауза после окончания перед загрузкой.")]
+    [Tooltip("Пауза после окончания сцены перед загрузкой следующей.")]
     [SerializeField] private float delay = 1f;
 
     [Header("Затемнение (необязательно)")]
     [SerializeField] private CanvasGroup fade;
     [SerializeField] private float fadeSeconds = 1f;
 
+    private IntermissionCinematic intermission;
+    private HelpyReturnDialogue helpyDialogue;
+    private DeliriumSequence delirium;
     private bool leaving;
 
     private void Awake()
     {
-        if (intermission == null) intermission = FindFirstObjectByType<IntermissionCinematic>();
-        if (tutorial == null) tutorial = FindFirstObjectByType<HelpyTutorialIntro>();
+        intermission = FindFirstObjectByType<IntermissionCinematic>();
+        helpyDialogue = FindFirstObjectByType<HelpyReturnDialogue>();
+        delirium = FindFirstObjectByType<DeliriumSequence>();
 
-        if (after == After.Auto)
-            after = intermission != null ? After.Intermission : After.Tutorial;
-
-        if (after == After.Intermission && intermission == null)
-            Debug.LogError("SceneExit: в сцене нет IntermissionCinematic — переход в следующий день не случится.", this);
-        if (after == After.Tutorial && tutorial == null)
-            Debug.LogError("SceneExit: в сцене нет HelpyTutorialIntro — переход не случится.", this);
+        if (intermission == null && helpyDialogue == null && delirium == null)
+            Debug.LogError("SceneExit: в сцене нет ни перебивки, ни разговора с роботом, ни DELIRIUM — " +
+                           "не знаю, когда сцена закончится.", this);
     }
 
     private void Update()
     {
-        if (leaving) return;
+        if (leaving || !IsFinished()) return;
+        leaving = true;
+        StartCoroutine(Leave());
+    }
 
-        bool finished = after == After.Intermission
-            ? intermission != null && intermission.HasFinished
-            : tutorial != null && tutorial.HasFinished;
-
-        if (finished)
-        {
-            leaving = true;
-            StartCoroutine(Leave());
-        }
+    private bool IsFinished()
+    {
+        if (intermission != null) return intermission.HasFinished;
+        if (helpyDialogue != null) return helpyDialogue.HasFinished;
+        if (delirium != null) return delirium.HasFinished;
+        return false;
     }
 
     private IEnumerator Leave()
@@ -72,14 +63,6 @@ public class SceneExit : MonoBehaviour
             fade.alpha = 1f;
         }
 
-        if (after == After.Intermission)
-        {
-            Debug.Log($"SceneExit: перебивка закончилась, загружаю день {GameFlow.CurrentShift + 1}.");
-            GameFlow.AfterIntermission();
-        }
-        else
-        {
-            GameFlow.CompleteTutorial();
-        }
+        GameFlow.Advance();
     }
 }

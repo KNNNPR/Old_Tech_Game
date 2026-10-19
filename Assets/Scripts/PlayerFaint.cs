@@ -56,7 +56,7 @@ public class PlayerFaint : MonoBehaviour
     [SerializeField] private bool fadeOutAllAudio = true;
 
     [Header("После обморока")]
-    [Tooltip("NextDay — очнуться в следующем дне. LoadScene — загрузить сцену из поля ниже.")]
+    [Tooltip("NextDay — следующий шаг сюжета (после дня 3 это DELIRIUM). LoadScene — загрузить сцену из поля ниже.")]
     [SerializeField] private AfterFaint afterFaint = AfterFaint.NextDay;
     [SerializeField] private string sceneAfterFaint = GameFlow.EndScene;
     public UnityEvent onFainted;

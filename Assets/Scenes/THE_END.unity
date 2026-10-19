@@ -157,7 +157,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[ EXTRACT ]'
+  m_text: '[ EXIT ]'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -685,6 +685,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 88.819}
+--- !u!1001 &180504626
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -185.645
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 215.852
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 80.797
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+      propertyPath: m_Name
+      value: hand
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+--- !u!4 &180504627 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7bbfe266a75dd1344803df7847b39e9e, type: 3}
+  m_PrefabInstance: {fileID: 180504626}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &218438443
 GameObject:
   m_ObjectHideFlags: 0
@@ -697,6 +771,7 @@ GameObject:
   - component: {fileID: 218438446}
   - component: {fileID: 218438445}
   - component: {fileID: 218438444}
+  - component: {fileID: 218438448}
   m_Layer: 0
   m_Name: Monitor
   m_TagString: Untagged
@@ -818,6 +893,57 @@ Transform:
   - {fileID: 1386644721}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 88.819}
+--- !u!114 &218438448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 218438443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df28d051531423943b48eafdf80409db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ExitTerminal
+  screenText: {fileID: 1182853079}
+  exitButton: {fileID: 2011107789}
+  buttonArea: {fileID: 1386644721}
+  header: 'HAND PATTERN: OPERATOR. ACCEPTED.'
+  puzzle: 'EVERY CARD YOU BURNED CAME BACK.
+
+    X-RAYS OF YOUR HAND ARE ON FILE.
+
+    IT
+    KNOWS YOUR SHIFT BY HEART.
+
+    THE ONLY WAY OUT IS A WORD.'
+  prompt: 'TYPE THE WORD:'
+  answer: EXIT
+  wrongText: ACCESS DENIED.
+  hintAfterMistakes: 2
+  hint: READ THE FIRST LETTERS.
+  solvedText: 'ACCESS GRANTED.
+
+    PRESS EXIT TO LEAVE.'
+  maxInputLength: 12
+  dodges: 2
+  dodgeTaunts:
+  - NO.
+  - NOT YET.
+  edgeMargin: 70
+  handOut: {fileID: 180504627}
+  handSeconds: 2.2
+  handStopDistance: 0.2
+  goodbyeText: GOODBYE, OPERATOR.
+  endTitle: THE END
+  endHoldSeconds: 5
+  returnToMenu: 1
+  audioSource: {fileID: 0}
+  keyClip: {fileID: 0}
+  deniedClip: {fileID: 0}
+  grantedClip: {fileID: 0}
+  dodgeClip: {fileID: 0}
+  handClip: {fileID: 0}
 --- !u!1 &266894069
 GameObject:
   m_ObjectHideFlags: 0
@@ -1478,6 +1604,37 @@ Transform:
   - {fileID: 1706756383}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 270, z: 0}
+--- !u!1 &734035554
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 734035555}
+  m_Layer: 0
+  m_Name: FocusPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &734035555
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 734035554}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.08077235, y: -0.013145891, z: 0.007200008, w: 0.9966199}
+  m_LocalPosition: {x: 4.9430795, y: -114.765465, z: -792.8418}
+  m_LocalScale: {x: 33333.324, y: 33333.33, z: 33333.332}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1386644721}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &795744694
 GameObject:
   m_ObjectHideFlags: 0
@@ -7279,6 +7436,8 @@ GameObject:
   - component: {fileID: 1386644724}
   - component: {fileID: 1386644723}
   - component: {fileID: 1386644722}
+  - component: {fileID: 1386644725}
+  - component: {fileID: 1386644726}
   m_Layer: 0
   m_Name: MonitorCanvas
   m_TagString: Untagged
@@ -7300,6 +7459,7 @@ RectTransform:
   m_Children:
   - {fileID: 1182853077}
   - {fileID: 2011107790}
+  - {fileID: 734035555}
   m_Father: {fileID: 218438447}
   m_LocalEulerAnglesHint: {x: -122.093, y: 0, z: 180}
   m_AnchorMin: {x: 0, y: 0}
@@ -7370,6 +7530,41 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!65 &1386644725
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386644720}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 640, y: 480, z: 10}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1386644726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1386644720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91956994104341d4099d8ab247556a42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FocusStation
+  focusPoint: {fileID: 734035555}
+  prompt: '[LMB] Use computer'
 --- !u!1001 &1424513897
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8592,7 +8787,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExtractButton
   visual: {fileID: 38684963}
-  prompt: '[E] EXTRACT'
+  prompt: '[LMB] EXIT'
   audioSource: {fileID: 0}
   clickClip: {fileID: 0}
 --- !u!224 &2011107790
@@ -9043,3 +9238,4 @@ SceneRoots:
   - {fileID: 2059137213}
   - {fileID: 274829819}
   - {fileID: 2080914429}
+  - {fileID: 180504626}
