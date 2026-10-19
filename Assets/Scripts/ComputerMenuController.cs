@@ -16,10 +16,12 @@ public class ComputerMenuController : MonoBehaviour
     [SerializeField] private Transform lever;
     [SerializeField] private TMP_Text hint;
     [SerializeField] private MainMenuController menu;
+    [SerializeField] private MenuAudio menuAudio;
     [SerializeField] private Material hoverOutlineMaterial;
     [SerializeField, HideInInspector] private MenuHoverOutline computerOutline, leverOutline;
     private MenuCameraSway cameraSway;
     private ComputerMenuTarget.TargetKind? hoveredTarget;
+    private FloatingLogoLetter hoveredLetter, previousHoveredLetter;
     private bool focused, powered = true, moving, draggingLever, leverToggled;
     private float flightTime, powerLevel = 1f;
     private Vector3 flightStart, dragStart;
@@ -60,6 +62,7 @@ public class ComputerMenuController : MonoBehaviour
     private void Update()
     {
         hoveredTarget = null;
+        hoveredLetter = null;
         float dt = Mathf.Min(Time.unscaledDeltaTime, .05f);
         if (moving) AdvanceFlight(dt);
         else
@@ -109,6 +112,7 @@ public class ComputerMenuController : MonoBehaviour
         var letter=hit.collider.GetComponentInParent<FloatingLogoLetter>();
         if(letter)
         {
+            hoveredLetter = letter;
             Vector3 away = letter.transform.position - hit.point;
             away += -menuCamera.transform.forward * .05f;
             letter.Push(away.normalized * Mathf.Min(dt*60,2),mouse.delta.ReadValue());
@@ -172,12 +176,15 @@ public class ComputerMenuController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (hoveredLetter != previousHoveredLetter && hoveredLetter && menuAudio) menuAudio.PlayLogoHover();
+        previousHoveredLetter = hoveredLetter;
         if (computerOutline != null) computerOutline.SetHovered(hoveredTarget == ComputerMenuTarget.TargetKind.Computer);
         if (leverOutline != null) leverOutline.SetHovered(hoveredTarget == ComputerMenuTarget.TargetKind.PowerLever);
     }
 
     private void OnDisable()
     {
+        hoveredLetter = previousHoveredLetter = null;
         if (cameraSway != null) cameraSway.RestoreBasePose();
         if (computerOutline != null) computerOutline.SetHovered(false);
         if (leverOutline != null) leverOutline.SetHovered(false);
@@ -189,27 +196,36 @@ public class ComputerMenuController : MonoBehaviour
         BeginFlight(true);
     }
 
-    public void ReturnToOverview()
+    public void ReturnToOverview()=>ReturnToOverview(true);
+    private void ReturnToOverview(bool playSound)
     {
         if(menu.IsLoading) return;
-        menu.CloseSettings();
+        menu.CloseSettings(false);
         EventSystem.current?.SetSelectedGameObject(null);
-        if(!focused && !moving) return;
+        if(!focused) return;
+        if(menuAudio)
+        {
+            menuAudio.StopCameraApproach();
+            if(playSound)menuAudio.PlayBack();
+        }
         BeginFlight(false);
     }
 
     public void TogglePower()
     {
         powered=!powered;
+        if(menuAudio)menuAudio.PlayLever();
+        if(menuAudio)menuAudio.PlayScreenPower();
         if(!powered)
         {
-            menu.CloseSettings();
-            if(focused) ReturnToOverview();
+            menu.CloseSettings(false);
+            if(focused) ReturnToOverview(false);
         }
     }
 
     private void BeginFlight(bool towardsComputer)
     {
+        if(towardsComputer&&menuAudio)menuAudio.PlayCameraApproach();
         focused=towardsComputer;moving=true;flightTime=0;
         flightStart=cameraSway.BasePosition;rotationStart=cameraSway.BaseRotation;fovStart=menuCamera.fieldOfView;
         menuPages.blocksRaycasts=menuPages.interactable=false;

@@ -169,6 +169,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
         ApplySpeakerStyle(lines[index].speaker);
         lineNumber.text = $"{index + 1:00} / {lines.Length:00}";
         dialogueText.text = lines[index].text; dialogueText.maxVisibleCharacters = 0; dialogueText.ForceMeshUpdate();
+        GetComponent<DialogueVoice>()?.Begin(dialogueText, lines[index].speaker == Speaker.Player);
         int count = dialogueText.textInfo.characterCount;
         float elapsed = 0, duration = count * secondsPerCharacter + Mathf.Max(minimumLineDuration, count * .045f);
         yield return null;
@@ -178,6 +179,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
             dialogueText.maxVisibleCharacters = Mathf.Min(count, (int)(elapsed / secondsPerCharacter));
             yield return null;
         }
+        GetComponent<DialogueVoice>()?.End();
         CurrentLine = -1;
     }
     public void AdvanceLine()
@@ -230,6 +232,7 @@ public sealed class HelpyReturnDialogue : MonoBehaviour
     }
     private void OnDisable()
     {
+        GetComponent<DialogueVoice>()?.End();
         StopAllCoroutines(); idlePlaying = false;
         RestorePlayer();
         if (IsPlaying && robot) { robot.SetLocalPositionAndRotation(landingPosition, landingRotation); robot.gameObject.SetActive(robotWasActive); }

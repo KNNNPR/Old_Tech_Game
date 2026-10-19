@@ -28,6 +28,7 @@ public class Pickupable : MonoBehaviour, IInteractable
     private Vector3 targetLocalPosition;
     private Quaternion targetLocalRotation;
     private float currentAttachSpeed;
+    private float nextImpactSound;
 
     private void Awake()
     {
@@ -91,5 +92,13 @@ public class Pickupable : MonoBehaviour, IInteractable
         }
         foreach (Collider c in colliders)
             c.enabled = enabled;
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        float speed = collision.relativeVelocity.magnitude;
+        if (IsAttached || body.isKinematic || speed < .6f || Time.unscaledTime < nextImpactSound) return;
+        nextImpactSound = Time.unscaledTime + .25f;
+        Vector3 position = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
+        GameplaySceneAudio.For(this)?.PlayDropImpact(position, speed);
     }
 }

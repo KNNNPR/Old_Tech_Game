@@ -11,6 +11,8 @@ public class ExtractButton : MonoBehaviour, IInteractable, IRequiresFocus
     [Tooltip("UI-объект кнопки на экране (картинка + надпись).")]
     [SerializeField] private GameObject visual;
     [SerializeField] private string prompt = "[LMB] EXTRACT";
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip clickClip;
 
     public event Action Pressed;
 
@@ -31,5 +33,9 @@ public class ExtractButton : MonoBehaviour, IInteractable, IRequiresFocus
 
     public bool CanInteract(PlayerInteractor interactor) => IsVisible;
 
-    public void Interact(PlayerInteractor interactor) => Pressed?.Invoke();
+    public void Interact(PlayerInteractor interactor)
+    {
+        if (audioSource && clickClip) audioSource.PlayOneShot(clickClip);
+        Pressed?.Invoke();
+    }
 }

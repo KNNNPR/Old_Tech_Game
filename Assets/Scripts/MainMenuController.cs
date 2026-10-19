@@ -18,6 +18,7 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private CanvasGroup fade;
     [SerializeField] private Button exitButton;
     [SerializeField] private ComputerMenuController computerMenu;
+    [SerializeField] private MenuAudio menuAudio;
     private int listening = -1;
     private int listenFrame;
     private bool loading;
@@ -65,7 +66,7 @@ public class MainMenuController : MonoBehaviour
         if (listening >= 0)
         {
             if (keyboard == null || Time.frameCount <= listenFrame) return;
-            if (keyboard.escapeKey.wasPressedThisFrame) { CancelRebind(); return; }
+            if (keyboard.escapeKey.wasPressedThisFrame) { if(menuAudio)menuAudio.PlayBack(); CancelRebind(); return; }
             foreach (var key in keyboard.allKeys)
             {
                 if (!key.wasPressedThisFrame || !GameSettings.IsAllowed(key.keyCode)) continue;
@@ -104,14 +105,18 @@ public class MainMenuController : MonoBehaviour
     public void OpenSettings()
     {
         if (computerMenu != null && !computerMenu.CanUseMenu) return;
+        if(SettingsOpen)return;
+        if(menuAudio)menuAudio.PlayPress();
         CancelRebind();
         mainPanel.SetActive(false);
         settingsPanel.SetActive(true);
         EventSystem.current?.SetSelectedGameObject(backButton.gameObject);
     }
 
-    public void CloseSettings()
+    public void CloseSettings()=>CloseSettings(true);
+    public void CloseSettings(bool playSound)
     {
+        if(playSound&&SettingsOpen&&menuAudio)menuAudio.PlayBack();
         CancelRebind();
         settingsPanel.SetActive(false);
         mainPanel.SetActive(true);
@@ -120,6 +125,7 @@ public class MainMenuController : MonoBehaviour
 
     private void BeginRebind(int action)
     {
+        if(menuAudio)menuAudio.PlayPress();
         listening = action;
         listenFrame = Time.frameCount;
         RefreshBindings();
@@ -137,7 +143,7 @@ public class MainMenuController : MonoBehaviour
         if (EventSystem.current != null) EventSystem.current.sendNavigationEvents = true;
     }
 
-    private void ResetKeys() { CancelRebind(); GameSettings.ResetBindings(); RefreshBindings(); }
+    private void ResetKeys() { if(menuAudio)menuAudio.PlayPress(); CancelRebind(); GameSettings.ResetBindings(); RefreshBindings(); }
     private void RefreshBindings()
     {
         for (int i = 0; i < bindingLabels.Length; i++) bindingLabels[i].text = GameSettings.KeyLabel((GameAction)i);
@@ -148,12 +154,30 @@ public class MainMenuController : MonoBehaviour
     public void StartGame()
     {
         if (computerMenu != null && !computerMenu.CanUseMenu) return;
-        if (!loading) StartCoroutine(LoadGame());
+        if (!loading) { if(menuAudio)menuAudio.PlayPress(); StartCoroutine(LoadGame()); }
     }
 
     public void ExitGame()
     {
         if (computerMenu != null && !computerMenu.CanUseMenu) return;
+        if(loading)return;
+        if(menuAudio)
+        {
+            menuAudio.PlayPress();loading=true;
+            StartCoroutine(ExitAfterPress());
+        }
+        else Quit();
+    }
+
+    private IEnumerator ExitAfterPress()
+    {
+        // Let the click sound begin before closing the application.
+        yield return new WaitForSecondsRealtime(Mathf.Min(.5f,menuAudio.PressDuration));
+        Quit();
+    }
+
+    private static void Quit()
+    {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -163,7 +187,7 @@ public class MainMenuController : MonoBehaviour
 
     private IEnumerator LoadGame()
     {
-        // Ïåðâûé çàïóñê — îáó÷åíèå, äàëüøå — ñðàçó îñíîâíàÿ ñöåíà (ñì. GameFlow).
+        // ÐŸÐµÑ€Ð²Ñ‹Ð¹ Ð·Ð°Ð¿ÑƒÑÐº â€” Ð¾Ð±ÑƒÑ‡ÐµÐ½Ð¸Ðµ, Ð´Ð°Ð»ÑŒÑˆÐµ â€” ÑÑ€Ð°Ð·Ñƒ Ð¾ÑÐ½Ð¾Ð²Ð½Ð°Ñ ÑÑ†ÐµÐ½Ð° (ÑÐ¼. GameFlow).
         string gameScene = GameFlow.SceneAfterMenu();
         if (!Application.CanStreamedLevelBeLoaded(gameScene))
         {
@@ -173,9 +197,11 @@ public class MainMenuController : MonoBehaviour
         }
         GameFlow.NewGame();
         loading = true;
+        float clickUntil=Time.unscaledTime+(menuAudio?Mathf.Min(.5f,menuAudio.PressDuration):0);
         startButton.interactable = settingsButton.interactable = false;
         fade.blocksRaycasts = true;
         while (fade.alpha < 1f) { fade.alpha = Mathf.Min(1, fade.alpha + Time.unscaledDeltaTime * 2.5f); yield return null; }
+        while(Time.unscaledTime<clickUntil)yield return null;
         yield return SceneManager.LoadSceneAsync(gameScene);
     }
 

@@ -38,6 +38,7 @@ public sealed class RecorderInspectionView : MonoBehaviour
         if (IsActive || !isActiveAndEnabled || !IsConfigured || !recorder.Current || !interactor || interactor.HasExternalInteraction) return;
         player = interactor; viewCamera = player.PlayerCamera; controller = player.Controller;
         if (!viewCamera) return;
+        GameplaySceneAudio.For(this)?.PlayCameraMove();
         savedLocalPosition = viewCamera.transform.localPosition; savedLocalRotation = viewCamera.transform.localRotation;
         savedWorldPosition = viewCamera.transform.position; savedWorldRotation = viewCamera.transform.rotation; savedFov = viewCamera.fieldOfView;
         savedCursorVisible = Cursor.visible; savedCursorLock = Cursor.lockState; inputEnabled = player.InputEnabled;

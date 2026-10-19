@@ -225,6 +225,7 @@ public class PlayerInteractor : MonoBehaviour
         if (IsFocused || station == null) return;
 
         CurrentFocus = station;
+        GameplaySceneAudio.For(this)?.PlayCameraMove();
         station.SetFocused(true);
 
         if (controller != null) controller.SetControlEnabled(false);
@@ -320,6 +321,7 @@ public class PlayerInteractor : MonoBehaviour
 
         HeldItem = item;
         item.AttachTo(holdPoint, item.HoldPositionOffset, Quaternion.Euler(item.HoldRotationOffset));
+        GameplaySceneAudio.For(this)?.PlayItemHandling();
     }
 
     /// <summary>
@@ -344,5 +346,6 @@ public class PlayerInteractor : MonoBehaviour
 
         Quaternion rotation = Quaternion.Euler(0f, cam.eulerAngles.y, 0f);
         item.Detach(position, rotation);
+        GameplaySceneAudio.For(this)?.PlayItemHandling();
     }
 }

@@ -56,11 +56,15 @@ public class FeedLever : MonoBehaviour, IInteractable
 
     [Header("Звук (необязательно)")]
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioSource punchAudioSource;
     [SerializeField] private AudioClip pullClip;
     [SerializeField] private AudioClip punchClip;
     [SerializeField] private AudioClip cardStepClip;
     [SerializeField] private AudioClip feedClip;
     [SerializeField] private AudioClip ejectClip;
+    [SerializeField, Range(0f, 1f)] private float pullVolume = 1f;
+
+    public event Action FeedStarted;
 
     /// <summary>Карта ушла в машину.</summary>
     public event Action<Pickupable> CardFed;
@@ -97,7 +101,7 @@ public class FeedLever : MonoBehaviour, IInteractable
 
         Quaternion pulled = handleRest * Quaternion.Euler(pulledRotation);
 
-        Play(pullClip);
+        Play(pullClip, pullVolume);
         yield return RotateHandle(handleRest, pulled, pullDuration);
 
         if (HasCardInside)
@@ -114,6 +118,7 @@ public class FeedLever : MonoBehaviour, IInteractable
 
     private IEnumerator FeedRoutine(Pickupable card)
     {
+        FeedStarted?.Invoke();
         Transform anchor = slot.AnchorTransform;
         Vector3 anchorStart = anchor.localPosition;
 
@@ -165,7 +170,8 @@ public class FeedLever : MonoBehaviour, IInteractable
             if (punchHead != null)
                 yield return MoveLocal(punchHead, punchHeadRest, punchHeadRest + punchStroke, punchDownTime);
 
-            Play(punchClip);
+            if (punchAudioSource && punchClip) { punchAudioSource.Stop(); punchAudioSource.clip = punchClip; punchAudioSource.Play(); }
+            else Play(punchClip);
 
             if (punchHead != null)
                 yield return MoveLocal(punchHead, punchHeadRest + punchStroke, punchHeadRest, punchUpTime);
@@ -206,9 +212,9 @@ public class FeedLever : MonoBehaviour, IInteractable
         target.localPosition = to;
     }
 
-    private void Play(AudioClip clip)
+    private void Play(AudioClip clip, float volume = 1f)
     {
         if (audioSource != null && clip != null)
-            audioSource.PlayOneShot(clip);
+            audioSource.PlayOneShot(clip, volume);
     }
 }

@@ -228,6 +228,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
         for(int i=1;i<points.Length;i++)lengths[i]=lengths[i-1]+Vector3.Distance(points[i-1],points[i]);
         float length=lengths[lengths.Length-1];
         Quaternion viewRotation=playerCamera.transform.rotation;
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(true);
         for(float t=0;t<entryWalkSeconds;t+=Time.unscaledDeltaTime)
         {
             float p=Mathf.SmoothStep(0,1,t/entryWalkSeconds);
@@ -248,12 +249,14 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
             yield return null;
         }
         player.transform.position=roomCentre.position;playerCamera.transform.localPosition=homePosition;
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
         playerCamera.transform.localRotation=homeRotation;
         player.SetLookDirection(greetingPosition-playerCamera.transform.position);
         yield return SwingDoor(doorOpenAngle,0,.7f);
     }
     private IEnumerator SwingDoor(float from,float to,float seconds)
     {
+        GameplaySceneAudio.For(this)?.PlayEntranceDoor(Mathf.Abs(to) > Mathf.Abs(from));
         for(float t=0;t<seconds;t+=Time.unscaledDeltaTime)
         {
             Quaternion turn=Quaternion.AngleAxis(Mathf.Lerp(from,to,Mathf.SmoothStep(0,1,t/seconds)),Vector3.up);
@@ -309,6 +312,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
     {
         subtitles.alpha=1;CurrentLine=spokenLines++;
         dialogueText.text=line;dialogueText.maxVisibleCharacters=0;dialogueText.ForceMeshUpdate();
+        GetComponent<DialogueVoice>()?.Begin(dialogueText, false);
         lineNumber.text=$"{spokenLines:00} / {lines.Length+7+closingLines.Length:00}";
         continueHint.text="[ SPACE ]  NEXT LINE";
         int count=dialogueText.textInfo.characterCount;
@@ -322,6 +326,7 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
             dialogueText.maxVisibleCharacters=Mathf.Min(count,(int)(elapsed/secondsPerCharacter));
             yield return null;
         }
+        GetComponent<DialogueVoice>()?.End();
         CurrentLine=-1;
     }
     private void Objective(string line,string hint)
@@ -391,6 +396,8 @@ public sealed class HelpyTutorialIntro : MonoBehaviour
 
     private void OnDisable()
     {
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
+        GetComponent<DialogueVoice>()?.End();
         StopAllCoroutines();
         idlePlaying=false;
         RestorePlayer();

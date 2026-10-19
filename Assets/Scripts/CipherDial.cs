@@ -43,6 +43,7 @@ public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable,
 
     private Collider[] colliders;
     private float dragAccumulator;
+    private float nextStepSound;
 
     private void Awake()
     {
@@ -85,7 +86,11 @@ public class CipherDial : MonoBehaviour, IInteractable, IScrollable, IDraggable,
         if (next == Value) return;
 
         Value = next;
-        if (audioSource != null && stepClip != null) audioSource.PlayOneShot(stepClip);
+        if (audioSource && stepClip && Time.unscaledTime >= nextStepSound)
+        {
+            audioSource.Stop(); audioSource.clip = stepClip; audioSource.Play();
+            nextStepSound = Time.unscaledTime + .07f;
+        }
         ValueChanged?.Invoke(Value);
     }
 

@@ -10,6 +10,7 @@ public sealed class PhotoExposureStation : MonoBehaviour, IInteractable
     [SerializeField, Min(0)] private float placementSeconds = .4f;
     [SerializeField, Min(.02f)] private float flashSeconds = .14f;
     [SerializeField, Min(1)] private float flashMultiplier = 2.2f;
+    [SerializeField] private AudioSource exposureAudio;
 
     private Color lampColor;
     private float lampIntensity;
@@ -63,6 +64,7 @@ public sealed class PhotoExposureStation : MonoBehaviour, IInteractable
                 exposureLight.intensity = Mathf.Max(lampIntensity * flashMultiplier, 600f);
             }
             Current.Expose();
+            if (exposureAudio && exposureAudio.clip) exposureAudio.Play();
             yield return new WaitForSeconds(flashSeconds);
             RestoreLamp();
         }

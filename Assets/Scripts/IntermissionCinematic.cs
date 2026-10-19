@@ -22,6 +22,9 @@ public sealed class IntermissionCinematic : MonoBehaviour
     [SerializeField] private Light emberLight;
     [SerializeField] private Vector3 heldPosition = new Vector3(.23f, -.18f, .54f);
     [SerializeField] private Vector3 heldEuler = new Vector3(-20, -24, -12);
+    [Header("Player sounds")]
+    [SerializeField] private AudioSource inhaleAudio, exhaleAudio, headTurnAudio;
+    [SerializeField] private AudioSource windAudio;
     [Header("Pacing")]
     [SerializeField, Min(.1f)] private float rightTurnSeconds = 1.6f;
     [SerializeField, Min(.1f)] private float walkSpeed = .85f;
@@ -83,6 +86,8 @@ public sealed class IntermissionCinematic : MonoBehaviour
     private Rigidbody droppedCigaretteBody;
     private CapsuleCollider droppedCigaretteCollider;
     private float cigaretteThrow;
+    private bool takingDrag;
+    private float windVolume;
 
     private void Awake()
     {
@@ -124,6 +129,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         playerCamera.transform.SetPositionAndRotation(desiredPosition, desiredRotation);
         playerCamera.fieldOfView = 58;
         emberProperties = new MaterialPropertyBlock();
+        if (windAudio) windVolume = windAudio.volume;
         BuildUI();
         SetFade(1);
         initialized = true;
@@ -132,6 +138,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
     private IEnumerator Start()
     {
         if (!initialized) yield break;
+        if (windAudio && windAudio.clip) { windAudio.loop = true; windAudio.Play(); }
         if (secondIntermission) { yield return SecondBreak(); yield break; }
         if (cigaretteSmoke) cigaretteSmoke.Play();
         CurrentShot = Shot.Opening;
@@ -183,6 +190,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         Vector3 start = desiredPosition;
         Vector3 corner = walkCorner ? walkCorner.position : Vector3.Lerp(start, doorStop.position, .5f);
         float seconds = (Vector3.Distance(start, corner) + Vector3.Distance(corner, doorStop.position)) / walkSpeed;
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(true, playerCamera.transform);
         for (float elapsed = 0; elapsed < seconds; elapsed += Step)
         {
             float t = Ease(elapsed / seconds), u = 1 - t;
@@ -194,9 +202,13 @@ public sealed class IntermissionCinematic : MonoBehaviour
         walking = 0;
         desiredPosition = doorStop.position;
         desiredRotation = Quaternion.LookRotation(doorFocus.position - desiredPosition, Vector3.up);
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
         yield return Pause(.25f);
         CurrentShot = Shot.Fading;
+        var doorSound = GameplaySceneAudio.For(this)?.PlayEntranceDoor(true);
         yield return FadeTo(1, fadeSeconds);
+        if (doorSound != null) yield return doorSound;
+        if (windAudio) windAudio.Stop();
         CurrentShot = Shot.Finished;
         HasFinished = true;
         onFinished.Invoke();
@@ -249,6 +261,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         Vector3 start = desiredPosition;
         Vector3 corner = walkCorner ? walkCorner.position : Vector3.Lerp(start,doorStop.position,.5f);
         float seconds = Mathf.Max(1,(Vector3.Distance(start,corner)+Vector3.Distance(corner,doorStop.position))/runSpeed);
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(true, playerCamera.transform);
         for (float elapsed=0;elapsed<seconds;elapsed+=Step)
         {
             float t=Ease(elapsed/seconds),u=1-t;
@@ -258,8 +271,12 @@ public sealed class IntermissionCinematic : MonoBehaviour
         }
         walking=0; desiredPosition=doorStop.position;
         desiredRotation=Quaternion.LookRotation(doorFocus.position-desiredPosition,Vector3.up);
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
         CurrentShot=Shot.Fading;
+        var doorSound = GameplaySceneAudio.For(this)?.PlayEntranceDoor(true);
         yield return FadeTo(1,fadeSeconds);
+        if (doorSound != null) yield return doorSound;
+        if (windAudio) windAudio.Stop();
         panic=0; CurrentShot=Shot.Finished; HasFinished=true;
         onFinished.Invoke();
     }
@@ -337,14 +354,20 @@ public sealed class IntermissionCinematic : MonoBehaviour
     private IEnumerator FirstDrag() { yield return Pause(.45f); yield return TakeDrag(); }
     private IEnumerator TakeDrag()
     {
+        while (takingDrag) yield return null;
+        takingDrag = true;
         for (float t = 0; t < .65f; t += Step) { drag = Ease(t / .65f); heat = Mathf.Lerp(.5f, 1, drag); yield return null; }
         drag = 1;
         heat = 1;
+        Play(inhaleAudio);
         yield return Pause(.45f);
         for (float t = 0; t < .7f; t += Step) { drag = 1 - Ease(t / .7f); heat = Mathf.Lerp(.5f, 1, drag); yield return null; }
         drag = 0;
         heat = .5f;
+        Play(exhaleAudio);
+        takingDrag = false;
     }
+    private static void Play(AudioSource source) { if (source && source.clip) source.PlayOneShot(source.clip); }
     private IEnumerator Say(int index, float seconds)
     {
         CurrentLine = index;
@@ -355,6 +378,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
         subtitleMotion.SetFear(secondIntermission&&index>=5?1:0);
         subtitleGroup.alpha = 1;
         subtitle.ForceMeshUpdate();
+        if (!script[index].StartsWith("[")) GetComponent<DialogueVoice>()?.Begin(subtitle, true, true);
         advance = false;
         yield return null;
         for (float elapsed = 0; elapsed < seconds; elapsed += Step)
@@ -362,6 +386,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
             if (advance || (Keyboard.current?.spaceKey.wasPressedThisFrame ?? false)) break;
             yield return null;
         }
+        GetComponent<DialogueVoice>()?.End();
         subtitleGroup.alpha = 0;
         CurrentLine = -1;
         yield return Pause(.15f);
@@ -370,6 +395,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
 
     private IEnumerator TurnRight(Vector3 target, float seconds)
     {
+        Play(headTurnAudio);
         Vector3 from = desiredRotation.eulerAngles;
         Vector3 to = Quaternion.LookRotation(target - desiredPosition, Vector3.up).eulerAngles;
         float yaw = Mathf.Repeat(to.y - from.y, 360);
@@ -387,6 +413,7 @@ public sealed class IntermissionCinematic : MonoBehaviour
     {
         Vector3 from = desiredPosition;
         Quaternion facing = desiredRotation;
+        if (Quaternion.Angle(facing, rotation) > 3f) Play(headTurnAudio);
         float fov = playerCamera.fieldOfView;
         for (float elapsed = 0; elapsed < seconds; elapsed += Step)
         {
@@ -446,7 +473,12 @@ public sealed class IntermissionCinematic : MonoBehaviour
         }
         SetFade(target);
     }
-    private void SetFade(float amount) { FadeAmount = amount; if (fade) fade.color = new Color(0, 0, 0, amount); }
+    private void SetFade(float amount)
+    {
+        FadeAmount = amount;
+        if (fade) fade.color = new Color(0, 0, 0, amount);
+        if (windAudio) windAudio.volume = windVolume * (1f - Mathf.Clamp01(amount));
+    }
 
     private void BuildUI()
     {
@@ -512,6 +544,11 @@ public sealed class IntermissionCinematic : MonoBehaviour
 
     private void OnDisable()
     {
+        GameplaySceneAudio.For(this)?.SetScriptedWalking(false);
+        foreach (var source in new[] { inhaleAudio, exhaleAudio, headTurnAudio }) if (source) source.Stop();
+        if (windAudio) { windAudio.Stop(); if (initialized) windAudio.volume = windVolume; }
+        takingDrag = false;
+        GetComponent<DialogueVoice>()?.End();
         if (!initialized) return;
         StopAllCoroutines();
         if(droppedCigaretteBody)

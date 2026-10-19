@@ -33,6 +33,11 @@ public class SortBin : MonoBehaviour
     [SerializeField] private AudioClip suckClip;
     [Tooltip("Если нажали кнопку, а в приёмнике пусто.")]
     [SerializeField] private AudioClip emptyClip;
+    [SerializeField, Min(0)] private float processingSoundSeconds;
+    [SerializeField, Min(0)] private float processingFadeStart;
+    [SerializeField] private AudioSource acceptedAudio;
+    private Coroutine processingSound;
+    private float processingVolume;
 
     public SortVerdict Verdict => verdict;
     public bool IsBusy { get; private set; }
@@ -40,6 +45,7 @@ public class SortBin : MonoBehaviour
 
     private void Awake()
     {
+        if (audioSource) processingVolume = audioSource.volume;
         if (slot != null) slot.RejectReason = CheckCard;
     }
 
@@ -78,7 +84,12 @@ public class SortBin : MonoBehaviour
         Vector3 anchorStart = anchor.localPosition;
         Vector3 startScale = card.transform.localScale;
 
-        Play(suckClip);
+        if (processingSoundSeconds > 0 && audioSource && suckClip)
+        {
+            if (processingSound != null) StopCoroutine(processingSound);
+            processingSound = StartCoroutine(ProcessingSound());
+        }
+        else Play(suckClip);
 
         // Медленно в начале и резко в конце — как будто карту затягивает.
         for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, suckDuration))
@@ -93,6 +104,7 @@ public class SortBin : MonoBehaviour
 
         slot.Remove();
         Destroy(card.gameObject);
+        if (acceptedAudio && acceptedAudio.clip) acceptedAudio.Play();
         anchor.localPosition = anchorStart;
 
         if (SortingManager.Instance != null)
@@ -106,5 +118,22 @@ public class SortBin : MonoBehaviour
     {
         if (audioSource != null && clip != null)
             audioSource.PlayOneShot(clip);
+    }
+    private IEnumerator ProcessingSound()
+    {
+        audioSource.Stop(); audioSource.clip = suckClip; audioSource.loop = true;
+        audioSource.volume = processingVolume; audioSource.Play();
+        for (float t = 0; t < processingSoundSeconds; t += Time.unscaledDeltaTime)
+        {
+            audioSource.volume = processingVolume * (1f - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(processingFadeStart, processingSoundSeconds, t)));
+            yield return null;
+        }
+        audioSource.Stop(); audioSource.loop = false; audioSource.volume = processingVolume; processingSound = null;
+    }
+    private void OnDisable()
+    {
+        if (processingSound != null) StopCoroutine(processingSound);
+        processingSound = null;
+        if (processingSoundSeconds > 0 && audioSource) { audioSource.Stop(); audioSource.loop = false; audioSource.volume = processingVolume; }
     }
 }

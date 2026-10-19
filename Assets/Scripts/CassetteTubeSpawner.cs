@@ -17,6 +17,7 @@ public sealed class CassetteTubeSpawner : MonoBehaviour, IInteractable
     [SerializeField, Min(0)] private float initialDelay = 2f;
     [SerializeField, Min(.1f)] private float spawnInterval = 8f;
     [SerializeField, Min(1)] private int maxLooseCassettes = 3;
+    [SerializeField] private AudioSource spawnAudio;
 
     private readonly List<Cassette> issued = new List<Cassette>();
     private Cassette feeding;
@@ -94,6 +95,7 @@ public sealed class CassetteTubeSpawner : MonoBehaviour, IInteractable
         timer = spawnInterval;
         progress = 0f;
         MoveCassette(0f);
+        if (spawnAudio && spawnAudio.clip) spawnAudio.Play();
         return true;
     }
 

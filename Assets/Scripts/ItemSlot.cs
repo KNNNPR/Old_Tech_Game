@@ -20,6 +20,7 @@ public class ItemSlot : MonoBehaviour, IInteractable
 
     [Tooltip("Скорость, с которой предмет въезжает в гнездо. 0 — обычная скорость предмета.\nДля лотка принтера поставь 1–2, чтобы лист выезжал медленно.")]
     [SerializeField] private float insertSpeed = 0f;
+    [SerializeField] private AudioSource insertAudio;
 
     public Pickupable Current { get; private set; }
 
@@ -68,7 +69,10 @@ public class ItemSlot : MonoBehaviour, IInteractable
             // Отказ: предмет остаётся в руке, причина уже видна в подсказке.
             if (GetRejectReason(interactor.HeldItem) != null) return;
 
-            Insert(interactor.ReleaseHeld());
+            var item = interactor.ReleaseHeld();
+            Insert(item);
+            if (item && Current == item && item.TryGetComponent<PunchCard>(out _) && insertAudio && insertAudio.clip)
+                insertAudio.PlayOneShot(insertAudio.clip);
         }
         else
         {

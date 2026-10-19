@@ -31,6 +31,7 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
     [SerializeField, Min(0)] private float exitSpeed = 1.1f;
     [SerializeField] private float downwardSpeed = .15f;
     [SerializeField] private float tumbleSpeed = 2.2f;
+    [SerializeField] private AudioSource spawnAudio;
 
     public bool InTransit => transit != null;
     // A scene-local tutorial can request one card while keeping the route and pickup physics running.
@@ -132,6 +133,7 @@ public sealed class PunchCardTubeSpawner : MonoBehaviour
         issued.Add(itemComponent); LastSpawnedCard = itemComponent;
         nextPrefab = (nextPrefab + 1) % CardCount;
         issuedCount++; timer = spawnInterval;
+        if (spawnAudio && spawnAudio.clip) spawnAudio.Play();
         return true;
     }
 

@@ -8,6 +8,7 @@ public sealed class AnimatedDoor : MonoBehaviour, IInteractable
     [SerializeField] private bool startsOpen;
     [SerializeField] private string timeParameter = "DoorProgress";
     [SerializeField] private string stateName = "Base Layer.door";
+    [SerializeField] private AudioSource motionAudio;
     private Animator animator;
     private int parameterHash;
     private float progress;
@@ -46,6 +47,8 @@ public sealed class AnimatedDoor : MonoBehaviour, IInteractable
     public bool CanInteract(PlayerInteractor interactor) => isActiveAndEnabled && animator && animator.enabled;
     public void Interact(PlayerInteractor interactor)
     {
-        if (CanInteract(interactor)) targetOpen=!targetOpen;
+        if (!CanInteract(interactor)) return;
+        targetOpen=!targetOpen;
+        if (motionAudio && motionAudio.clip) motionAudio.Play();
     }
 }

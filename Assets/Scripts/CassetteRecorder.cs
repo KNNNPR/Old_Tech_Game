@@ -32,6 +32,9 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
 
     private void Awake()
     {
+        GameSettings.Load();
+        foreach (var source in new[] { carrierSource, hiddenSource, buttonSource })
+            if (source) { source.ignoreListenerVolume = false; source.spatialBlend = 1; source.dopplerLevel = 0; }
         if (!inspectionView) inspectionView = GetComponent<RecorderInspectionView>();
         if (playButton) buttonRest = playButton.localPosition;
         StopPlayback();
@@ -79,8 +82,8 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
     public void TogglePlayback()
     {
         if (!Current || !isActiveAndEnabled) return;
+        if (IsPlaying) { StopPlayback(); PressButton(); return; }
         PressButton();
-        if (IsPlaying) { StopPlayback(); return; }
         if (!Current.Clip || !carrierSource || !hiddenSource) return;
         hasPlayed = IsPlaying = true;
         reveal = revealVelocity = 0f;
