@@ -1475,9 +1475,9 @@ MonoBehaviour:
   - title: Shift_3
     cards:
     - {fileID: 11400000, guid: 5f515dd065c92854f98e5c0dd13835f7, type: 2}
-    - {fileID: 11400000, guid: ece6b78ff119cfd49ba82f985cbcc581, type: 2}
+    - {fileID: 11400000, guid: fc8c74bbc1602a248be81d98d8d083f8, type: 2}
     - {fileID: 11400000, guid: f9bf811cff05f704cbb33b1e33178924, type: 2}
-    - {fileID: 11400000, guid: 95e5365e1690729468879eab8d90ff1b, type: 2}
+    - {fileID: 11400000, guid: c45aee60b335c9b4e8df04e54e1ea42e, type: 2}
     - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
     - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
     spawnInsteadOfCards: []
