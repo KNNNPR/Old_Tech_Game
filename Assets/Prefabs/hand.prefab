@@ -165,4 +165,4 @@ MonoBehaviour:
   handRotation: {x: 0, y: 180, z: 0}
   handPosition: {x: 0, y: 0, z: 0}
   slotRotation: {x: 0, y: 90, z: 180}
-  slotPosition: {x: 0, y: 0, z: 0}
+  slotPosition: {x: 0, y: -0.15, z: 0}

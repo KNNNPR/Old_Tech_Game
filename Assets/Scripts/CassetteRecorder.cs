@@ -91,10 +91,10 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
         reveal = revealVelocity = 0f;
         carrierSource.enabled = hiddenSource.enabled = true;
         if (carrierProcessor) carrierProcessor.SetProcessing(true);
-        if (hiddenProcessor) hiddenProcessor.SetProcessing(Current.IsAnomaly);
+        if (hiddenProcessor) hiddenProcessor.SetProcessing(false); // скрытой дорожки нет
         carrierSource.clip = Current.CarrierClip;
         carrierSource.volume = playbackVolume;
-        hiddenSource.clip = Current.IsAnomaly ? Current.Clip : null;
+        hiddenSource.clip = null; // играет только запись с карты
         hiddenSource.volume = 0f;
         UpdateProcessors();
         if (carrierSource.clip) carrierSource.Play();
@@ -143,8 +143,8 @@ public sealed class CassetteRecorder : MonoBehaviour, IInteractable, IPrimaryInt
             if (!Current) StopPlayback();
             else
             {
-                float target = touchedSliders && Current.IsAnomaly
-                    ? Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.5f, .92f, SignalQuality)) * Mathf.SmoothStep(0f, 1f, FineTuneQuality) : 0f;
+                // —крытой дорожки нет Ч запись с карты всегда звучит в полную громкость.
+                float target = 0f;
                 reveal = Mathf.SmoothDamp(reveal, target, ref revealVelocity, .18f);
                 carrierSource.volume = playbackVolume * (1f - reveal * .85f);
                 hiddenSource.volume = playbackVolume * reveal;
