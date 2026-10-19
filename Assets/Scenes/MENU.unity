@@ -933,6 +933,7 @@ MonoBehaviour:
   acceptedTag: 
   allowTakeBack: 1
   insertSpeed: 0
+  insertAudio: {fileID: 0}
 --- !u!65 &268923299
 BoxCollider:
   m_ObjectHideFlags: 0

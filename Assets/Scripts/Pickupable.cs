@@ -1,6 +1,16 @@
 using UnityEngine;
 
 /// <summary>
+/// Предмет, который сам решает, как он лежит в руке или в гнезде (например, рука из Blender
+/// с неудобной точкой опоры). Если такой компонент есть рядом с Pickupable, его поза важнее
+/// той, что передали в AttachTo.
+/// </summary>
+public interface IAttachPose
+{
+    bool TryGetPose(Transform parent, out Vector3 localPosition, out Quaternion localRotation);
+}
+
+/// <summary>
 /// Предмет, который можно взять в руку, положить или вставить в гнездо.
 /// Пока предмет в руке или в гнезде, его физика и коллайдеры выключены.
 /// </summary>
@@ -29,11 +39,13 @@ public class Pickupable : MonoBehaviour, IInteractable
     private Quaternion targetLocalRotation;
     private float currentAttachSpeed;
     private float nextImpactSound;
+    private IAttachPose poseProvider;
 
     private void Awake()
     {
         body = GetComponent<Rigidbody>();
         colliders = GetComponentsInChildren<Collider>();
+        poseProvider = GetComponent<IAttachPose>();
 
         // Тонкие предметы (перфокарты, письма) иначе пролетают сквозь пол и стол.
         body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
@@ -43,6 +55,14 @@ public class Pickupable : MonoBehaviour, IInteractable
     private void Update()
     {
         if (!IsAttached) return;
+
+        // Поза может меняться на лету (подбор поворота руки прямо в Play).
+        if (poseProvider != null && transform.parent != null &&
+            poseProvider.TryGetPose(transform.parent, out Vector3 p, out Quaternion r))
+        {
+            targetLocalPosition = p;
+            targetLocalRotation = r;
+        }
 
         float t = currentAttachSpeed * Time.deltaTime;
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetLocalPosition, t);
@@ -68,6 +88,18 @@ public class Pickupable : MonoBehaviour, IInteractable
         transform.SetParent(parent, true);
         targetLocalPosition = localPosition;
         targetLocalRotation = localRotation;
+
+        if (poseProvider != null && poseProvider.TryGetPose(parent, out Vector3 p, out Quaternion r))
+        {
+            targetLocalPosition = p;
+            targetLocalRotation = r;
+        }
+    }
+
+    /// <summary>Сразу поставить предмет в точку крепления, без плавного подлёта.</summary>
+    public void SnapToTarget()
+    {
+        if (IsAttached) transform.SetLocalPositionAndRotation(targetLocalPosition, targetLocalRotation);
     }
 
     /// <summary>Отпустить в мир с включённой физикой.</summary>

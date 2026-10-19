@@ -1,61 +1,87 @@
 using System.Collections;
-using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
 /// Финальный компьютер в THE_END.
 ///
-/// 1. На экране: «рука считана» и загадка. Игрок садится за компьютер (FocusStation)
-///    и набирает ответ на клавиатуре, Enter — проверить. Ответ по умолчанию — EXIT
-///    (первые буквы строк загадки).
-/// 2. Появляется кнопка EXIT. Первые нажатия она «убегает» в другое место экрана.
+/// 1. На экране зашифрованное сообщение — та же мини-игра со сдвигом, что и с картами.
+///    Игрок садится за компьютер и двигает ползунок. Когда текст становится нормальным,
+///    кнопка EXIT загорается (до этого она видна, но тусклая и не нажимается).
+/// 2. Первые нажатия кнопка прыгает по краям экрана, без надписей.
 /// 3. Когда кнопку всё-таки нажали — из компьютера к игроку вылезает его рука,
 ///    чернота, надпись и возврат в меню.
 ///
 /// Вешается на любой объект сцены THE_END (удобно — на монитор).
 /// </summary>
+// Позже остальных: наша поза камеры (тряска, отдёргивание) перекрывает фокус компьютера.
+[DefaultExecutionOrder(1000)]
 public class ExitTerminal : MonoBehaviour
 {
     [Header("Экран")]
     [SerializeField] private TMP_Text screenText;
+    [Tooltip("Ползунок сдвига на мониторе (тот же CipherDial, что в основной сцене).")]
+    [SerializeField] private CipherDial cipherDial;
+    [Tooltip("Надпись SHIFT: 00 (необязательно).")]
+    [SerializeField] private TMP_Text shiftLabel;
     [Tooltip("Кнопка на экране. Подойдёт уже существующий ExtractButton монитора (поменяй ему Prompt на [LMB] EXIT).")]
     [SerializeField] private ExtractButton exitButton;
-    [Tooltip("Область, по которой бегает кнопка (обычно Canvas монитора). Пусто — родитель кнопки.")]
+    [Tooltip("Область, по которой прыгает кнопка (обычно Canvas монитора). Пусто — родитель кнопки.")]
     [SerializeField] private RectTransform buttonArea;
 
-    [Header("Загадка")]
-    [TextArea(2, 4), SerializeField] private string header = "HAND PATTERN: OPERATOR. ACCEPTED.";
-    [TextArea(4, 12), SerializeField] private string puzzle =
-        "EVERY CARD YOU BURNED CAME BACK.\n" +
-        "X-RAYS OF YOUR HAND ARE ON FILE.\n" +
-        "IT KNOWS YOUR SHIFT BY HEART.\n" +
-        "THE ONLY WAY OUT IS A WORD.";
-    [SerializeField] private string prompt = "TYPE THE WORD:";
-    [SerializeField] private string answer = "EXIT";
-    [SerializeField] private string wrongText = "ACCESS DENIED.";
-    [Tooltip("Подсказка появляется после стольких ошибок.")]
-    [SerializeField] private int hintAfterMistakes = 2;
-    [SerializeField] private string hint = "READ THE FIRST LETTERS.";
-    [SerializeField] private string solvedText = "ACCESS GRANTED.\nPRESS EXIT TO LEAVE.";
-    [SerializeField] private int maxInputLength = 12;
+    [Header("Сообщение")]
+    [TextArea(4, 12), SerializeField]
+    private string message =
+        "HAND PATTERN: OPERATOR.\n\n" +
+        "YOU NEVER READ THE CARDS.\n" +
+        "THE CARDS WERE READING YOU.\n" +
+        "NOW WE HAVE ALL OF YOU.\n\n" +
+        "PRESS EXIT.";
+    [Tooltip("Сдвиг шифра. 0 — случайный.")]
+    [SerializeField] private int cipherKey = 0;
+    [Tooltip("Пока текст не расшифрован, кнопка видна, но тусклая. Выключи — будет совсем спрятана.")]
+    [SerializeField] private bool showDimmedButton = true;
 
-    [Header("Убегающая кнопка")]
-    [Tooltip("Сколько раз кнопка увернётся, прежде чем нажаться.")]
-    [SerializeField] private int dodges = 2;
-    [SerializeField] private string[] dodgeTaunts = { "NO.", "NOT YET." };
+    [Header("Прыгающая кнопка")]
+    [Tooltip("Сколько раз кнопка отпрыгнет, прежде чем нажаться.")]
+    [SerializeField] private int dodges = 3;
+    [Tooltip("Время одного прыжка (сек).")]
+    [SerializeField] private float jumpSeconds = 0.12f;
     [Tooltip("Отступ от краёв экрана, чтобы кнопка не уезжала за край.")]
-    [SerializeField] private float edgeMargin = 70f;
+    [SerializeField] private float edgeMargin = 20f;
 
     [Header("Рука из компьютера")]
     [Tooltip("Рука, спрятанная внутри монитора (выключенная). Вылезет к игроку.")]
     [SerializeField] private Transform handOut;
-    [SerializeField] private float handSeconds = 2.2f;
-    [Tooltip("На каком расстоянии от лица игрока рука остановится.")]
-    [SerializeField] private float handStopDistance = 0.2f;
+    [Tooltip("Вкл — рука летит, не поворачиваясь: как ты повернул её в сцене (ладонью к игроку), так и прилетит.\n" +
+             "Выкл — в конце повернётся на Hand Out Rotation относительно взгляда игрока.")]
+    [SerializeField] private bool keepSceneRotation = true;
+    [Tooltip("Используется, только если Keep Scene Rotation выключен.")]
+    [SerializeField] private Vector3 handOutRotation = new Vector3(0f, 180f, 0f);
+    [SerializeField] private float handSeconds = 1.6f;
+    [Tooltip("На каком расстоянии от лица игрока окажется центр руки.")]
+    [SerializeField] private float handStopDistance = 0.25f;
     [TextArea, SerializeField] private string goodbyeText = "GOODBYE, OPERATOR.";
+
+    [Header("Тряска (после первого нажатия EXIT)")]
+    [Tooltip("Сила тряски в градусах — как при потере сознания.")]
+    [SerializeField] private float shakeDegrees = 7f;
+    [Tooltip("За сколько секунд тряска набирает силу.")]
+    [SerializeField] private float shakeRampSeconds = 1.5f;
+    [Tooltip("Сколько секунд после GOODBYE, OPERATOR тряска затихает.")]
+    [SerializeField] private float shakeStopSeconds = 0.25f;
+
+    [Header("Испуг оператора")]
+    [Tooltip("Когда (доля полёта руки, 0..1) оператор отшатывается.")]
+    [SerializeField, Range(0.5f, 1f)] private float flinchAt = 0.85f;
+    [Tooltip("Насколько камера отпрыгивает назад (метры).")]
+    [SerializeField] private float flinchDistance = 0.15f;
+    [Tooltip("Насколько голова откидывается вверх (градусы).")]
+    [SerializeField] private float flinchPitch = 8f;
+    [SerializeField] private float flinchSeconds = 0.18f;
+    [Tooltip("Пауза перед чернотой, когда рука уже у лица.")]
+    [SerializeField] private float holdBeforeBlack = 0.6f;
 
     [Header("Конец")]
     [TextArea, SerializeField] private string endTitle = "THE END";
@@ -65,20 +91,29 @@ public class ExitTerminal : MonoBehaviour
 
     [Header("Звук (необязательно)")]
     [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip keyClip;
-    [SerializeField] private AudioClip deniedClip;
     [SerializeField] private AudioClip grantedClip;
     [SerializeField] private AudioClip dodgeClip;
     [SerializeField] private AudioClip handClip;
 
-    private enum State { Typing, Checking, ButtonShown, Ending }
+    private enum State { Decoding, ButtonActive, Ending }
 
-    private State state = State.Typing;
+    private State state = State.Decoding;
     private PlayerInteractor interactor;
-    private readonly StringBuilder input = new StringBuilder();
-    private string statusLine = "";
-    private int mistakes;
+    private string cipherText;
+    private int key;
     private int dodgesDone;
+    private int lastEdge = -1;
+    private Coroutine jumpRoutine;
+
+    // Камера: базовая поза (за компьютером) + тряска + отдёргивание.
+    private Transform cam;
+    private bool cameraOverride;
+    private Vector3 basePosition;
+    private Quaternion baseRotation;
+    private float shakeAmount;   // 0..1
+    private float flinch;        // 0..1
+    private bool shaking;
+    private Coroutine shakeRoutine;
 
     private void Awake()
     {
@@ -94,109 +129,155 @@ public class ExitTerminal : MonoBehaviour
 
     private void OnEnable()
     {
-        if (Keyboard.current != null) Keyboard.current.onTextInput += OnTextInput;
         if (exitButton != null) exitButton.Pressed += OnExitPressed;
+        if (cipherDial != null) cipherDial.ValueChanged += OnDialChanged;
     }
 
     private void OnDisable()
     {
-        if (Keyboard.current != null) Keyboard.current.onTextInput -= OnTextInput;
         if (exitButton != null) exitButton.Pressed -= OnExitPressed;
+        if (cipherDial != null) cipherDial.ValueChanged -= OnDialChanged;
     }
 
     private void Start()
     {
-        if (exitButton != null) exitButton.SetVisible(false);
+        if (screenText != null)
+        {
+            // Текст всегда влезает в экран.
+            screenText.enableAutoSizing = true;
+            screenText.fontSizeMax = 26f;
+            screenText.fontSizeMin = 10f;
+            screenText.textWrappingMode = TextWrappingModes.Normal;
+            screenText.overflowMode = TextOverflowModes.Truncate;
+        }
+
+        if (cipherDial == null)
+        {
+            Debug.LogError("ExitTerminal: не задан Cipher Dial — кнопка EXIT сразу активна.", this);
+            Unlock();
+            return;
+        }
+
+        int min = Mathf.Max(1, cipherDial.MinValue + 1);
+        key = cipherKey > 0 ? cipherKey : Random.Range(min, cipherDial.MaxValue + 1);
+        cipherText = CaesarCipher.Shift(message, key);
+
+        cipherDial.ResetValue();
+        cipherDial.SetActive(true);
+        SetButtonLocked();
         Redraw();
     }
 
-    private void Update()
+    private void SetButtonLocked()
     {
-        if (state != State.Typing) return;
-
-        // Мигающий курсор ввода.
-        if (Time.frameCount % 15 == 0) Redraw();
-
-        Keyboard kb = Keyboard.current;
-        if (kb == null || !CanType()) return;
-
-        if (kb.backspaceKey.wasPressedThisFrame && input.Length > 0)
-        {
-            input.Length--;
-            Play(keyClip);
-            Redraw();
-        }
-        else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
-        {
-            StartCoroutine(Check());
-        }
+        if (exitButton == null) return;
+        if (showDimmedButton) exitButton.SetDimmed(true);
+        else exitButton.SetVisible(false);
     }
 
-    // Печатать можно только сидя за компьютером.
-    private bool CanType() => interactor == null || interactor.IsFocused;
-
-    private void OnTextInput(char c)
+    private void OnDialChanged(int value)
     {
-        if (state != State.Typing || !CanType()) return;
-        if (!char.IsLetterOrDigit(c) && c != '-' && c != ' ') return;
-        if (input.Length >= maxInputLength) return;
-
-        input.Append(char.ToUpperInvariant(c));
-        Play(keyClip);
+        if (state != State.Decoding) return;
         Redraw();
-    }
-
-    private IEnumerator Check()
-    {
-        state = State.Checking;
-        string typed = input.ToString().Trim();
-
-        if (string.Equals(typed, answer, System.StringComparison.OrdinalIgnoreCase))
-        {
-            Play(grantedClip);
-            statusLine = "";
-            state = State.ButtonShown;
-            if (screenText != null) screenText.text = $"{header}\n\n{solvedText}";
-            if (exitButton != null) exitButton.SetVisible(true);
-            yield break;
-        }
-
-        mistakes++;
-        Play(deniedClip);
-        statusLine = wrongText;
-        Redraw();
-        yield return new WaitForSeconds(1.2f);
-
-        input.Clear();
-        statusLine = mistakes >= hintAfterMistakes ? hint : "";
-        state = State.Typing;
-        Redraw();
+        if (value == key) Unlock();
     }
 
     private void Redraw()
     {
-        if (screenText == null) return;
+        if (screenText != null)
+        {
+            screenText.text = cipherText != null && cipherDial != null
+                ? CaesarCipher.Shift(cipherText, -cipherDial.Value)
+                : message;
+            screenText.maxVisibleCharacters = int.MaxValue;
+        }
+        if (shiftLabel != null && cipherDial != null)
+            shiftLabel.text = string.Format("SHIFT: {0:00}", cipherDial.Value);
+    }
 
-        bool cursorOn = state == State.Typing && (Time.time * 2f) % 2f < 1f;
-        var text = new StringBuilder();
-        text.Append(header).Append("\n\n");
-        text.Append(puzzle).Append("\n\n");
-        text.Append(prompt).Append('\n');
-        text.Append("> ").Append(input).Append(cursorOn ? "_" : " ");
-        if (!string.IsNullOrEmpty(statusLine)) text.Append("\n\n").Append(statusLine);
-        screenText.text = text.ToString();
-        screenText.maxVisibleCharacters = int.MaxValue;
+    private void Unlock()
+    {
+        state = State.ButtonActive;
+        if (screenText != null) { screenText.text = message; screenText.maxVisibleCharacters = int.MaxValue; }
+        if (cipherDial != null) cipherDial.SetActive(false); // текст больше не сбить
+        if (exitButton != null) { exitButton.SetDimmed(false); exitButton.SetVisible(true); }
+        Play(grantedClip);
+    }
+
+    // ---------- Камера ----------
+
+    private void LateUpdate()
+    {
+        if (!cameraOverride || cam == null) return;
+
+        // Игрок встал из-за компьютера (Esc) — камеру не держим, тряска продолжится, когда сядет снова.
+        if (state != State.Ending && interactor != null && !interactor.IsFocused) return;
+        if (state != State.Ending) UpdateBasePose();
+
+        float t = Time.time * 18f;
+        Quaternion shake = Quaternion.Euler(
+            (Mathf.PerlinNoise(t, 0.1f) - 0.5f) * 2f * shakeDegrees * shakeAmount,
+            (Mathf.PerlinNoise(0.3f, t) - 0.5f) * 2f * shakeDegrees * 0.6f * shakeAmount,
+            (Mathf.PerlinNoise(t, 0.7f) - 0.5f) * 2f * shakeDegrees * 1.3f * shakeAmount);
+
+        Vector3 position = basePosition - baseRotation * Vector3.forward * (flinchDistance * flinch);
+        Quaternion rotation = baseRotation * Quaternion.Euler(-flinchPitch * flinch, 0f, 0f) * shake;
+        cam.SetPositionAndRotation(position, rotation);
+    }
+
+    private void TakeCamera()
+    {
+        if (cameraOverride || interactor == null || interactor.PlayerCamera == null) return;
+        cam = interactor.PlayerCamera.transform;
+        basePosition = cam.position;
+        baseRotation = cam.rotation;
+        UpdateBasePose();
+        cameraOverride = true;
+    }
+
+    // Спокойная поза — точка фокуса компьютера (а не текущая, уже трясущаяся камера).
+    private void UpdateBasePose()
+    {
+        if (interactor == null || interactor.CurrentFocus == null) return;
+        Transform point = interactor.CurrentFocus.FocusPoint;
+        basePosition = point.position;
+        baseRotation = point.rotation;
+    }
+
+    // Первое нажатие EXIT: текст пропадает, начинается тряска.
+    private void StartShaking()
+    {
+        if (shaking) return;
+        shaking = true;
+        if (screenText != null) screenText.text = "";
+        TakeCamera();
+        shakeRoutine = StartCoroutine(Ramp(v => shakeAmount = v, 0f, 1f, shakeRampSeconds, false));
+    }
+
+    private IEnumerator Ramp(System.Action<float> set, float from, float to, float seconds, bool easeOut)
+    {
+        for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, seconds))
+        {
+            float k = easeOut ? 1f - (1f - t) * (1f - t) : t;
+            set(Mathf.Lerp(from, to, k));
+            yield return null;
+        }
+        set(to);
     }
 
     // ---------- Кнопка EXIT ----------
 
     private void OnExitPressed()
     {
-        if (state != State.ButtonShown) return;
+        if (state != State.ButtonActive) return;
+        StartShaking();
 
         if (dodgesDone < dodges)
         {
-            Dodge();
+            dodgesDone++;
+            Play(dodgeClip);
+            if (screenText != null) screenText.text = "";
+            Jump();
             return;
         }
 
@@ -205,66 +286,114 @@ public class ExitTerminal : MonoBehaviour
         StartCoroutine(Ending());
     }
 
-    private void Dodge()
+    // Кнопка прыгает в один из углов или середин краёв экрана, каждый раз в другой.
+    private void Jump()
     {
-        string taunt = dodgeTaunts != null && dodgeTaunts.Length > 0
-            ? dodgeTaunts[Mathf.Min(dodgesDone, dodgeTaunts.Length - 1)]
-            : "";
-        dodgesDone++;
-        Play(dodgeClip);
-
-        if (screenText != null) screenText.text = $"{header}\n\n{taunt}";
-
         var rect = exitButton.transform as RectTransform;
         if (rect == null || buttonArea == null) return;
 
-        // Новое место — в другой половине экрана, чтобы курсор точно оказался не над кнопкой.
         Rect area = buttonArea.rect;
         Vector2 size = rect.rect.size;
-        float halfW = Mathf.Max(0f, area.width / 2f - size.x / 2f - edgeMargin);
-        float halfH = Mathf.Max(0f, area.height / 2f - size.y / 2f - edgeMargin);
+        float x = Mathf.Max(0f, area.width / 2f - size.x / 2f - edgeMargin);
+        float y = Mathf.Max(0f, area.height / 2f - size.y / 2f - edgeMargin);
+        Vector2 offset = area.center; // если pivot области не по центру
+
+        Vector2[] edges =
+        {
+            new Vector2(-x,  y), new Vector2(0f,  y), new Vector2(x,  y),
+            new Vector2( x, 0f),
+            new Vector2( x, -y), new Vector2(0f, -y), new Vector2(-x, -y),
+            new Vector2(-x, 0f),
+        };
+
+        // Подальше от текущего места, чтобы курсор точно оказался не над кнопкой.
         Vector2 current = rect.anchoredPosition;
+        int pick = -1;
+        float best = -1f;
+        for (int tries = 0; tries < 12; tries++)
+        {
+            int i = Random.Range(0, edges.Length);
+            if (i == lastEdge) continue;
+            float d = Vector2.Distance(current, edges[i] + offset);
+            if (d > best) { best = d; pick = i; }
+            if (d > area.width * 0.45f) break;
+        }
+        if (pick < 0) pick = (lastEdge + 4) % edges.Length;
+        lastEdge = pick;
 
-        Vector2 next = current;
-        for (int i = 0; i < 10 && Vector2.Distance(next, current) < area.width * 0.3f; i++)
-            next = new Vector2(Random.Range(-halfW, halfW), Random.Range(-halfH, halfH));
+        if (jumpRoutine != null) StopCoroutine(jumpRoutine);
+        jumpRoutine = StartCoroutine(JumpTo(rect, edges[pick] + offset));
+    }
 
-        rect.anchoredPosition = next;
+    private IEnumerator JumpTo(RectTransform rect, Vector2 target)
+    {
+        Vector2 from = rect.anchoredPosition;
+        for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, jumpSeconds))
+        {
+            rect.anchoredPosition = Vector2.Lerp(from, target, 1f - (1f - t) * (1f - t));
+            yield return null;
+        }
+        rect.anchoredPosition = target;
+        jumpRoutine = null;
     }
 
     // ---------- Финал ----------
 
     private IEnumerator Ending()
     {
-        if (screenText != null) screenText.text = goodbyeText;
-
         if (interactor != null) interactor.InputEnabled = false;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        TakeCamera();
+
+        // Ещё немного трясёт, потом GOODBYE, OPERATOR — и тряска разом стихает.
+        yield return new WaitForSeconds(0.6f);
+        if (screenText != null) screenText.text = goodbyeText;
+        if (shakeRoutine != null) StopCoroutine(shakeRoutine);
+        yield return Ramp(v => shakeAmount = v, shakeAmount, 0f, shakeStopSeconds, true);
 
         yield return new WaitForSeconds(1.2f);
 
         // Рука вылезает из экрана к лицу игрока: сначала медленно, в конце — рывок.
+        // Конечная поза считается один раз — так движение ровное, без дёрганья.
         if (handOut != null && interactor != null && interactor.PlayerCamera != null)
         {
             handOut.gameObject.SetActive(true);
             if (handOut.TryGetComponent(out Rigidbody body)) body.isKinematic = true;
             foreach (var c in handOut.GetComponentsInChildren<Collider>()) c.enabled = false;
+            foreach (var p in handOut.GetComponentsInChildren<Pickupable>()) p.enabled = false;
 
             Play(handClip);
-            Transform cam = interactor.PlayerCamera.transform;
-            Vector3 from = handOut.position;
+            Vector3 center = FinalHand.ModelCenter(handOut);
+            Vector3 scaledCenter = Vector3.Scale(handOut.lossyScale, center);
+
+            // Двигаем центр модели, а не точку опоры — тогда поворот не «размахивает» рукой.
+            Vector3 fromCenter = handOut.position + handOut.rotation * scaledCenter;
             Quaternion fromRotation = handOut.rotation;
+            // Цель — от спокойной позы камеры (до тряски и испуга).
+            Quaternion toRotation = keepSceneRotation ? fromRotation : baseRotation * Quaternion.Euler(handOutRotation);
+            Vector3 toCenter = basePosition + baseRotation * Vector3.forward * handStopDistance;
+            bool flinched = false;
 
             for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.1f, handSeconds))
             {
-                float k = t * t * t;
-                Vector3 to = cam.position + cam.forward * handStopDistance;
-                handOut.position = Vector3.Lerp(from, to, k);
-                handOut.rotation = Quaternion.Slerp(fromRotation,
-                    Quaternion.LookRotation(cam.position - handOut.position, Vector3.up) * Quaternion.Euler(0f, 0f, 20f * k), k * 0.6f);
+                float k = t * t * t;                   // разгон
+                float turn = Mathf.SmoothStep(0f, 1f, t); // поворот плавнее, заранее
+                Quaternion rotation = Quaternion.Slerp(fromRotation, toRotation, turn);
+                Vector3 centerNow = Vector3.Lerp(fromCenter, toCenter, k);
+                handOut.SetPositionAndRotation(centerNow - rotation * scaledCenter, rotation);
+
+                // Рука почти у лица — оператор резко отшатывается.
+                if (!flinched && t >= flinchAt)
+                {
+                    flinched = true;
+                    StartCoroutine(Ramp(v => flinch = v, 0f, 1f, flinchSeconds, true));
+                }
                 yield return null;
             }
+            handOut.SetPositionAndRotation(toCenter - toRotation * scaledCenter, toRotation);
+            if (!flinched) yield return Ramp(v => flinch = v, 0f, 1f, flinchSeconds, true);
+            yield return new WaitForSeconds(holdBeforeBlack);
         }
 
         // Резкая чернота и надпись.

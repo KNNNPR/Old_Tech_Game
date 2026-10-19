@@ -186,7 +186,13 @@ public class PlayerInteractor : MonoBehaviour
         // Ближайшее попадание, пропуская элементы экрана, если мы не за компьютером.
         float bestDistance = float.MaxValue;
         IInteractable best = null;
+        Collider bestCollider = null;
         bool found = false;
+
+        // Ближайший интерактивный объект — на случай, если он «утоплен» в грубый коллайдер машины.
+        float nearestInteractableDistance = float.MaxValue;
+        IInteractable nearestInteractable = null;
+        Vector3 nearestInteractablePoint = Vector3.zero;
 
         for (int i = 0; i < count; i++)
         {
@@ -201,9 +207,22 @@ public class PlayerInteractor : MonoBehaviour
             {
                 bestDistance = hits[i].distance;
                 best = interactable;
+                bestCollider = hits[i].collider;
                 found = true;
             }
+
+            if (interactable != null && hits[i].distance < nearestInteractableDistance)
+            {
+                nearestInteractableDistance = hits[i].distance;
+                nearestInteractable = interactable;
+                nearestInteractablePoint = hits[i].point;
+            }
         }
+
+        // Ближе всего — неинтерактивный коллайдер, но интерактивный объект находится внутри него
+        // (экран внутри общей коробки компьютера и т.п.). Тогда коробка его не закрывает.
+        if (found && best == null && nearestInteractable != null && IsInside(bestCollider, nearestInteractablePoint))
+            best = nearestInteractable;
 
         if (found && best != null && best.CanInteract(this))
         {
@@ -216,6 +235,16 @@ public class PlayerInteractor : MonoBehaviour
             CurrentPrompt = "[Esc] Step away";
         else if (HeldItem != null)
             CurrentPrompt = "[G] Drop";
+    }
+
+    // Точка внутри простого (выпуклого) коллайдера? Невыпуклые меши комнаты не считаются —
+    // иначе можно было бы «дотянуться» сквозь стены.
+    private static bool IsInside(Collider blocker, Vector3 point)
+    {
+        if (blocker == null) return false;
+        bool convex = blocker is BoxCollider || blocker is SphereCollider || blocker is CapsuleCollider
+                      || blocker is MeshCollider mesh && mesh.convex;
+        return convex && (blocker.ClosestPoint(point) - point).sqrMagnitude < 0.0001f;
     }
 
     // ---------- Работа за компьютером ----------

@@ -191,8 +191,35 @@ public class ShiftManager : MonoBehaviour
         GameObject instance = Instantiate(prefab, cam.position + cam.forward * 0.4f, cam.rotation);
         instance.tag = "Card"; // чтобы слот компьютера принял предмет
 
-        if (instance.TryGetComponent(out Pickupable item)) interactor.Hold(item);
-        else Debug.LogError("ShiftManager: у предмета для игрока нет Pickupable.", instance);
+        if (!instance.TryGetComponent(out Pickupable item))
+        {
+            Debug.LogError("ShiftManager: у предмета для игрока нет Pickupable.", instance);
+            return;
+        }
+
+        interactor.Hold(item);
+        CenterInHand(item);
+    }
+
+    /// <summary>
+    /// У моделей из Blender точка опоры (pivot) часто далеко от самой модели — тогда предмет «держится»,
+    /// но висит в стороне. Сдвигаем так, чтобы в точке руки оказался центр модели, а не pivot.
+    /// </summary>
+    private static void CenterInHand(Pickupable item)
+    {
+        Transform hand = item.transform.parent;
+        var renderers = item.GetComponentsInChildren<Renderer>();
+        if (hand == null || renderers.Length == 0) return;
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+
+        Quaternion rotation = Quaternion.Euler(item.HoldRotationOffset);
+        Vector3 centerInItem = Vector3.Scale(item.transform.localScale, item.transform.InverseTransformPoint(bounds.center));
+        Vector3 position = item.HoldPositionOffset - rotation * centerInItem;
+
+        item.AttachTo(hand, position, rotation);
+        item.SnapToTarget(); // сразу в руке, без подлёта (у руки поза своя — из FinalHand)
     }
 
     private void Update()
