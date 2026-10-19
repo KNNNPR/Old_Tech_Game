@@ -1965,20 +1965,36 @@ MonoBehaviour:
   - title: Shift_1
     cards:
     - {fileID: 11400000, guid: 53dff3bcd0d2c804288dea069f19448f, type: 2}
+    - {fileID: 11400000, guid: 21f910c89e195e649b38e172ee7ffb9e, type: 2}
+    - {fileID: 11400000, guid: b3dbf71302de5b147845ba30c1475dbe, type: 2}
+    - {fileID: 11400000, guid: 754643c8cfe3ef744ab7771f5d86081b, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 0
   - title: Shift_2
     cards:
-    - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
-    - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
+    - {fileID: 11400000, guid: cfa13e7ab7ba2514b990442895518393, type: 2}
+    - {fileID: 11400000, guid: 1738210bcd0003a4cbdc364e57c448ca, type: 2}
+    - {fileID: 11400000, guid: da9c8ead1a03cd0448e69ab920072d45, type: 2}
+    - {fileID: 11400000, guid: 3c6de049ad4b5434483dc0fb35f0cb6e, type: 2}
+    - {fileID: 11400000, guid: acaec431870f7264289d69774cff8a55, type: 2}
+    - {fileID: 11400000, guid: 92b20ae606cf1bb41aa0a0c90984bd37, type: 2}
+    - {fileID: 11400000, guid: ac2dae77bcb1a9d40bd16e1f767e6b47, type: 2}
+    - {fileID: 11400000, guid: e0d45671c370c9b40ac26e3f75eb7514, type: 2}
+    - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
+    - {fileID: 11400000, guid: b3dc46cde3cb0144499273ca94b9ebaf, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 1
   - title: Shift_3
     cards:
+    - {fileID: 11400000, guid: 5f515dd065c92854f98e5c0dd13835f7, type: 2}
+    - {fileID: 11400000, guid: fc8c74bbc1602a248be81d98d8d083f8, type: 2}
+    - {fileID: 11400000, guid: f9bf811cff05f704cbb33b1e33178924, type: 2}
+    - {fileID: 11400000, guid: c45aee60b335c9b4e8df04e54e1ea42e, type: 2}
+    - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
     - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}
@@ -2002,7 +2018,7 @@ MonoBehaviour:
   titleFadeSeconds: 1
   titleHoldSeconds: 2.5
   returnDialogue: {fileID: 0}
-  testDay: 3
+  testDay: 2
   endDelay: 3
   onShiftComplete:
     m_PersistentCalls:
@@ -4213,6 +4229,11 @@ MonoBehaviour:
   bobFrequency: 1.6
   bobAmplitude: 0.035
   bobReturnSpeed: 8
+  strafeTilt: 1.5
+  turnTilt: 1.2
+  tiltSpeed: 6
+  breathAmplitude: 0.006
+  breathFrequency: 0.25
 --- !u!143 &515159298
 CharacterController:
   m_ObjectHideFlags: 0
@@ -15755,6 +15776,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1473274244}
+  - component: {fileID: 1473274245}
   m_Layer: 0
   m_Name: HoldPoint
   m_TagString: Untagged
@@ -15777,6 +15799,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1109477477}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1473274245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1473274243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36a6e9d77736504448115184206445a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoldSway
+  swayDegrees: 4
+  swayShift: 0.015
+  swaySmooth: 8
+  walkBob: 0.012
+  walkFrequency: 1.6
+  walkDrop: 0.01
 --- !u!1 &1477987980
 GameObject:
   m_ObjectHideFlags: 0

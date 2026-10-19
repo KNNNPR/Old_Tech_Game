@@ -15,9 +15,19 @@ MonoBehaviour:
   cardName: card_Audio
   type: 0
   isAnomaly: 0
-  text: Hello Operator!
+  text: '"SAFETY REMINDER.
+
+    TURN OFF THE READER BEFORE
+
+    REMOVING A JAMMED
+    CARD.
+
+    DO NOT PUT HANDS INTO
+
+    THE CARD SLOT." '
   encrypted: 1
   cipherKey: 8
+  causesBlackout: 0
   image: {fileID: 0}
   audio: {fileID: 0}
   audioCarrier: {fileID: 0}

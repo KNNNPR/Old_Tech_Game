@@ -27,6 +27,18 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float bobAmplitude = 0.035f;
     [SerializeField] private float bobReturnSpeed = 8f;
 
+    [Header("Ощущения (game feel)")]
+    [Tooltip("Наклон головы при шаге вбок (A/D), градусы.")]
+    [SerializeField] private float strafeTilt = 1.5f;
+    [Tooltip("Наклон головы при резком повороте мышью, градусы (максимум).")]
+    [SerializeField] private float turnTilt = 1.2f;
+    [Tooltip("Как быстро наклон догоняет цель.")]
+    [SerializeField] private float tiltSpeed = 6f;
+    [Tooltip("Дыхание на месте: высота подъёма камеры (м). 0 — выключить.")]
+    [SerializeField] private float breathAmplitude = 0.006f;
+    [Tooltip("Вдохов в секунду.")]
+    [SerializeField] private float breathFrequency = 0.25f;
+
     public bool ControlEnabled { get; private set; } = true;
 
     private CharacterController characterController;
@@ -35,6 +47,8 @@ public class FirstPersonController : MonoBehaviour
     private float pitch;
     private float bobTimer;
     private Vector3 cameraBaseLocalPosition;
+    private float roll;
+    private float strafeInput;
 
     private void Awake()
     {
@@ -72,7 +86,7 @@ public class FirstPersonController : MonoBehaviour
     {
         ControlEnabled = enabled;
         if (enabled) controlEnabledFrame = Time.frameCount;
-        else horizontalVelocity = Vector3.zero;
+        else { horizontalVelocity = Vector3.zero; strafeInput = 0f; roll = 0f; }
     }
 
     private int controlEnabledFrame = -1;
@@ -86,6 +100,7 @@ public class FirstPersonController : MonoBehaviour
         pitch = Mathf.Clamp(-Mathf.Asin(direction.y) * Mathf.Rad2Deg, minPitch, maxPitch);
         transform.rotation = Quaternion.Euler(0f, yaw, 0f);
         cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        roll = 0f;
     }
 
     private void Look()
@@ -97,7 +112,13 @@ public class FirstPersonController : MonoBehaviour
 
         transform.Rotate(0f, delta.x, 0f);
         pitch = Mathf.Clamp(pitch - delta.y, minPitch, maxPitch);
-        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+
+        // Лёгкий крен: голова наклоняется при шаге вбок и при резком повороте.
+        float turn = Time.deltaTime > 0f ? Mathf.Clamp(delta.x / Time.deltaTime / 400f, -1f, 1f) : 0f;
+        float targetRoll = -strafeInput * strafeTilt - turn * turnTilt;
+        roll = Mathf.Lerp(roll, targetRoll, 1f - Mathf.Exp(-tiltSpeed * Time.deltaTime));
+
+        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, roll);
     }
 
     private void Move()
@@ -114,6 +135,7 @@ public class FirstPersonController : MonoBehaviour
         }
 
         if (input.sqrMagnitude > 1f) input.Normalize();
+        strafeInput = input.x;
 
         Vector3 target = (transform.right * input.x + transform.forward * input.y) * walkSpeed;
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, target, acceleration * Time.deltaTime);
@@ -153,6 +175,10 @@ public class FirstPersonController : MonoBehaviour
         else
         {
             bobTimer = 0f;
+
+            // Стоим на месте — еле заметное дыхание (только когда игрок управляет сам).
+            if (ControlEnabled && breathAmplitude > 0f)
+                targetPosition += Vector3.up * Mathf.Sin(Time.time * breathFrequency * Mathf.PI * 2f) * breathAmplitude;
         }
 
         cameraPivot.localPosition = Vector3.Lerp(

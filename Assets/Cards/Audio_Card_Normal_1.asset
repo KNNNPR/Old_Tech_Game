@@ -18,6 +18,7 @@ MonoBehaviour:
   text: 
   encrypted: 1
   cipherKey: 0
+  causesBlackout: 0
   image: {fileID: 0}
   audio: {fileID: 8300000, guid: db76ac8124a7b89468f0582da65a256b, type: 3}
   audioCarrier: {fileID: 0}
