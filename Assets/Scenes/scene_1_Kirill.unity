@@ -2018,7 +2018,7 @@ MonoBehaviour:
   titleFadeSeconds: 1
   titleHoldSeconds: 2.5
   returnDialogue: {fileID: 0}
-  testDay: 3
+  testDay: -1
   endDelay: 3
   onShiftComplete:
     m_PersistentCalls:
@@ -12933,6 +12933,8 @@ MonoBehaviour:
   doorHinge: {fileID: 1188610272}
   doorOpenAngle: -90
   entryWalkSeconds: 6.777495
+  enteringRoom: {fileID: 0}
+  enteringRoomSpeed: 0.45
   appearance: {fileID: 7400000, guid: 3437c20af1dad5c449339facbf8a7944, type: 2}
   movement:
   - {fileID: 7400000, guid: 3ff85e7358b5fe241a0b5b190de0b81d, type: 2}
@@ -13364,6 +13366,7 @@ MonoBehaviour:
   reading: {fileID: 96809910}
   cameraMove: {fileID: 946060065}
   footsteps: {fileID: 1171860691}
+  ambientVolume: 0.5
   itemHandling: {fileID: 1113509441}
   entranceDoorAudio: {fileID: 1045453453}
   entranceDoorOpenAudio: {fileID: 1328088443}
@@ -36963,6 +36966,8 @@ MonoBehaviour:
   - 0.85
   - 1.05
   fireFadeSeconds: 1
+  biteStartSeconds: 0.06
+  biteSoundSeconds: 0.28
 --- !u!1 &6458859407466284905
 GameObject:
   m_ObjectHideFlags: 0
