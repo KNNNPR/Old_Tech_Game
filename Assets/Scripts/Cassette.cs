@@ -11,7 +11,8 @@ public class Cassette : MonoBehaviour
     private float[] tuningTargets;
 
     public bool IsAnomaly { get; private set; }
-    public AudioClip CarrierClip => IsAnomaly ? carrier : clip;
+    // На кассете одна запись — с карты. Аномальная она или нет, решает галочка в CardData.
+    public AudioClip CarrierClip => clip;
 
     public AudioClip Clip
     {
@@ -31,7 +32,7 @@ public class Cassette : MonoBehaviour
     {
         clip = recording;
         IsAnomaly = anomaly;
-        carrier = anomaly ? (carrierClip ? carrierClip : Choose(normalRecordings)) : recording;
+        carrier = recording;
     }
 
     // A tape keeps its tuning after stop, removal and reinsertion.
