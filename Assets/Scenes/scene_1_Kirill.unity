@@ -1970,6 +1970,8 @@ MonoBehaviour:
     playerStart: {fileID: 0}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 0
+    randomNormals: 2
+    randomAnomalies: 0
   - title: Shift_2
     cards:
     - {fileID: 11400000, guid: cfa13e7ab7ba2514b990442895518393, type: 2}
@@ -1981,6 +1983,8 @@ MonoBehaviour:
     playerStart: {fileID: 1062985000}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 1
+    randomNormals: 2
+    randomAnomalies: 3
   - title: Shift_3
     cards:
     - {fileID: 11400000, guid: 5f515dd065c92854f98e5c0dd13835f7, type: 2}
@@ -1990,6 +1994,8 @@ MonoBehaviour:
     playerStart: {fileID: 1062985000}
     giveToPlayer: {fileID: 0}
     helpyDialogueAtEnd: 0
+    randomNormals: 0
+    randomAnomalies: 2
   - title: Shift_4
     cards: []
     spawnInsteadOfCards:
@@ -1997,6 +2003,8 @@ MonoBehaviour:
     playerStart: {fileID: 469362217}
     giveToPlayer: {fileID: 1668418816724480201, guid: 09c5d5edf5a450b419c4727a76e2d2c1, type: 3}
     helpyDialogueAtEnd: 0
+    randomNormals: -1
+    randomAnomalies: -1
   tube: {fileID: 1605404918}
   tutorial: {fileID: 1098284447}
   tutorialCard: {fileID: 11400000, guid: 6cbdf0e5fbdb1204186dbab3a8b8c6a9, type: 2}
@@ -2008,6 +2016,41 @@ MonoBehaviour:
   titleFadeSeconds: 1
   titleHoldSeconds: 2.5
   returnDialogue: {fileID: 0}
+  randomizeCards: 1
+  cardPool:
+  - {fileID: 11400000, guid: 754643c8cfe3ef744ab7771f5d86081b, type: 2}
+  - {fileID: 11400000, guid: bbd3519d88db1964a909f6fc2e0405c7, type: 2}
+  - {fileID: 11400000, guid: da9c8ead1a03cd0448e69ab920072d45, type: 2}
+  - {fileID: 11400000, guid: caf8a292b8e651941b7701923e9ca06e, type: 2}
+  - {fileID: 11400000, guid: b3dc46cde3cb0144499273ca94b9ebaf, type: 2}
+  - {fileID: 11400000, guid: 53dff3bcd0d2c804288dea069f19448f, type: 2}
+  - {fileID: 11400000, guid: 1738210bcd0003a4cbdc364e57c448ca, type: 2}
+  - {fileID: 11400000, guid: 3aa919d7ccf928e458586118b45f4018, type: 2}
+  - {fileID: 11400000, guid: ac2dae77bcb1a9d40bd16e1f767e6b47, type: 2}
+  - {fileID: 11400000, guid: 58e8489126951cb4c8976c62e26e95d6, type: 2}
+  - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
+  - {fileID: 11400000, guid: abfb970a31d5b3c418007b15fc1a90af, type: 2}
+  - {fileID: 11400000, guid: f9bf811cff05f704cbb33b1e33178924, type: 2}
+  - {fileID: 11400000, guid: 95e5365e1690729468879eab8d90ff1b, type: 2}
+  - {fileID: 11400000, guid: acaec431870f7264289d69774cff8a55, type: 2}
+  - {fileID: 11400000, guid: 3c6de049ad4b5434483dc0fb35f0cb6e, type: 2}
+  - {fileID: 11400000, guid: 21f910c89e195e649b38e172ee7ffb9e, type: 2}
+  - {fileID: 11400000, guid: 92b20ae606cf1bb41aa0a0c90984bd37, type: 2}
+  - {fileID: 11400000, guid: cda59d579fc0cd84e82cde5aa5192418, type: 2}
+  - {fileID: 11400000, guid: fc8c74bbc1602a248be81d98d8d083f8, type: 2}
+  - {fileID: 11400000, guid: c45aee60b335c9b4e8df04e54e1ea42e, type: 2}
+  - {fileID: 11400000, guid: ece6b78ff119cfd49ba82f985cbcc581, type: 2}
+  - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
+  - {fileID: 11400000, guid: c0cd741238970e247bc4b7fc500906e0, type: 2}
+  - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
+  - {fileID: 11400000, guid: 5f515dd065c92854f98e5c0dd13835f7, type: 2}
+  - {fileID: 11400000, guid: b3dbf71302de5b147845ba30c1475dbe, type: 2}
+  - {fileID: 11400000, guid: cfa13e7ab7ba2514b990442895518393, type: 2}
+  - {fileID: 11400000, guid: f9a764bf23d093c4a89626fcaaeddd56, type: 2}
+  - {fileID: 11400000, guid: e0d45671c370c9b40ac26e3f75eb7514, type: 2}
+  - {fileID: 11400000, guid: 6cbdf0e5fbdb1204186dbab3a8b8c6a9, type: 2}
+  keepAnomalyCount: 1
+  debugSeed: 0
   testDay: 1
   endDelay: 3
   onShiftComplete:

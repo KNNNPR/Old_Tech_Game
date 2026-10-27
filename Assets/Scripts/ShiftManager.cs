@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -31,6 +33,13 @@ public class ShiftManager : MonoBehaviour
         [Header("Конец дня")]
         [Tooltip("Когда все карты дня отсортированы — прилетает робот и разговаривает с игроком (Helpy Return Dialogue).")]
         public bool helpyDialogueAtEnd;
+
+        [Header("Случайные карты (если Randomize Cards включён)")]
+        [Tooltip("Сколько обычных карт вытянуть в этот день. -1 — столько, сколько обычных в списке Cards.")]
+        public int randomNormals = -1;
+        [Tooltip("Сколько аномальных карт вытянуть в этот день. -1 — столько, сколько аномалий в списке Cards.\n" +
+                 "Карты-«отключки» (FAINT) из списка Cards добавляются в конец дня сверх этого числа.")]
+        public int randomAnomalies = -1;
     }
 
     [SerializeField] private Shift[] shifts;
@@ -57,6 +66,22 @@ public class ShiftManager : MonoBehaviour
     [Header("Разговор с роботом в конце дня")]
     [Tooltip("Разговор робота (Helpy return conversation). Если пусто — найдётся в сцене сам.\nОбъект с ним держи выключенным — его включит этот скрипт в нужный день.")]
     [SerializeField] private HelpyReturnDialogue returnDialogue;
+
+    [Header("Случайные карты")]
+    [Tooltip("Раздавать карты по дням случайно. Сколько карт в дне — берётся из его списка Cards выше.\n" +
+             "Раздача делается один раз на забег (без повторов между днями) и меняется при новой игре.")]
+    [SerializeField] private bool randomizeCards = true;
+    [Tooltip("Из каких карт набирать дни. Пусто — из карт, уже разложенных по дням (тогда они просто перетасуются между днями).\n" +
+             "Можно перетащить сюда всю папку Cards: карты-«отключки» (Causes Blackout) и учебная карта отфильтруются сами.")]
+    [SerializeField] private CardData[] cardPool;
+    [Tooltip("В каждом дне столько же аномалий, сколько в его исходном списке — сохраняет сложность, заданную по дням.")]
+    [SerializeField] private bool keepAnomalyCount = true;
+    [Tooltip("Сид для отладки: одна и та же раскладка каждый раз. 0 — случайная.")]
+    [SerializeField] private int debugSeed;
+
+    // Раздача на весь забег. Статическая, чтобы пережить перезагрузку сцены между днями.
+    private static CardData[][] dealtCards;
+    private static int dealtForRun = -1;
 
     [Header("Отладка")]
     [Tooltip("Номер дня с нуля, если нажать Play прямо в этой сцене (0 — день 1, 3 — день 4).\n-1 — как обычно. На игру из меню не влияет.")]
@@ -90,7 +115,7 @@ public class ShiftManager : MonoBehaviour
         if (testDay >= 0 && Time.frameCount <= 1) GameFlow.JumpToDay(testDay);
 
         ShiftIndex = Mathf.Clamp(GameFlow.CurrentShift, 0, shifts.Length - 1);
-        shiftCards = shifts[ShiftIndex].cards ?? Array.Empty<CardData>();
+        shiftCards = CardsForShift(ShiftIndex);
         if (titleGroup != null) titleGroup.alpha = 0f;
 
         if (tutorial == null) tutorial = FindFirstObjectByType<HelpyTutorialIntro>(FindObjectsInactive.Include);
@@ -132,6 +157,119 @@ public class ShiftManager : MonoBehaviour
             BeginShift();
         }
     }
+
+    // ---------- Случайная раздача карт ----------
+
+    private CardData[] CardsForShift(int index)
+    {
+        CardData[] authored = shifts[index].cards ?? Array.Empty<CardData>();
+        if (!randomizeCards) return authored;
+
+        if (dealtCards == null || dealtForRun != GameFlow.RunId || dealtCards.Length != shifts.Length)
+        {
+            dealtCards = Deal();
+            dealtForRun = GameFlow.RunId;
+        }
+        return dealtCards[index];
+    }
+
+    /// <summary>Карта, которая не участвует в перемешивании и остаётся на своём месте в своём дне (FAINT).</summary>
+    private static bool IsPinned(CardData card) => card != null && card.causesBlackout;
+
+    private CardData[][] Deal()
+    {
+        var rng = new System.Random(debugSeed != 0 ? debugSeed : Environment.TickCount);
+
+        // Колода: пул из инспектора или все карты дней. Без дублей, «отключек» и учебной карты.
+        var deck = new List<CardData>();
+        IEnumerable<CardData> source = cardPool != null && cardPool.Length > 0
+            ? cardPool
+            : shifts.SelectMany(s => s.cards ?? Array.Empty<CardData>());
+        foreach (CardData card in source)
+            if (card != null && !IsPinned(card) && card != tutorialCard && !deck.Contains(card))
+                deck.Add(card);
+
+        var anomalies = deck.Where(c => c.isAnomaly).ToList();
+        var normals = deck.Where(c => !c.isAnomaly).ToList();
+        Shuffle(anomalies, rng);
+        Shuffle(normals, rng);
+        Shuffle(deck, rng);
+
+        var result = new CardData[shifts.Length][];
+        var log = new System.Text.StringBuilder("ShiftManager: раздача карт на забег");
+        for (int s = 0; s < shifts.Length; s++)
+        {
+            CardData[] authored = shifts[s].cards ?? Array.Empty<CardData>();
+
+            // Сколько карт какого вида нужно дню: из полей смены, а если там -1 — по списку Cards
+            // (закреплённые карты не считаем).
+            int listAnomalies = 0, listNormals = 0;
+            foreach (CardData card in authored)
+            {
+                if (card == null || IsPinned(card)) continue;
+                if (keepAnomalyCount && card.isAnomaly) listAnomalies++;
+                else listNormals++;
+            }
+            int needAnomalies = shifts[s].randomAnomalies >= 0 ? shifts[s].randomAnomalies : listAnomalies;
+            int needNormals = shifts[s].randomNormals >= 0 ? shifts[s].randomNormals : listNormals;
+            if (!keepAnomalyCount) { needNormals += needAnomalies; needAnomalies = 0; }
+
+            var drawn = new List<CardData>();
+            if (keepAnomalyCount)
+            {
+                Take(anomalies, normals, needAnomalies, drawn, "аномалий", s);
+                Take(normals, anomalies, needNormals, drawn, "обычных", s);
+            }
+            else Take(deck, null, needNormals, drawn, "карт", s);
+            Shuffle(drawn, rng);
+
+            // День: вытянутые карты в случайном порядке, закреплённые (FAINT) — в конце.
+            var day = new List<CardData>(drawn);
+            foreach (CardData card in authored)
+                if (IsPinned(card)) day.Add(card);
+            result[s] = day.ToArray();
+
+            log.Append($"\n  {shifts[s].title}: ").Append(string.Join(", ", day.Select(c => c.name)));
+        }
+        Debug.Log(log.ToString(), this);
+        return result;
+
+        // Вытащить count карт из main; если там не хватает — добрать из fallback.
+        void Take(List<CardData> main, List<CardData> fallback, int count, List<CardData> into, string what, int shift)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                List<CardData> from = main.Count > 0 ? main : fallback != null && fallback.Count > 0 ? fallback : null;
+                if (from == null)
+                {
+                    Debug.LogWarning($"ShiftManager: в колоде не хватило {what} для {shifts[shift].title} — день будет короче. " +
+                                     "Добавь карт в Card Pool.", this);
+                    return;
+                }
+                if (from != main)
+                    Debug.LogWarning($"ShiftManager: для {shifts[shift].title} не хватило {what}, взята карта другого вида.", this);
+
+                into.Add(from[from.Count - 1]);
+                from.RemoveAt(from.Count - 1);
+
+                // Карта ушла в день — убрать её и из остальных списков, чтобы не повторилась.
+                CardData taken = into[into.Count - 1];
+                deck.Remove(taken); anomalies.Remove(taken); normals.Remove(taken);
+            }
+        }
+    }
+
+    private static void Shuffle<T>(IList<T> list, System.Random rng)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = rng.Next(i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
+    }
+
+    [ContextMenu("Перераздать карты (следующий запуск дня)")]
+    private void ResetDeal() => dealtCards = null;
 
     private void Start()
     {
@@ -238,8 +376,8 @@ public class ShiftManager : MonoBehaviour
 
         if (tube != null)
         {
-            if(ShiftIndex==3 && shifts[ShiftIndex].giveToPlayer && shifts[ShiftIndex].giveToPlayer.GetComponent<FinalHand>())
-            { tube.AutomaticSpawning=false; tube.enabled=false; shiftCards=Array.Empty<CardData>(); }
+            if (ShiftIndex == 3 && shifts[ShiftIndex].giveToPlayer && shifts[ShiftIndex].giveToPlayer.GetComponent<FinalHand>())
+            { tube.AutomaticSpawning = false; tube.enabled = false; shiftCards = Array.Empty<CardData>(); }
             else
             {
                 GameObject[] special = shifts[ShiftIndex].spawnInsteadOfCards;

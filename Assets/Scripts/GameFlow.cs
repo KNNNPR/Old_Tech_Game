@@ -50,6 +50,9 @@ public static class GameFlow
 
     public static int StepIndex { get; private set; }
 
+    /// <summary>Номер забега. Меняется при каждой новой игре — по нему ShiftManager понимает, что пора заново раздать карты.</summary>
+    public static int RunId { get; private set; }
+
     /// <summary>Номер текущего (или последнего пройденного) дня, с нуля.</summary>
     public static int CurrentShift
     {
@@ -72,6 +75,7 @@ public static class GameFlow
     {
         StepIndex = 0;
         TotalMistakes = 0;
+        RunId++;
     }
 
     // ---------- Основное ----------
@@ -81,6 +85,7 @@ public static class GameFlow
     {
         StepIndex = 0;
         TotalMistakes = 0;
+        RunId++;
     }
 
     /// <summary>Из меню — в сцену первого шага.</summary>
