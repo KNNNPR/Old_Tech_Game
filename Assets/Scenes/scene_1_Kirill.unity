@@ -1965,9 +1965,7 @@ MonoBehaviour:
   - title: Shift_1
     cards:
     - {fileID: 11400000, guid: 53dff3bcd0d2c804288dea069f19448f, type: 2}
-    - {fileID: 11400000, guid: 21f910c89e195e649b38e172ee7ffb9e, type: 2}
-    - {fileID: 11400000, guid: b3dbf71302de5b147845ba30c1475dbe, type: 2}
-    - {fileID: 11400000, guid: 754643c8cfe3ef744ab7771f5d86081b, type: 2}
+    - {fileID: 11400000, guid: 92b20ae606cf1bb41aa0a0c90984bd37, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 0}
     giveToPlayer: {fileID: 0}
@@ -1979,11 +1977,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: da9c8ead1a03cd0448e69ab920072d45, type: 2}
     - {fileID: 11400000, guid: 3c6de049ad4b5434483dc0fb35f0cb6e, type: 2}
     - {fileID: 11400000, guid: acaec431870f7264289d69774cff8a55, type: 2}
-    - {fileID: 11400000, guid: 92b20ae606cf1bb41aa0a0c90984bd37, type: 2}
-    - {fileID: 11400000, guid: ac2dae77bcb1a9d40bd16e1f767e6b47, type: 2}
-    - {fileID: 11400000, guid: e0d45671c370c9b40ac26e3f75eb7514, type: 2}
-    - {fileID: 11400000, guid: 08559ac110603e34eb1816bedd295eaa, type: 2}
-    - {fileID: 11400000, guid: b3dc46cde3cb0144499273ca94b9ebaf, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 1062985000}
     giveToPlayer: {fileID: 0}
@@ -1992,9 +1985,6 @@ MonoBehaviour:
     cards:
     - {fileID: 11400000, guid: 5f515dd065c92854f98e5c0dd13835f7, type: 2}
     - {fileID: 11400000, guid: fc8c74bbc1602a248be81d98d8d083f8, type: 2}
-    - {fileID: 11400000, guid: f9bf811cff05f704cbb33b1e33178924, type: 2}
-    - {fileID: 11400000, guid: c45aee60b335c9b4e8df04e54e1ea42e, type: 2}
-    - {fileID: 11400000, guid: 65bdbb529eab0f9479064c6c224b52da, type: 2}
     - {fileID: 11400000, guid: aaad68b8a56d14440833d11bb823a39e, type: 2}
     spawnInsteadOfCards: []
     playerStart: {fileID: 1062985000}
@@ -10615,7 +10605,7 @@ MonoBehaviour:
   slot: {fileID: 744021831}
   verdict: 1
   requireViewed: 1
-  notViewedText: "\u041A\u0430\u0440\u0442\u0430 \u043D\u0435 \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440\u0435\u043D\u0430"
+  notViewedText: Card was not viewed
   suckOffset: {x: 0, y: 0, z: -0.02}
   suckDuration: 1.35
   shrink: 1
